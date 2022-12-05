@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<!-- meta -->
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>kaer</title>
+
+	<!-- fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto:wght@500;700&family=Josefin+Sans:wght@600&display=swap" rel="stylesheet">
+
+	<!-- css -->
+	<style>
+		body {
+			margin: 0;
+			background: #2c2a34;
+			overflow: hidden;
+		}
+		canvas {
+			position: absolute;
+			top: 0;
+			left: 0;
+		}
+
+		#mapInput {
+			position: absolute;
+			top: 0;
+			left: 0;
+
+			z-index: 1;
+		}
+	</style>
+
+</head>
+<body>
+	<canvas id="subcanv" style="display: none;"></canvas>
+	<canvas id="skidMarkCanv" style="display: block;"></canvas>
+	<canvas id="canv"></canvas>
+	<input id="mapInput" type="file" accept="image/svg+xml">
+</body>
+<!-- engine -->
+<script src="./engine/animations.js"></script>
+<script src="./engine/vec.js"></script>
+<script src="./engine/quadtree.js"></script>
+<script src="./engine/bodies.js"></script>
+<script src="./engine/ter.js"></script>
+
+<!-- init -->
+<script src="./js/init/initEngine.js"></script>
+<script src="./js/init/loadImg.js"></script>
+<script src="./js/init/car.js"></script>
+
+<!-- map -->
+<script src="./js/map/map.js"></script>
+<script src="./js/map/loadMap.js"></script>
+<script src="./js/map/mapping.js"></script>
+
+<!-- visuals -->
+<script src="./js/vis/skid.js"></script>
+<script src="./js/vis/smoke.js"></script>
+
+<!-- ai -->
+<script src="./js/ai/enemyDriver.js"></script>
+
+<script src="./js/keyEvents.js"></script>
+</html>
