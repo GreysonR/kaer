@@ -1,0 +1,145 @@
+#homeWrapper {
+	display: none;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 6;
+
+	width: 100vw;
+	height: 100vh;
+	background: #2c2a34;
+}
+#homeWrapper.active {
+	display: block;
+}
+
+
+#modeSelect {
+	display: none;
+}
+#modeSelect.active {
+    display: grid;
+	grid-template-columns: repeat(3, 300px);
+	grid-template-rows: 300px;
+	column-gap: 100px;
+
+	width: min-content;
+	margin: auto;
+
+	margin-top: 50vh;
+	transform: translateY(-50%);
+
+	font-family: "Inter", Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	color: #d0d0d0;
+	text-align: center;
+	min-width: 150px;
+
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+#modeSelect .mode {
+	position: relative;
+	width:  300px;
+	height: 300px;
+	line-height: 300px;
+	
+	cursor: pointer;
+
+	background: linear-gradient(45deg, #492dae, #e33c7f);
+}
+#modeSelect .mode.grayed {
+	filter: grayscale(80%) brightness(90%);
+	cursor: default;
+}
+#modeSelect .mode::before {
+	content: "";
+	display: block;
+
+	position: absolute;
+	top:  2px;
+	left: 2px;
+	z-index: 0;
+	width:  296px;
+	height: 296px;
+	
+	background: linear-gradient(45deg, #2b2835, #2b2729);
+}
+#modeSelect .mode:not(.grayed):hover::before {
+	background: linear-gradient(45deg, #332d52, #3a2c31);
+}
+
+#modeSelect .mode span {
+	vertical-align: middle;
+	line-height: normal;
+	position: relative;
+	z-index: 2;
+}
+
+
+
+#trackSelect {
+	display: none;
+}
+#trackSelect.active {
+    display: block;
+
+	width: max-content;
+	margin: auto;
+
+	margin-top: 50vh;
+	transform: translateY(-50%);
+
+	font-family: "Inter", Arial, Helvetica, sans-serif;
+	font-weight: normal;
+	font-size: 22px;
+	color: #d0d0d0;
+	text-align: center;
+	min-width: 150px;
+
+	user-select: none;
+	-webkit-user-select: none;
+
+	cursor: pointer;
+}
+
+#trackSelect .track {
+	display: inline-block;
+	position: relative;
+	width:  300px;
+	height: 300px;
+	line-height: 300px;
+
+	margin-right: 100px;
+	margin-left: 0;
+
+	background: linear-gradient(45deg, #492dae, #e33c7f);
+}
+#trackSelect .track:last-child {
+	margin-right: 0;
+}
+#trackSelect .track::before {
+	content: "";
+	display: block;
+
+	position: absolute;
+	top:  2px;
+	left: 2px;
+	z-index: 0;
+	width:  296px;
+	height: 296px;
+	
+	background: linear-gradient(45deg, #2b2835, #2b2729);
+}
+#trackSelect .track:hover::before {
+	background: linear-gradient(45deg, #332d52, #3a2c31);
+}
+
+#trackSelect .track span {
+	vertical-align: middle;
+	line-height: normal;
+	position: relative;
+	z-index: 2;
+}

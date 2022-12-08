@@ -18,6 +18,23 @@ window.addEventListener("keydown", event => {
 	else if (key === " ") {
 		car.handbrake = true;
 	}
+	else if (key === "r") {
+		resetCar();
+	}
+	else if (key === "escape") {
+		if (trackName !== "" && modeName !== "") {
+			if (homeOpen) {
+				closeHome();
+			}
+			else {
+				openHome();
+			}
+		}
+	}
+
+	if (event.altKey && key === "q") {
+		document.getElementById("mapInput").classList.toggle("active");
+	}
 });
 window.addEventListener("keyup", event => {
 	let key = event.key.toLowerCase();

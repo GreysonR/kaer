@@ -10,29 +10,11 @@
 	<!-- fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto:wght@500;700&family=Josefin+Sans:wght@600&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto:wght@500;700&Inter:wght@400;700&display=swap" rel="stylesheet">
 
 	<!-- css -->
-	<style>
-		body {
-			margin: 0;
-			background: #2c2a34;
-			overflow: hidden;
-		}
-		canvas {
-			position: absolute;
-			top: 0;
-			left: 0;
-		}
-
-		#mapInput {
-			position: absolute;
-			top: 0;
-			left: 0;
-
-			z-index: 1;
-		}
-	</style>
+	<link rel="stylesheet" href="./css/main.css">
+	<link rel="stylesheet" href="./css/home.css">
 
 </head>
 <body>
@@ -40,6 +22,35 @@
 	<canvas id="skidMarkCanv" style="display: block;"></canvas>
 	<canvas id="canv"></canvas>
 	<input id="mapInput" type="file" accept="image/svg+xml">
+
+	<div id="overhead">
+		<div id="timer">0:00</div>
+		<div id="bestTime">Best: 0:00</div>
+	</div>
+	<div id="homeWrapper" class="active">
+		<div id="modeSelect" class="active">
+			<div class="mode" onclick="selectMode('time')">
+				<span>Timed</span>
+			</div>
+			<div class="mode" onclick="selectMode('drift')">
+				<span>Drift</span>
+			</div>
+			<div class="mode grayed">
+				<span>Evade</span>
+			</div>
+		</div>
+		<div id="trackSelect" class="active">
+			<div class="track" onclick="selectTrack('track1')">
+				<span>Track 1</span>
+			</div>
+			<div class="track" onclick="selectTrack('track2')">
+				<span>Track 2</span>
+			</div>
+			<div class="track" onclick="selectTrack('track3')">
+				<span>Track 3</span>
+			</div>
+		</div>
+	</div>
 </body>
 <!-- engine -->
 <script src="./engine/animations.js"></script>
@@ -53,10 +64,18 @@
 <script src="./js/init/loadImg.js"></script>
 <script src="./js/init/car.js"></script>
 
+<!-- gameplay -->
+<script src="./js/gameplay/selectTrack.js"></script>
+<script src="./js/gameplay/timedTrack.js"></script>
+
 <!-- map -->
-<script src="./js/map/map.js"></script>
 <script src="./js/map/loadMap.js"></script>
 <script src="./js/map/mapping.js"></script>
+
+<!-- map data -->
+<script src="./js/map/data/track1.js"></script>
+<script src="./js/map/data/track2.js"></script>
+<script src="./js/map/data/track3.js"></script>
 
 <!-- visuals -->
 <script src="./js/vis/skid.js"></script>

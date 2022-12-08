@@ -228,7 +228,7 @@ class Body {
 		if (angle !== this.last.angle) {
 			let vertices = this.vertices;
 			let position = this.position;
-			let delta = this.last.angle - angle;
+			let delta = -(this.last.angle - angle);
 			let sin = Math.sin(delta);
 			let cos = Math.cos(delta);
 
@@ -333,7 +333,9 @@ class Body {
 	}
 	off(event, callback) {
 		event = this.events[event];
-		event.splice(event.indexOf(callback), 1);
+		if (event.includes(callback)) {
+			event.splice(event.indexOf(callback), 1);
+		}
 	}
 	trigger(event, arg1, arg2) {
 		this.events[event].forEach(callback => {

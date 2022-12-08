@@ -56,7 +56,7 @@ function main() {
 
 	// - render
 	Render();
-	Performance.render();
+	// Performance.render();
 
 	// - run animations
 	animation.run();

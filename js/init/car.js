@@ -1,6 +1,6 @@
 "use strict";
 
-const car = Bodies.rectangle(220*0.6, 100*0.6, new vec(-200, 200), { // 3170, 4100
+const car = Bodies.rectangle(220*0.6, 100*0.6, new vec(3170, 4100), { // -200, 200
 	angle: 0,
 	mass: 100,
 
@@ -14,17 +14,19 @@ const car = Bodies.rectangle(220*0.6, 100*0.6, new vec(-200, 200), { // 3170, 41
 	maxSpeed: 14,
 	maxReverseSpeed: 7,
 	acceleration: 2,
-	turnSpeed: 1,
+	turnSpeed: 0.9,
 
 	// drifting / sliding
 	tireGrip: 4,
-	slide: 0.2, // 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
+	slide: 0.08, // 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 	drifting: false,
 	driftAmount: 0,
 	hasTireSkid: false,
+	hasTireSmoke: false,
 
 	// visual
 	tireSkid: [],
+	path: [],
 	smoke: [],
 
 	// controls
@@ -252,27 +254,63 @@ function updateCar() {
 		car.applyTorque((maxTurnAmt - Math.abs(torque)) * Math.sign(torque))
 	}
 
-	
+	// - Scoring
+	if (Math.abs(normVel) > maxGrip * 15 * timescale) {
+		driftScore += Math.abs(Common.angleDiff(car.velocity.angle, car.angle)) * car.velocity.length ** 2 / 500;
+	}
+
+	// - Visuals 
+	car.path.unshift(new vec(car.position));
+	if (car.path.length > 200) {
+		car.path.length = 200;
+	}
+
+	// skid marks
 	let hadTireSkid = car.hasTireSkid;
 	car.hasTireSkid = Math.abs(normVel) > maxGrip * 15 * timescale;
 	if (car.hasTireSkid !== hadTireSkid) {
 		if (car.hasTireSkid) {
 			car.tireSkid.push(new Skid(), new Skid(), new Skid(), new Skid());
-			// car.smoke.push(new Smoke({
-			// 	position: car.position,
-			// 	angle: car.angle + Math.PI/2
-			// }));
 		}
 		else {
 			car.tireSkid.length = 0;
+		}
+	}
 
+	// smoke
+	let hadTireSmoke = car.hasTireSmoke;
+	car.hasTireSmoke = Math.abs(normVel) > maxGrip * 18 * timescale;
+	if (car.hasTireSmoke !== hadTireSmoke) {
+		if (car.hasTireSmoke) {
+			let options = {
+				position: car.position,
+				render: {
+					background: "#ffffff40",
+				}
+			}
+			car.smoke.push(new Smoke(options));
+			car.smoke.push(new Smoke(options));
+		}
+		else {
 			for (let smoke of car.smoke) {
-				smoke.stop();
+				smoke.stop(() => {
+					let angle = car.angle;
+					let { width, height } = car;
+					let s = 0.3;
+					
+					smoke.position = new vec(-width*s, -height*s).rotate(angle).add(car.position);
+
+					let verts = [];
+					for (let pt of car.path) {
+						verts.push(pt.sub(car.position));
+					}
+					smoke.setPath(verts);
+				});
 			}
 			car.smoke.length = 0;
 		}
 	}
-
+	
 	if (car.tireSkid.length > 0) {
 		let angle = car.angle;
 		let { width, height } = car;
@@ -288,12 +326,17 @@ function updateCar() {
 		let angle = car.angle;
 		let { width, height } = car;
 		let s = 0.3;
-
-		for (let smoke of car.smoke) {
-			smoke.angle = angle + Math.PI/2;
-		}
 		
 		car.smoke[0].position = new vec(-width*s, -height*s).rotate(angle).add(car.position);
+		car.smoke[1].position = new vec(-width*s,  height*s).rotate(angle).add(car.position);
+
+		let verts = [];
+		for (let pt of car.path) {
+			verts.push(pt.sub(car.position));
+		}
+		for (let s of car.smoke) {
+			s.setPath(verts);
+		}
 	}
 }
 
@@ -307,7 +350,7 @@ Render.on("beforeRender", () => {
 	
 	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*car.velocity.length / timescale)) / g)) ** 10 * 1800;
 	lastFov.push(curFov);
-	if (Performance.frame > Performance.fps * 0.5) {
+	if (lastFov.length > Performance.fps * 0.5) {
 		lastFov.shift();
 	}
 	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
@@ -315,7 +358,7 @@ Render.on("beforeRender", () => {
 
 	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity.div(timescale ** 0.5)) * 9));
 	lastPos.push(curPos);
-	if (Performance.frame > Math.round(Performance.fps * 0.1)) {
+	if (lastPos.length > Math.round(Performance.fps * 0.1)) {
 		lastPos.shift();
 	}
 	let avgPos = lastPos.reduce((a, b) => a.add(b), new vec(0, 0)).div(lastPos.length);

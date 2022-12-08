@@ -305,6 +305,7 @@ var ter = {
 				let pair = pairs[i];
 				if (!pair || this.cleansePair(pair)) continue;
 				const { depth, bodyA, bodyB, normal } = pair;
+				if (bodyA.isSensor || bodyB.isSensor) continue;
 				
 				let impulse = normal.mult(depth / 5 * 0.3);
 				let totalMass = bodyA.mass + bodyB.mass;
@@ -617,6 +618,7 @@ var ter = {
 				if (!pair || ter.Bodies.cleansePair(pair)) continue;
 
 				const { bodyA, bodyB, normal, tangent } = pair;
+				if (bodyA.isSensor || bodyB.isSensor) continue;
 				
 				// update body velocities
 				bodyA.velocity = bodyA.position.sub(bodyA.last.position);
@@ -965,7 +967,9 @@ var ter = {
 		}
 		Render.off = function(event, callback) {
 			event = Render.events[event];
-			event.splice(event.indexOf(callback), 1);
+			if (event.includes(callback)) {
+				event.splice(event.indexOf(callback), 1);
+			}
 		}
 		Render.trigger = function(event) {
 			// Trigger each event

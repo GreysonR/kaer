@@ -20,8 +20,9 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		const envColors = {
 			// ~ env
 			"white": "wall",
-			"#C9BB42": "checkpoint",
+			"#D58850": "checkpoint",
 			"#FEFEFE": "circle",
+			"#BF3232": "spawn",
 			"#FFC120": "zone",
 			"#8F8F8F": "barrier",
 		}
@@ -39,10 +40,10 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			let vy = new vec(Math.cos(a + Math.PI/2) * h, Math.sin(a + Math.PI/2) * h);
 
 			let vertices = [
-				new vec(0, 0),
-				new vec(vx),
-				new vec(vx.add(vy)),
-				new vec(vy),
+				new vec(0, 0).round(),
+				new vec(vx).round(),
+				new vec(vx.add(vy)).round(),
+				new vec(vy).round(),
 			]
 
 			return [vertices, vx, vy];
@@ -110,11 +111,24 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					out.env[name] = [];
 				}
 				let vertices = getVertices(rect);
-				out.env[name].push({
-					x: rect.x + vertices[1].x / 2 + vertices[2].x / 2,
-					y: rect.y + vertices[1].y / 2 + vertices[2].y / 2,
+				let obj = {
+					x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),
+					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
 					vertices: vertices[0],
-				});
+				}
+				if (name === "checkpoint") {
+					obj.index = Math.round(rect.rx * 100);
+				}
+				if (name === "spawn") {
+					let a = 0;
+					if (rect.transform) {
+						let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
+						a = transform[0] / 180 * Math.PI;
+					}
+					obj.angle = a;
+					delete obj.vertices;
+				}
+				out.env[name].push(obj);
 
 				index = iEnd + 2;
 			}
@@ -131,6 +145,20 @@ document.getElementById("mapInput").addEventListener("input", event => {
 
 			if (iStart > index) {
 				index = iEnd + 2;
+				
+				// get string of current path
+				let pathText = res.slice(iStart + 5, iEnd);
+				
+				// create object from string
+				if (pathText == "") return;
+				let pathObjArr = pathText.trim().split('"');
+				let pathObj = (() => {
+					let obj  = {};
+					for (let i = 0; i < Math.floor(pathObjArr.length / 2) * 2; i += 2) {
+						obj[pathObjArr[i].replace("=", "").replace(/[" "]/g, "")] = !isNaN(Number(pathObjArr[i + 1])) ? Number(pathObjArr[i + 1]) : pathObjArr[i + 1];
+					}
+					return obj;
+				})();
 
 				let text = res.slice(iStart + 5, iEnd);
 				if (text == "") return;
@@ -180,13 +208,14 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						console.error(pathArr, i);
 					}
 
-					path.push({ x: x, y: y });
+					path.push({ x: Math.round(x), y: Math.round(y) });
 				}
 				
 				if (path.length > 1) {
 					let name = "wall";
-					if (envColors[rect.fill]) {
-						name = envColors[rect.fill];
+					console.log(pathObj.fill);
+					if (envColors[pathObj.fill]) {
+						name = envColors[pathObj.fill];
 					}
 					if (!out.env[name]) {
 						out.env[name] = [];
@@ -205,8 +234,8 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					}
 	
 					out.env[name].push({
-						x: center.x,
-						y: center.y,
+						x: Math.round(center.x),
+						y: Math.round(center.y),
 						vertices: path,
 					});
 				}
