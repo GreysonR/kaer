@@ -667,6 +667,12 @@ var ter = {
 			}
 			return mod(angle1 - angle2 + Math.PI, Math.PI * 2) - Math.PI;
 		},
+		modDiff: function(x, y, m = 1) {
+			function mod(a, b) {
+				return a - Math.floor(a / b) * b;
+			}
+			return mod(x - y + m/2, m) - m/2;
+		},
 		pair: function(x, y) { // Elegant pairing function - http://szudzik.com/ElegantPairing.pdf
 			if (x > y)
 				return x*x + x + y;

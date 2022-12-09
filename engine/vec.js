@@ -163,8 +163,8 @@ class vec {
 	}
 	normal2() {
 		let y = this.y;
-		this.x = y;
 		this.y = -this.x;
+		this.x = y;
 		return this;
 	}
 	inverse() {

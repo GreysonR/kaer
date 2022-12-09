@@ -1,7 +1,5 @@
 "use strict";
 
-var checkpoints = [];
-var curCheckpoint = -1;
 var laps = 0;
 var raceStarted = false;
 var lapStartTime = 0;
@@ -29,49 +27,54 @@ function getTimeStr(time) {
 	return str;
 }
 
-function handleCheckpointCollision(collision) {
-	let { bodyA, bodyB } = collision;
-	if (!(bodyA === car || bodyB === car)) return;
-	let checkpoint = bodyA === car ? bodyB : bodyA;
-	let index = checkpoint.index;
-
-	if (curCheckpoint + 1 === index || curCheckpoint === checkpoints.length - 1 && index === 0) {
-		let lastCheckpoint = curCheckpoint;
+Render.on("beforeRender", () => {
+	if (curMap.objs.length > 0) {
+		let modDiff = Common.modDiff;
 		let now = Performance.lastUpdate;
-		curCheckpoint = index;
-
-		if (lastCheckpoint > 1 && curCheckpoint === 0) { // completed a lap
-			laps++;
-			console.log("Lap #" + laps);
-
-			let time = (now - lapStartTime);
-			if (modeName === "time") {
-				if (time < bestLapTime) {
-					bestLapTime = time;
-					document.getElementById("bestTime").innerHTML = "Best: " + getTimeStr(bestLapTime);
-				}
+		let timescale = 144 / Performance.fps;
+		let lastPercent = curMap.completePercent;
+		let percent = curMap.completePercent = getPercentComplete();
+	
+		if (percent < 0.1 && lastPercent > 0.9) {
+			if (!raceStarted) {
+				raceStarted = true;
+				lapStartTime = now;
+				Render.on("beforeRender", updateRaceTimer);
 			}
-			else if (modeName === "drift") {
-				let score = Math.round(driftScore * 10) / 10; // driftScore / (time / 1000) * 10
-				if (score > bestDriftScore) {
-					bestDriftScore = score;
-					document.getElementById("bestTime").innerHTML = "Best: " + bestDriftScore.toFixed(1);
+			else if (curMap.maxLapPercent > 0.9) {
+				laps++;
+				console.log("Lap #" + laps);
+
+				let time = (now - lapStartTime);
+				if (modeName === "time") {
+					if (time < bestLapTime) {
+						bestLapTime = time;
+						document.getElementById("bestTime").innerHTML = "Best: " + getTimeStr(bestLapTime);
+					}
 				}
-
-				driftScore = 0;
+				else if (modeName === "drift") {
+					let score = Math.round(driftScore * 10) / 10; // driftScore / (Math.max(1, time) / 1000) * 10
+					if (score > bestDriftScore) {
+						bestDriftScore = score;
+						document.getElementById("bestTime").innerHTML = "Best: " + bestDriftScore.toFixed(1);
+					}
+	
+					driftScore = 0;
+				}
+				curMap.maxLapPercent = 0;
+				lapStartTime = now;
 			}
-
-			lapStartTime = now;
 		}
-
-		if (lastCheckpoint === -1) {
-			raceStarted = true;
-			lapStartTime = now;
-
-			Render.on("beforeRender", updateRaceTimer);
+		else {
+			if (raceStarted) {
+				let maxChange = modDiff(percent, curMap.maxLapPercent, 1);
+				if (maxChange > 0 && maxChange / timescale < 0.1) {
+					curMap.maxLapPercent = percent;
+				}
+			}
 		}
 	}
-}
+});
 
 function updateRaceTimer() {
 	let now = Performance.lastUpdate;
@@ -82,6 +85,6 @@ function updateRaceTimer() {
 		timer.innerHTML = getTimeStr(time);
 	}
 	else if (modeName === "drift") {
-		timer.innerHTML = (Math.round(driftScore * 10) / 10).toFixed(1); // driftScore / (time / 1000) * 10
+		timer.innerHTML = (Math.round(driftScore * 10) / 10).toFixed(1); // driftScore / (Math.max(1, time) / 1000) * 10
 	}
 }

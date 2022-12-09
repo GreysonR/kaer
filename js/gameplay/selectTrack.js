@@ -22,8 +22,6 @@ function selectMode(newMode) {
 function selectTrack(newTrack) {
 	let newMode = modeName;
 
-	checkpoints = [];
-	curCheckpoint = -1;
 	laps = 0;
 	raceStarted = false;
 	lapStartTime = 0;

@@ -255,7 +255,7 @@ function updateCar() {
 	}
 
 	// - Scoring
-	if (Math.abs(normVel) > maxGrip * 15 * timescale) {
+	if (Math.abs(normVel) > maxGrip * 15 * timescale && Math.abs(Common.modDiff(curMap.completePercent, curMap.maxLapPercent, 1)) <= 0.01) {
 		driftScore += Math.abs(Common.angleDiff(car.velocity.angle, car.angle)) * car.velocity.length ** 2 / 500;
 	}
 

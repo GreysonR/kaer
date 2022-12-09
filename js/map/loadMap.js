@@ -28,17 +28,11 @@ let mapBodies = {
 				index: index,
 
 				render: {
-					visible: false,
+					visible: true,
 					background: "#5E9555",
 					layer: -1
 				}
 			});
-			obj.on("collisionEnd", handleCheckpointCollision);
-			checkpoints[index] = obj;
-
-			if (index === 0) {
-				obj.render.visible = true;
-			}
 
 			return obj;
 		},
@@ -50,6 +44,13 @@ let mapBodies = {
 
 			curMap.spawn.position = new vec(x, y);
 			curMap.spawn.angle = angle;
+		},
+		path: function({ x, y, vertices }) {
+			let { path } = curMap;
+			let pos = new vec(x, y);
+			for (let v of vertices) {
+				path.push((new vec(v)));
+			}
 		}
 	}
 }
@@ -59,12 +60,14 @@ var curMap = {
 		position: new vec(0, 0),
 		angle: 0,
 	},
-	objs: []
+	objs: [],
+	path: [],
+	completePercent: 0,
+	maxLapPercent: 0,
 }
 
 
 function loadMap(map) {
-	checkpoints.length = 0;
 	for (let categoryName of Object.keys(map)) {
 		if (!mapBodies[categoryName]) continue;
 	
@@ -88,11 +91,11 @@ function unloadMap() {
 		obj.delete();
 	}
 	curMap.objs.length = 0;
+	curMap.path.length = 0;
+	curMap.maxLapPercent = 0;
 	trackName = "";
 	modeName = "";
 
-	checkpoints.length = 0;
-	curCheckpoint = -1;
 	laps = 0;
 	raceStarted = false;
 	lapStartTime = 0;
@@ -118,7 +121,6 @@ function resetCar() {
 	car.setPosition(new vec(position));
 	car.setAngle(angle);
 	
-	curCheckpoint = -1;
 	laps = 0;
 	raceStarted = false;
 	lapStartTime = 0;
@@ -133,3 +135,50 @@ function resetCar() {
 		timerElem.innerHTML = "0.0";
 	}
 }
+
+function getPercentComplete() {
+	let { path } = curMap;
+	let len = path.length;
+	if (len <= 1) return 0;
+
+	let carPos = car.position;
+	let minDist = Infinity;
+	let curLen = 0;
+	let totalLen = 0;
+	let percent = 0;
+	
+	for (let i = 0; i < len; i++) {
+		let cur = path[i];
+		let next = path[(i + 1) % len];
+		totalLen += cur.sub(next).length;
+	}
+
+	for (let i = 0; i < len; i++) {
+		let cur = path[i];
+		let next = path[(i + 1) % len];
+		let diff = next.sub(cur);
+		let carDiff = carPos.sub(cur);
+		let norm = diff.normalize();
+		let perp = norm.normal();
+
+		let normDot = carDiff.dot(norm);
+		let perpDot = carDiff.dot(perp);
+		let dist = Math.sqrt((normDot - diff.length/2) ** 2 + perpDot ** 2);
+
+		if (dist < minDist) {
+			minDist = dist;
+			percent = curLen / totalLen + normDot / totalLen;
+
+		}
+		curLen += diff.length;
+	}
+
+	return percent;
+}
+
+Render.on("beforeRender", () => {
+	let completeElem = document.getElementById("complete");
+	let completePercent = curMap.maxLapPercent;
+
+	completeElem.style.width = completePercent * 100 + "%";
+});

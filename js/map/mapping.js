@@ -15,16 +15,13 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			env: {
 			},
 		}
-		let paths = [];
 		
 		const envColors = {
 			// ~ env
 			"white": "wall",
 			"#D58850": "checkpoint",
-			"#FEFEFE": "circle",
 			"#BF3232": "spawn",
-			"#FFC120": "zone",
-			"#8F8F8F": "barrier",
+			"#82E1BF": "path",
 		}
 
 		function getVertices(rect) {
@@ -213,9 +210,9 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				
 				if (path.length > 1) {
 					let name = "wall";
-					console.log(pathObj.fill);
-					if (envColors[pathObj.fill]) {
-						name = envColors[pathObj.fill];
+					if (envColors[pathObj.fill] || envColors[pathObj.stroke]) {
+						if (envColors[pathObj.stroke]) console.log(pathObj.stroke);
+						name = envColors[pathObj.fill] || envColors[pathObj.stroke];
 					}
 					if (!out.env[name]) {
 						out.env[name] = [];
@@ -225,7 +222,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						center.add2({ x: p.x / path.length, y: p.y / path.length });
 					}
 					
-					if (Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
+					if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
 						path.reverse();
 					}
 
