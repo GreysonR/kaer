@@ -125,6 +125,8 @@ function resetCar() {
 	raceStarted = false;
 	lapStartTime = 0;
 	driftScore = 0;
+	curMap.maxLapPercent = 0;
+	curMap.percent = 0;
 
 	Render.off("beforeRender", updateRaceTimer);
 	let timerElem = document.getElementById("timer");
