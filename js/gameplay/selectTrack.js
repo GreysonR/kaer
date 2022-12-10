@@ -43,5 +43,5 @@ function selectTrack(newTrack) {
 		timerElem.innerHTML = "0.0";
 	}
 
-	loadMap(timedTracks[newTrack]);
+	loadMap(timedTracks[newTrack], trackName);
 }

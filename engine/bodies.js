@@ -161,11 +161,29 @@ class Body {
 		this.updateBounds();
 		this.updateAxes();
 	}
-	recenterVertices() {
-		let center = new vec(0, 0);
-		for (let i = 0; i < this.vertices.length; i++) {
-			center.add2(this.vertices[i].div(this.vertices.length));
+	getCenterOfMass() { /* https://bell0bytes.eu/centroid-convex/ */
+		let vertices = this.vertices;
+		let centroid = new vec(0, 0);
+		let det = 0;
+		let tempDet = 0;
+		let numVertices = vertices.length;
+
+		for (let i = 0; i < vertices.length; i++) {
+			let curVert = vertices[i];
+			let nextVert = vertices[(i + 1) % numVertices];
+
+			tempDet = curVert.x * nextVert.y - nextVert.x * curVert.y;
+			det += tempDet;
+
+			centroid.add2({ x: (curVert.x + nextVert.x) * tempDet, y: (curVert.y + nextVert.y) * tempDet });
 		}
+
+		centroid.div2(3 * det);
+
+		return centroid;
+	}
+	recenterVertices() {
+		let center =  this.getCenterOfMass();
 		center.sub2(this.position);
 		for (let i = 0; i < this.vertices.length; i++) {
 			this.vertices[i].sub2(center);

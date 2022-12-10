@@ -34,6 +34,7 @@ window.addEventListener("keydown", event => {
 
 	if (event.altKey && key === "q") {
 		document.getElementById("mapInput").classList.toggle("active");
+		document.getElementById("pathInput").classList.toggle("active");
 	}
 });
 window.addEventListener("keyup", event => {

@@ -37,7 +37,10 @@ window.addEventListener("blur", () => {
 });
 
 Render.showBoundingBox = false;
-Render.showBroadphase = true;
+Render.showBroadphase = false;
+// Render.showVertices = true
+// Render.showCenters = true;
+
 // ctx.imageSmoothingEnabled = false;
 
 var runEngine = true;
@@ -56,7 +59,7 @@ function main() {
 
 	// - render
 	Render();
-	// Performance.render();
+	Performance.render();
 
 	// - run animations
 	animation.run();

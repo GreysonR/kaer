@@ -1,5 +1,25 @@
 "use strict";
 
+function getCenterOfMass(vertices) { /* https://bell0bytes.eu/centroid-convex/ */
+	let centroid = new vec(0, 0);
+	let det = 0;
+	let tempDet = 0;
+	let numVertices = vertices.length;
+
+	for (let i = 0; i < vertices.length; i++) {
+		let curVert = vertices[i];
+		let nextVert = vertices[(i + 1) % numVertices];
+
+		tempDet = curVert.x * nextVert.y - nextVert.x * curVert.y;
+		det += tempDet;
+
+		centroid.add2({ x: (curVert.x + nextVert.x) * tempDet, y: (curVert.y + nextVert.y) * tempDet });
+	}
+
+	centroid.div2(3 * det);
+
+	return centroid;
+}
 
 document.getElementById("mapInput").addEventListener("input", event => {
 	let input = event.target;
@@ -217,12 +237,12 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					if (!out.env[name]) {
 						out.env[name] = [];
 					}
-					let center = new vec(0, 0);
-					for (let p of path) {
-						center.add2({ x: p.x / path.length, y: p.y / path.length });
-					}
+					let center = getCenterOfMass(path);
 					
 					if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
+						path.reverse();
+					}
+					if (name === "path" && pathObj["stroke-width"] === 6) {
 						path.reverse();
 					}
 
@@ -261,8 +281,33 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		// out = JSON.stringify(out, null, "\t");
 		out = JSON.stringify(out);
 
-		navigator.clipboard.writeText(out);
+		copyToClipboard(out);
 		console.log(out);
 		input.value = "";
 	}
 });
+
+function copyToClipboard(text) {
+    if (window.clipboardData && window.clipboardData.setData) {
+        // Internet Explorer-specific code path to prevent textarea being shown while dialog is visible.
+        return window.clipboardData.setData("Text", text);
+
+    }
+    else if (document.queryCommandSupported && document.queryCommandSupported("copy")) {
+        var textarea = document.createElement("textarea");
+        textarea.textContent = text;
+        textarea.style.position = "fixed";  // Prevent scrolling to bottom of page in Microsoft Edge.
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            return document.execCommand("copy");  // Security exception may be thrown by some browsers.
+        }
+        catch (ex) {
+            console.warn("Copy to clipboard failed.", ex);
+            return prompt("Copy to clipboard: Ctrl+C, Enter", text);
+        }
+        finally {
+            document.body.removeChild(textarea);
+        }
+    }
+}

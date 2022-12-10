@@ -382,6 +382,9 @@ var ter = {
 			for (let i = 0; i < pairs.length; i++) {
 				let bodyA = pairs[i][0];
 				let bodyB = pairs[i][1];
+
+				if (bodyA.static && bodyB.static) continue;
+
 				let collision = true;
 
 				function getAllSupports(body, direction) {
@@ -454,9 +457,6 @@ var ter = {
 				}
 
 				if (collision === true) {
-					// bodyA.render.tempBackground = bodyA.render.border + "40";
-					// bodyB.render.tempBackground = bodyB.render.border + "40";
-
 					// - get collision normal by getting point with minimum depth
 					let minDepth = Infinity;
 					let normal;
@@ -494,8 +494,10 @@ var ter = {
 					findNormal(bodyB, bodyA);
 					if (contacts.length === 0) continue;
 
-					// globalVectors.push({ position: normalPoint, vector: normal.inverse() });
-					// globalPoints.push(...contacts.map(v => v.vertice));
+					if (Render.showCollisionPoints) {
+						globalVectors.push({ position: normalPoint, vector: normal.inverse() });
+						globalPoints.push(...contacts.map(v => v.vertice));
+					}
 
 					normal = normal.inverse();
 
@@ -726,9 +728,6 @@ var ter = {
 			ctx.translate(camera.translation.x, camera.translation.y);
 			ctx.scale(camera.scale, camera.scale);
 			
-			if (Render.showBoundingBox === true) {
-				Render.boundingBox();
-			}
 			if (Render.showBroadphase === true) {
 				Render.broadphase();
 			}
@@ -744,10 +743,23 @@ var ter = {
 				Render.trigger("beforeLayer" + layerId);
 				for (let body of layer) {
 					const { position, vertices, render, bounds } = body;
-					const { visible, background, tempBackground, border, borderWidth, borderType, lineDash, bloom, opacity, sprite, round, } = render;
+					const { visible, background, border, borderWidth, borderType, lineDash, bloom, opacity, sprite, round, } = render;
 					const inView = !(bounds.max.x < camera.bounds.min.x || bounds.min.x > camera.bounds.max.x
 								 || bounds.max.y < camera.bounds.min.y || bounds.min.y > camera.bounds.max.y);
 
+					function renderVertices() {
+						ctx.moveTo(vertices[0].x, vertices[0].y);
+
+						for (let j = 0; j < vertices.length; j++) {
+							if (j > 0) {
+								let vertice = vertices[j];
+								ctx.lineTo(vertice.x, vertice.y);
+							}
+						}
+			
+						ctx.closePath();
+					}
+					
 					if (visible && inView) {
 						ctx.beginPath();
 						ctx.globalAlpha = opacity ?? 1;
@@ -761,32 +773,11 @@ var ter = {
 							ctx.shadowBlur = bloom;
 						}
 			
-						if (tempBackground !== undefined) {
-							ctx.fillStyle = tempBackground;
-			
-							if (body.pairs.length === 0) {
-								delete render.tempBackground;
-							}
-						}
-			
 						if (lineDash) {
 							ctx.setLineDash(lineDash);
 						}
 						else {
 							ctx.setLineDash([]);
-						}
-
-						function renderVertices() {
-							ctx.moveTo(vertices[0].x, vertices[0].y);
-		
-							for (let j = 0; j < vertices.length; j++) {
-								if (j > 0) {
-									let vertice = vertices[j];
-									ctx.lineTo(vertice.x, vertice.y);
-								}
-							}
-				
-							ctx.closePath();
 						}
 	
 						if (sprite && Render.images[sprite]) { // sprite render
@@ -797,13 +788,6 @@ var ter = {
 							ctx.drawImage(Render.images[sprite], spriteX, spriteY, spriteWidth, spriteHeight);
 							ctx.rotate(-body.angle);
 							ctx.translate(-position.x, -position.y);
-
-							if (Render.showVertices === true) {
-								renderVertices();
-								ctx.lineWidth = 3;
-								ctx.strokeStyle = "#FF832A";
-								ctx.stroke();
-							}
 
 							continue;
 						}
@@ -830,13 +814,6 @@ var ter = {
 							ctx.shadowBlur = 0;
 						}
 						ctx.globalAlpha = 1;
-						
-						if (Render.showVertices === true) {
-							renderVertices();
-							ctx.lineWidth = 3;
-							ctx.strokeStyle = "#FF832A";
-							ctx.stroke();
-						}
 					}
 				}
 				Render.trigger("afterLayer" + layerId);
@@ -844,6 +821,12 @@ var ter = {
 			
 			if (Render.showBoundingBox === true) {
 				Render.boundingBox();
+			}
+			if (Render.showVertices === true) {
+				Render.allVertices();
+			}
+			if (Render.showCenters === true) {
+				Render.allCenters();
 			}
 
 			if (globalPoints.length > 0) { // Render globalPoints
@@ -988,8 +971,8 @@ var ter = {
 
 		
 		// - Broadphase
+		Render.showCollisionPoints = false;
 		Render.showBoundingBox = false;
-		Render.showVertices = false;
 		Render.boundingBox = function() {
 			let allBodies = ter.World.bodies;
 
@@ -1004,6 +987,43 @@ var ter = {
 
 				ctx.beginPath();
 				ctx.strokeRect(bounds.min.x, bounds.min.y, width, height);
+			}
+		}
+		Render.showVertices = false;
+		Render.allVertices = function() {
+			function renderVertices(vertices) {
+				ctx.moveTo(vertices[0].x, vertices[0].y);
+	
+				for (let j = 0; j < vertices.length; j++) {
+					if (j > 0) {
+						let vertice = vertices[j];
+						ctx.lineTo(vertice.x, vertice.y);
+					}
+				}
+	
+				ctx.closePath();
+			}
+
+			ctx.beginPath();
+			let allBodies = ter.World.bodies;
+			for (let i = 0; i < allBodies.length; i++) {
+				let body = allBodies[i];
+				renderVertices(body.vertices);
+			}
+			ctx.lineWidth = 3;
+			ctx.strokeStyle = "#FF832A";
+			ctx.stroke();
+		}
+		Render.showCenters = false;
+		Render.allCenters = function() {
+			ctx.lineWidth = 3;
+			ctx.strokeStyle = "#FF832A";
+			let allBodies = ter.World.bodies;
+			for (let i = 0; i < allBodies.length; i++) {
+				let body = allBodies[i];
+				ctx.beginPath();
+				ctx.arc(body.position.x, body.position.y, 2, 0, Math.PI*2);
+				ctx.stroke();
 			}
 		}
 

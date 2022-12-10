@@ -11,6 +11,7 @@ let mapBodies = {
 				hasCollisions: true,
 
 				render: {
+					visible: false,
 					background: "#ffffff",
 					round: 10,
 				}
@@ -29,8 +30,8 @@ let mapBodies = {
 
 				render: {
 					visible: true,
-					background: "#5E9555",
-					layer: -1
+					background: "#FC9473",
+					layer: -2,
 				}
 			});
 
@@ -52,13 +53,82 @@ let mapBodies = {
 				path.push((new vec(v)));
 			}
 		}
-	}
+	},
 }
 let timedTracks = {};
+let allMaps = {
+	track1: {
+		objs: [
+			{ // walls
+				sprite: "track1/walls",
+				width: 7295.91,
+				height: 5624,
+				position: new vec(7295.91/2 + 10, 5624/2 - 25),
+				layer: 1,
+			},
+			{ // track
+				sprite: "track1/track",
+				width: 7295.91,
+				height: 5624,
+				position: new vec(7295.91/2 + 10, 5624/2 - 25),
+				layer: -3,
+			},
+			{ // track outline
+				sprite: "track1/trackOutline",
+				width: 7295.91,
+				height: 5624,
+				position: new vec(7295.91/2 + 10, 5624/2 - 25),
+				layer: -1,
+			},
+			{ // environment background
+				sprite: "track1/envBackground",
+				width:  9827.5,
+				height: 8963.5,
+				position: new vec(9827.5/2 - 1220, 8963.5/2 - 1580),
+				layer: -4,
+			},
+		]
+	},
+	track3: {
+		objs: [
+			{ // walls
+				sprite: "track3/walls",
+				width: 6194.5,
+				height: 6207.26,
+				position: new vec(6194.5/2 - 25, 6207.26/2 - 30),
+				layer: 1,
+			},
+			{ // track
+				sprite: "track3/track",
+				width:  6197,
+				height: 6211,
+				position: new vec(6197/2 - 25, 6211/2 - 22),
+				layer: -3,
+			},
+			{ // track outline
+				sprite: "track3/trackOutline",
+				width:  6197,
+				height: 6211,
+				position: new vec(6197/2 - 25, 6211/2 - 22),
+				layer: -1,
+			},
+			{ // environment background
+				sprite: "track3/envBackground",
+				width:  9806,
+				height: 8956,
+				position: new vec(9806/2 - 1830, 8956/2 - 1230),
+				layer: -4,
+			},
+		]
+	}
+}
 var curMap = {
 	spawn: {
 		position: new vec(0, 0),
 		angle: 0,
+	},
+	visual: {
+		walls: [],
 	},
 	objs: [],
 	path: [],
@@ -67,7 +137,7 @@ var curMap = {
 }
 
 
-function loadMap(map) {
+function loadMap(map, name) {
 	for (let categoryName of Object.keys(map)) {
 		if (!mapBodies[categoryName]) continue;
 	
@@ -85,6 +155,26 @@ function loadMap(map) {
 			}
 		}
 	}
+
+	// add extra visual stuff
+	let { objs } = allMaps[name];
+	for (let obj of objs) {
+		let { width, height, position, sprite, layer } = obj;
+		let body = Bodies.rectangle(width, height, position, {
+			static: true,
+			hasCollisions: false,
+	
+			render: {
+				visible: true,
+				background: "#5E9555",
+				sprite: sprite,
+				layer: layer,
+				opacity: 1,
+			}
+		});
+		
+		curMap.objs.push(body);
+	}
 }
 function unloadMap() {
 	for (let obj of curMap.objs) {
@@ -96,6 +186,8 @@ function unloadMap() {
 	trackName = "";
 	modeName = "";
 
+	curMap.visual.walls.length = 0;
+	
 	laps = 0;
 	raceStarted = false;
 	lapStartTime = 0;

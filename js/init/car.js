@@ -25,6 +25,7 @@ const car = Bodies.rectangle(220*0.6, 100*0.6, new vec(3170, 4100), { // -200, 2
 	hasTireSmoke: false,
 
 	// visual
+	driftHistory: [],
 	tireSkid: [],
 	path: [],
 	smoke: [],
@@ -122,7 +123,7 @@ function updateCar() {
 	let timescaleSqrt = Math.sqrt(timescale);
 	let timescaleSqr = timescale * timescale;
 
-	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount, slide } = car;
+	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount, slide, driftHistory } = car;
 
 	if (gamepad.connected) {
 		let controller = navigator.getGamepads()[0];
@@ -155,9 +156,10 @@ function updateCar() {
 	// ~ handbrake
 	if (handbrake) {
 		tireGrip *= 0.1;
-		turnSpeed *= 0.8;
-		up *= 0.5;
-		down *= 0.5;
+		up *=   0.8;
+		down *= 0.8;
+		maxSpeed *= 0.8;
+		slide = slide + (1 - slide) * 0.15;
 	}
 	// ~ gas
 	if (up) {
@@ -205,7 +207,6 @@ function updateCar() {
 
 	// ~ drag
 	let speed = car.velocity.length;
-
 	if (handbrake) {
 		car.frictionAir = 0.015;
 		car.frictionAngular = 0.02;
@@ -260,6 +261,12 @@ function updateCar() {
 	}
 
 	// - Visuals 
+	driftHistory.unshift(Math.abs(normVel) / timescale);
+	let avgDrift = driftHistory.reduce((t, c) => t + c) / driftHistory.length;
+
+	let maxDriftHistLen = Math.max(1, Math.round(20 / timescale));
+	if (driftHistory.length > maxDriftHistLen) driftHistory.length = maxDriftHistLen;
+
 	car.path.unshift(new vec(car.position));
 	if (car.path.length > 200) {
 		car.path.length = 200;
@@ -267,7 +274,7 @@ function updateCar() {
 
 	// skid marks
 	let hadTireSkid = car.hasTireSkid;
-	car.hasTireSkid = Math.abs(normVel) > maxGrip * 15 * timescale;
+	car.hasTireSkid = avgDrift > maxGrip * 11;
 	if (car.hasTireSkid !== hadTireSkid) {
 		if (car.hasTireSkid) {
 			car.tireSkid.push(new Skid(), new Skid(), new Skid(), new Skid());
@@ -279,7 +286,7 @@ function updateCar() {
 
 	// smoke
 	let hadTireSmoke = car.hasTireSmoke;
-	car.hasTireSmoke = Math.abs(normVel) > maxGrip * 18 * timescale;
+	car.hasTireSmoke = avgDrift > maxGrip * 17;
 	if (car.hasTireSmoke !== hadTireSmoke) {
 		if (car.hasTireSmoke) {
 			let options = {
@@ -343,23 +350,30 @@ function updateCar() {
 let lastFov = [];
 let lastPos = [];
 let baseFov = 1800;
-Render.on("beforeRender", () => {
+Render.on("beforeLayer0", () => {
 	let g = 0.3; // higher g = fov more sensitive to speed changes
 	let carUp = new vec(Math.cos(car.angle), Math.sin(car.angle));
-	let timescale = 144 / Performance.fps;
+	let fps = Performance.history.fps.reduce((t, v) => t + v, 60) / Performance.history.fps.length;
+	let timescale = 144 / fps;
 	
 	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*car.velocity.length / timescale)) / g)) ** 10 * 1800;
-	lastFov.push(curFov);
-	if (lastFov.length > Performance.fps * 0.5) {
-		lastFov.shift();
+	lastFov.unshift(curFov);
+	let maxFovLen = Math.max(1, Math.round(Performance.fps * 0.5));
+	if (lastFov.length > maxFovLen) {
+		lastFov.pop();
+		if (Math.abs(lastFov.length - maxFovLen) > 6)
+			lastFov.pop();
 	}
 	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
 	camera.fov = avgFov;
 
 	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity.div(timescale ** 0.5)) * 9));
-	lastPos.push(curPos);
-	if (lastPos.length > Math.round(Performance.fps * 0.1)) {
-		lastPos.shift();
+	lastPos.unshift(curPos);
+	let maxPosLen = Math.max(1, Math.round(Performance.fps * 0.1));
+	if (lastPos.length > maxPosLen) {
+		lastPos.pop();
+		if (Math.abs(lastPos.length - maxPosLen) > 6)
+			lastPos.pop();
 	}
 	let avgPos = lastPos.reduce((a, b) => a.add(b), new vec(0, 0)).div(lastPos.length);
 	camera.position = avgPos; // car.position.add(car.velocity.mult(-2));

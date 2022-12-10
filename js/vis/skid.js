@@ -19,7 +19,7 @@ class Skid {
 }
 
 camera.lastPosition = new vec(camera.translation);
-Render.on("beforeRender", () => {
+Render.on("beforeLayer0", () => {
 	let now = Performance.aliveTime;
 
 	for (let skid of Skid.all) {
@@ -54,9 +54,9 @@ Render.on("beforeRender", () => {
 				}
 			}
 
-			ctx.strokeStyle = "#77777717";
-			ctx.lineWidth = 10;
-			// subctx.lineCap = "round";
+			ctx.strokeStyle = "#00000020";
+			ctx.lineWidth = 12;
+			ctx.lineCap = "round";
 			ctx.stroke();
 		}
 	}

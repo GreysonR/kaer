@@ -1,6 +1,6 @@
 body {
 	margin: 0;
-	background: #2c2a34;
+	background: #93C93C;
 	overflow: hidden;
 }
 canvas {
@@ -20,6 +20,17 @@ canvas {
 #mapInput.active {
 	display: block;
 }
+#pathInput {
+	position: absolute;
+	top: 25px;
+	left: 0;
+	z-index: 100;
+	
+	display: none;
+}
+/* #pathInput.active {
+	display: block;
+} */
 
 
 #overhead {
@@ -80,5 +91,5 @@ canvas {
 	width: 0%;
 
 	border-radius: 5px;
-	background: #5ddf96;
+	background: #1dd35a;
 }

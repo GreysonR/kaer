@@ -328,4 +328,4 @@ class Smoke {
 	}
 }
 
-Render.on("beforeRender", Smoke.update);
+Render.on("beforeLayer0", Smoke.update);

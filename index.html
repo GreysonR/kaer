@@ -22,6 +22,7 @@
 	<canvas id="skidMarkCanv" style="display: block;"></canvas>
 	<canvas id="canv"></canvas>
 	<input id="mapInput" type="file" accept="image/svg+xml">
+	<input id="pathInput" type="file" accept="image/svg+xml">
 
 	<div id="overhead">
 		<div id="timer">0:00</div>
@@ -72,8 +73,10 @@
 <script src="./js/gameplay/timedTrack.js"></script>
 
 <!-- map -->
+<script src="./js/map/svg-path-properties.min.js"></script>
 <script src="./js/map/loadMap.js"></script>
 <script src="./js/map/mapping.js"></script>
+<script src="./js/map/getPath.js"></script>
 
 <!-- map data -->
 <script src="./js/map/data/track1.js"></script>
