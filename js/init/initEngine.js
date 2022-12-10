@@ -41,7 +41,7 @@ Render.showBroadphase = false;
 // Render.showVertices = true
 // Render.showCenters = true;
 
-ctx.imageSmoothingEnabled = false;
+// ctx.imageSmoothingEnabled = false;
 
 var runEngine = true;
 function main() {
