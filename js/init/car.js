@@ -1,6 +1,6 @@
 "use strict";
 
-const car = Bodies.rectangle(220*0.6, 100*0.6, new vec(3170, 4100), { // -200, 200
+const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200, 200
 	angle: 0,
 	mass: 100,
 
@@ -58,63 +58,6 @@ car.on("collisionStart", event => {
 });
 
 
-/*
-// spawn block grid
-for (let x = 0; x < 6; x++) {
-	for (let y = 0; y < 6; y++) {
-		Bodies.rectangle(200, 200, new vec(x*1200-900, y*900-1000), {
-			static: true,
-			restitution: 0,
-			render: {
-				background: "white",
-			}
-		})
-	}
-}
-/* */
-
-/*
-// spawn red smashable blocks
-function despawnBlock(block) {
-	if (!block.fadeOut) {
-		block.fadeOut = animation.create({
-			duration: 300,
-			delay: 1000,
-			curve: ease.linear,
-			callback: (p) => {
-				block.render.opacity = 1 - p;
-			},
-			onend: () => {
-				block.render.opacity = 0;
-				block.delete();
-			},
-		});
-	}
-}
-for (let x = 0; x < 2; x++) {
-	for (let y = 0; y < 2; y++) {
-		let b = Bodies.rectangle(3.5, 3.5, new vec(x*4 + 50, y*4-500), {
-			mass: 0.01,
-			static: false,
-			restitution: 0.6,
-			render: {
-				border: "red",
-				borderWidth: 2,
-				borderType: "round",
-				background: "red",
-			}
-		});
-		b.on("collisionStart", event => {
-			// return;
-			let { bodyA, bodyB } = event;
-			if (bodyA === car || bodyB === car || true) {
-				despawnBlock(b);
-			}
-		});
-	}
-}
-/* */
-
 camera.position = car.position;
 camera.fov = 1800;
 
@@ -155,11 +98,12 @@ function updateCar() {
 
 	// ~ handbrake
 	if (handbrake) {
-		tireGrip *= 0.1;
-		up *=   0.8;
-		down *= 0.8;
-		maxSpeed *= 0.8;
-		slide = slide + (1 - slide) * 0.15;
+		tireGrip *= 0.3;
+		up *=   0.7;
+		down *= 0.7;
+		maxSpeed *= 0.9;
+		acceleration *=  0.6;
+		slide = slide + (1 - slide) * 0.2;
 	}
 	// ~ gas
 	if (up) {
@@ -257,7 +201,7 @@ function updateCar() {
 
 	// - Scoring
 	if (Math.abs(normVel) > maxGrip * 15 * timescale && Math.abs(Common.modDiff(curMap.completePercent, curMap.maxLapPercent, 1)) <= 0.01) {
-		driftScore += Math.abs(Common.angleDiff(car.velocity.angle, car.angle)) * car.velocity.length ** 2 / 500;
+		driftScore += Math.abs(Common.angleDiff(car.velocity.angle, car.angle)) * (car.velocity.length / 10) ** 2 / 7;
 	}
 
 	// - Visuals 

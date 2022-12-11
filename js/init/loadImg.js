@@ -4,8 +4,6 @@
 	Render.loadImg("sportsCar.svg");
 	
 	Render.loadImg("policeCar.png");
-
-	Render.loadImg("finish.png");
 })();
 
 (function loadMapImg() {
