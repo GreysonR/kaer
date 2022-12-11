@@ -103,11 +103,12 @@ function updateCar() {
 		down *= 0.7;
 		maxSpeed *= 0.9;
 		acceleration *=  0.6;
-		slide = slide + (1 - slide) * 0.2;
+		turnSpeed *= 0.8;
+		slide = slide + (1 - slide) * 0.3;
 	}
 	// ~ gas
 	if (up) {
-		let acc = (0.15 + (drifting ? (0.5 + 0.5 / (Math.abs(driftAmount) * timescale ** 1.8)) * 0.2 : 0)) * up;
+		let acc = (0.15 + (drifting ? (0.4 + 0.6 / (Math.abs(driftAmount) * timescale ** 1.8)) * 0.2 : 0)) * up;
 		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.sqrt(tireGrip))));
 	}
 	// ~ brake
