@@ -196,10 +196,11 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				})();
 
 				// parse path
-				let pathArr = obj["d"].replace(/M/g, "!M").replace(/H/g, "!H").replace(/V/g, "!V").replace(/L/g, "!L").split("!").filter(v => v != "");
+				let pathArr = obj["d"].replace(/M/g, "!M").replace(/H/g, "!H").replace(/V/g, "!V").replace(/L/g, "!L").replace(/Z/g, "!Z").split("!").filter(v => v != "");
 				let x = 0;
 				let y = 0;
-				let path = [];
+				let paths = [[]];
+				let pathNum = 0;
 				for (let i = 0; i < pathArr.length; i++) {
 					let func = pathArr[i][0]
 					let part = pathArr[i].slice(1).split(" ");
@@ -220,41 +221,65 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						x = Math.round(Number(part[0]));
 						y = Math.round(Number(part[1].replace("Z", "")));
 					}
+					else if (func === "Z") {
+						console.warn("More than 1 path");
+						// paths.push([]);
+						// pathNum++;
+					}
 					else {
 						console.error(func, part);
 						console.error(pathArr, i);
 					}
 
-					path.push({ x: Math.round(x), y: Math.round(y) });
+					paths[pathNum].push({ x: Math.round(x), y: Math.round(y) });
 				}
 				
-				if (path.length > 1) {
-					let name = "wall";
-					if (envColors[pathObj.fill] || envColors[pathObj.stroke]) {
-						if (envColors[pathObj.stroke]) console.log(pathObj.stroke);
-						name = envColors[pathObj.fill] || envColors[pathObj.stroke];
-					}
-					if (!out.env[name]) {
-						out.env[name] = [];
-					}
-					let center = getCenterOfMass(path);
-					
-					if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
-						path.reverse();
-					}
-					if (name === "path" && pathObj["stroke-width"] === 6) {
-						path.reverse();
-					}
-
-					if (new vec(path[0]).equals(path[path.length - 1])) {
-						path.pop();
-					}
+				for (let path of paths) {
+					if (path.length > 1) {
+						let name = "wall";
+						if (envColors[pathObj.fill] || envColors[pathObj.stroke]) {
+							name = envColors[pathObj.fill] || envColors[pathObj.stroke];
+						}
+						if (!out.env[name]) {
+							out.env[name] = [];
+						}
+						let center = getCenterOfMass(path);
+						
+						if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
+							path.reverse();
+						}
+						if (name === "path" && pathObj["stroke-width"] === 6) {
+							path.reverse();
+						}
 	
-					out.env[name].push({
-						x: Math.round(center.x),
-						y: Math.round(center.y),
-						vertices: path,
-					});
+						if (name === "wall") {
+							let decompPoints = path.map(v => [v.x, v.y]);
+							decomp.removeDuplicatePoints(decompPoints, 0.01);
+							decomp.makeCCW(decompPoints);
+							let convex = decomp.quickDecomp(decompPoints);
+
+							for (let shape of convex) {
+								let verts = shape.map(v => ({ x: v[0], y: v[1] }));
+								let center = getCenterOfMass(verts);
+								out.env[name].push({
+									x: Math.round(center.x),
+									y: Math.round(center.y),
+									vertices: verts,
+								});
+							}
+						}
+						else {
+							if (new vec(path[0]).equals(path[path.length - 1])) {
+								path.pop();
+							}
+			
+							out.env[name].push({
+								x: Math.round(center.x),
+								y: Math.round(center.y),
+								vertices: path,
+							});
+						}
+					}
 				}
 			}
 			else {

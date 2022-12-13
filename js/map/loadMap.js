@@ -89,6 +89,38 @@ let allMaps = {
 			},
 		]
 	},
+	track2: {
+		objs: [
+			{ // walls
+				sprite: "track2/walls",
+				width: 8527,
+				height: 6776,
+				position: new vec(8527/2 + 45, 6776/2 - 55),
+				layer: 1,
+			},
+			{ // track
+				sprite: "track2/track",
+				width:  8527,
+				height: 6776,
+				position: new vec(8527/2 + 45, 6776/2 - 55),
+				layer: -3,
+			},
+			{ // track outline
+				sprite: "track2/trackOutline",
+				width:  8527,
+				height: 6776,
+				position: new vec(8527/2 + 45, 6776/2 - 55),
+				layer: -1,
+			},
+			{ // environment background
+				sprite: "track2/envBackground",
+				width:  10803,
+				height: 9255,
+				position: new vec(10803/2 - 1110, 9255/2 - 1450),
+				layer: -4,
+			},
+		]
+	},
 	track3: {
 		objs: [
 			{ // walls
@@ -257,7 +289,8 @@ function getPercentComplete() {
 
 		let normDot = carDiff.dot(norm);
 		let perpDot = carDiff.dot(perp);
-		let dist = Math.sqrt((normDot - diff.length/2) ** 2 + perpDot ** 2);
+		let normDist = Math.max(0, Math.abs(normDot - diff.length/2) - diff.length / 2);
+		let dist = Math.sqrt(perpDot ** 2 + normDist ** 2);
 
 		if (dist < minDist) {
 			minDist = dist;
@@ -270,9 +303,28 @@ function getPercentComplete() {
 	return percent;
 }
 
-Render.on("beforeRender", () => {
+Render.on("afterRender", () => {
 	let completeElem = document.getElementById("complete");
 	let completePercent = curMap.maxLapPercent;
 
 	completeElem.style.width = completePercent * 100 + "%";
+
+	/*
+	// visualize progress path
+	ctx.beginPath();
+	let i = 0;
+	for (let pt of curMap.path) {
+		if (i === 0) {
+			ctx.moveTo(pt.x, pt.y);
+		}
+		else {
+			ctx.lineTo(pt.x, pt.y);
+		}
+		
+		i++;
+	}
+
+	ctx.strokeStyle = "cyan";
+	ctx.lineWidth = 10;
+	ctx.stroke();*/
 });
