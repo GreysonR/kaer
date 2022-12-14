@@ -9,6 +9,7 @@ let mapBodies = {
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				static: true,
 				hasCollisions: true,
+				restitution: 0,
 
 				render: {
 					visible: false,

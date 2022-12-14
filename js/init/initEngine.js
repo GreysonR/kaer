@@ -36,6 +36,9 @@ window.addEventListener("blur", () => {
 	focused = false;
 });
 
+
+Performance.enabled = false;
+Performance.getAvg = true;
 Render.showBoundingBox = false;
 Render.showBroadphase = false;
 // Render.showVertices = true
@@ -46,23 +49,29 @@ Render.showBroadphase = false;
 var runEngine = true;
 function main() {
 	// - run engine
-	if (runEngine) {
-		Engine.update();
+	if (Performance.fps / Math.max(1, Performance.history.avgFps) < 0.5) { // prevent freeze jumps
+		Performance.fps = Performance.history.avgFps;
+		Performance.delta = 1000 / Performance.fps;
 	}
-	else 
-		Performance.update();
+	else {
+		if (runEngine) {
+			Engine.update();
+		}
+		else 
+			Performance.update();
+		
+		// - move car
+		updateCar();
+		// if (runEngine)
+		// 	Engine.updateCollisions();
 
-	// - move car
-	updateCar();
-	// if (runEngine)
-	// 	Engine.updateCollisions();
+		// - render
+		Render();
+		// Performance.render();
 
-	// - render
-	Render();
-	Performance.render();
-
-	// - run animations
-	animation.run();
+		// - run animations
+		animation.run();
+	}
 
 	requestAnimationFrame(main);
 }

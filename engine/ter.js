@@ -18,7 +18,8 @@ var ter = {
 		ter.Render.camera.boundSize = Math.sqrt(width * height) || 1; // Math.sqrt(width * height) || 1; // Math.sqrt(width**2 + height**2) / 2;
 	},
 	Performance: {
-		enabled: false,
+		enabled: true,
+		getAvgs: true,
 		lastUpdate: performance.now(),
 		fps: 60,
 		delta: 16.67,
@@ -26,6 +27,8 @@ var ter = {
 		aliveTime: 0,
 
 		history: {
+			avgFps: 60,
+			avgDelta: 16.67,
 			fps: [],
 			delta: [],
 		},
@@ -33,36 +36,66 @@ var ter = {
 		update: function() {
 			let Performance = ter.Performance;
 			let curTime = performance.now();
-			Performance.delta = curTime - Performance.lastUpdate;
+			Performance.delta = Math.min(35, curTime - Performance.lastUpdate);
 			Performance.fps = 1000 / Performance.delta;
 			Performance.lastUpdate = curTime;
 			Performance.aliveTime += Performance.delta;
+
+			if (!Performance.enabled && Performance.getAvgs) {
+				Performance.history.fps.push(Performance.fps);
+				Performance.history.delta.push(Performance.delta);
+	
+				if (Performance.history.fps.length > 100) {
+					Performance.history.fps.shift();
+					Performance.history.delta.shift();
+				}
+				let fps = (() => {
+					let v = 0;
+					for (let i = 0; i < Performance.history.fps.length; i++) {
+						v += Performance.history.fps[i] / Performance.history.fps.length;
+					}
+					return v;
+				})();
+				let delta = (() => {
+					let v = 0;
+					for (let i = 0; i < Performance.history.delta.length; i++) {
+						v += Performance.history.delta[i] / Performance.history.delta.length;
+					}
+					return v;
+				})();
+
+				Performance.history.avgFps = fps;
+				Performance.history.avgDelta = delta;
+			}
 		},
 		render: function() {
-			let timing = ter.Performance;
+			let Performance = ter.Performance;
 			let ctx = ter.ctx;
 
-			timing.history.fps.push(timing.fps);
-			timing.history.delta.push(timing.delta);
+			Performance.history.fps.push(Performance.fps);
+			Performance.history.delta.push(Performance.delta);
 
-			if (timing.history.fps.length > 100) {
-				timing.history.fps.shift();
-				timing.history.delta.shift();
+			if (Performance.history.fps.length > 100) {
+				Performance.history.fps.shift();
+				Performance.history.delta.shift();
 			}
 			let fps = (() => {
 				let v = 0;
-				for (let i = 0; i < timing.history.fps.length; i++) {
-					v += timing.history.fps[i] / timing.history.fps.length;
+				for (let i = 0; i < Performance.history.fps.length; i++) {
+					v += Performance.history.fps[i] / Performance.history.fps.length;
 				}
 				return v;
 			})();
 			let delta = (() => {
 				let v = 0;
-				for (let i = 0; i < timing.history.delta.length; i++) {
-					v += timing.history.delta[i] / timing.history.delta.length;
+				for (let i = 0; i < Performance.history.delta.length; i++) {
+					v += Performance.history.delta[i] / Performance.history.delta.length;
 				}
 				return v;
 			})();
+
+			Performance.history.avgFps = fps;
+			Performance.history.avgDelta = delta;
 
 			ctx.fillStyle = "#2D2D2D80";
 			ctx.fillRect(20, 20, 200, 70);

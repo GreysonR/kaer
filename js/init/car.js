@@ -8,19 +8,20 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	friction: 0.085,
 	frictionAir: 0,
 	frictionAngular: 0,
-	restitution: 0,
+	restitution: 0.2,
 
 	// car basic stats
-	maxSpeed: 14,
-	maxReverseSpeed: 7,
-	acceleration: 2,
-	turnSpeed: 0.9,
+	maxSpeed: 14, // [0, Infinity]
+	maxReverseSpeed: 7, // [0, Infinity]
+	acceleration: 2, // [0, Infinity]
+	turnSpeed: 0.9, // [0, Infinity] not recommended to be above 1.5
 
 	// drifting / sliding
-	tireGrip: 4,
-	slide: 0.08, // 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
+	tireGrip: 4, // [0.0001, Infinity]
+	slide: 0.08, // [0-1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 	drifting: false,
 	driftAmount: 0,
+	driftAcceleration: 0.3, // [0-1] min amount of acceleration kept when drifting, could also be labeled "power"
 	hasTireSkid: false,
 	hasTireSmoke: false,
 
@@ -66,7 +67,7 @@ function updateCar() {
 	let timescaleSqrt = Math.sqrt(timescale);
 	let timescaleSqr = timescale * timescale;
 
-	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount, slide, driftHistory } = car;
+	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount, driftAcceleration, slide, driftHistory } = car;
 
 	if (gamepad.connected) {
 		let controller = navigator.getGamepads()[0];
@@ -103,12 +104,12 @@ function updateCar() {
 		down *= 0.7;
 		maxSpeed *= 0.9;
 		acceleration *=  0.6;
-		turnSpeed *= 0.8;
+		turnSpeed *= 0.92;
 		slide = slide + (1 - slide) * 0.3;
 	}
 	// ~ gas
 	if (up) {
-		let acc = (0.15 + (drifting ? (0.4 + 0.6 / (Math.abs(driftAmount) * timescale ** 1.8)) * 0.2 : 0)) * up;
+		let acc = (0.15 + (drifting ? (driftAcceleration + (1 - driftAcceleration) / (Math.abs(driftAmount) * timescale ** 1.8)) * 0.2 : 0)) * up;
 		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.sqrt(tireGrip))));
 	}
 	// ~ brake
