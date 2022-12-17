@@ -26,7 +26,7 @@ Render.on("beforeLayer0", () => {
 		let { path } = skid;
 
 		// delete points
-		let maxTime = 1000;
+		let maxTime = 1500;
 		if (path.size <= 0) {
 			Skid.all.delete(skid);
 			continue;

@@ -277,19 +277,13 @@ var ter = {
 			body.last.position.x = body.position.x - body.velocity.x / timescaleSqrt;
 			body.last.position.y = body.position.y - body.velocity.y / timescaleSqrt;
 
-			body.angularVelocity = ((body.angle - body.last.angle) * frictionAngular) + (body.torque / body.inertia);
-			body.last.angle = body.angle;
-			if (Math.abs(body.angularVelocity) < 0.0001) body.angularVelocity = 0;
-			body.angle += body.angularVelocity;
 
-			for (let j = 0; j < body.vertices.length; j++) {
-				let vertice = body.vertices[j];
-				vertice.add2(body.velocity);
-				
-				if (body.angularVelocity !== 0) {
-					vertice.sub2(body.position).rotate2(body.angularVelocity).add2(body.position);
-				}
-			}
+			body.translate(body.velocity, true);
+
+			body.angularVelocity = ((body.angle - body.last.angle) * frictionAngular) + (body.torque / body.inertia);
+			if (Math.abs(body.angularVelocity) < 0.0001) body.angularVelocity = 0;
+			body.last.angle = body.angle;
+			body.translateAngle(body.angularVelocity);
 
 			body.velocity.div2(timescaleSqrt);
 			body.updateBounds();
@@ -525,7 +519,9 @@ var ter = {
 
 					findNormal(bodyA, bodyB);
 					findNormal(bodyB, bodyA);
-					if (contacts.length === 0) continue;
+					if (contacts.length === 0) {
+						contacts.push({ vertice: new vec(bodyA.position), body: bodyA });
+					}
 
 					if (Render.showCollisionPoints) {
 						globalVectors.push({ position: normalPoint, vector: normal.inverse() });

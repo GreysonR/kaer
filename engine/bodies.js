@@ -50,6 +50,7 @@ class Body {
 	force = new vec(0, 0);
 	impulse = new vec(0, 0);
 	angle = 0;
+	rotationPoint = new vec(0, 0);
 	angularVelocity = 0;
 	torque = 0;
 
@@ -246,6 +247,7 @@ class Body {
 		if (angle !== this.last.angle) {
 			let vertices = this.vertices;
 			let position = this.position;
+			let rotationPoint = this.rotationPoint.rotate(angle);
 			let delta = -(this.last.angle - angle);
 			let sin = Math.sin(delta);
 			let cos = Math.cos(delta);
@@ -257,15 +259,44 @@ class Body {
 				vert.y = position.y + (dist.x * sin + dist.y * cos);
 			}
 
+			let posOffset = this.rotationPoint.rotate(this.last.angle).sub(rotationPoint);
+			this.translate(posOffset);
+
+			this.translateAngle(-this.angularVelocity);
+			
 			this.angle = angle;
 			this.last.angle = angle;
-			this.updateBounds();
-			this.updateAxes();
 		}
 
 		return this;
 	}
-	setPosition(position, silent=false) {
+	translateAngle(angle, silent = false) {
+			let vertices = this.vertices;
+			let position = this.position;
+			let rotationPoint = this.rotationPoint.rotate(this.angle + angle);
+			let sin = Math.sin(angle);
+			let cos = Math.cos(angle);
+
+			for (let i = vertices.length; i-- > 0;) {
+				let vert = vertices[i];
+				let dist = vert.sub(position);
+				vert.x = position.x + (dist.x * cos - dist.y * sin);
+				vert.y = position.y + (dist.x * sin + dist.y * cos);
+			}
+
+			let posOffset = this.rotationPoint.rotate(this.angle).sub(rotationPoint);
+			this.translate(posOffset);
+			this.last.position.add2(posOffset);
+
+			if (!silent) {
+				this.angle += angle;
+			}
+			this.updateBounds();
+			this.updateAxes();
+
+		return this;
+	}
+	setPosition(position, silent = false) {
 		let last = this.position;
 		if (position.x !== last.x || position.y !== last.y) {
 			let delta = position.sub(last);
@@ -285,13 +316,15 @@ class Body {
 			this.updateBounds();
 		}
 	}
-	translate(delta) {
+	translate(delta, silent = false) {
 		let vertices = this.vertices;
 		for (let i = 0; i < vertices.length; i++) {
 			vertices[i].add2(delta);
 		}
 
-		this.position.add2(delta);
+		if (!silent) {
+			this.position.add2(delta);
+		}
 		this.updateBounds();
 	}
 	getSupport(vector, position=this.position) {
@@ -337,7 +370,6 @@ class Body {
 	}
 
 	events = {
-		push: [],
 		collisionStart: [],
 		collisionActive: [],
 		collisionEnd: [],

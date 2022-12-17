@@ -190,7 +190,7 @@ function loadMap(map, name) {
 	}
 
 	// add extra visual stuff
-	let { objs } = allMaps[name];
+	let objs = allMaps[name] ? allMaps[name].objs : [];
 	for (let obj of objs) {
 		let { width, height, position, sprite, layer } = obj;
 		let body = Bodies.rectangle(width, height, position, {
@@ -243,8 +243,8 @@ function unloadMap() {
 
 function resetCar() {
 	let { position, angle } = curMap.spawn;
-	car.setPosition(new vec(position));
 	car.setAngle(angle);
+	car.setPosition(new vec(position));
 	
 	laps = 0;
 	raceStarted = false;
