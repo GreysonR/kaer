@@ -22,7 +22,7 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 
 	// drifting / sliding
 	tireGrip: 4, // [0.0001, Infinity]
-	slide: 0.08, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
+	slide: 1, // 0.08 [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 	drifting: false,
 	driftAmount: 0,
 	driftAcceleration: 0.3, // [-1, 1] min amount of acceleration kept when drifting, could also be labeled "power"
