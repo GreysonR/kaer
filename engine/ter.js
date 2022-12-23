@@ -382,7 +382,7 @@ var ter = {
 				ter.Bodies.update(bodies[i], delta);
 			}
 
-			Bodies.postUpdate();
+			// Bodies.postUpdate();
 			
 			
 			globalVectors = [];
@@ -403,7 +403,7 @@ var ter = {
 		},
 		testCollisions: function() {
 			const { World, Common: Basic, Performance } = ter;
-			const { collisionPairs:pairs } = World;
+			const pairs = World.collisionPairs;
 
 			// - go through possible collision pairs
 			for (let i = 0; i < pairs.length; i++) {
@@ -768,12 +768,11 @@ var ter = {
 				Render.trigger("beforeLayer" + layerId);
 				for (let body of layer) {
 					const { position, vertices, render, bounds } = body;
-					const { visible, background, border, borderWidth, borderType, lineDash, bloom, opacity, sprite, round, } = render;
 					const inView = !(bounds.max.x < camera.bounds.min.x || bounds.min.x > camera.bounds.max.x
 								 || bounds.max.y < camera.bounds.min.y || bounds.min.y > camera.bounds.max.y);
-
 					
-					if (visible && inView) {
+					if (render.visible && inView) {
+						const { background, border, borderWidth, borderType, lineDash, bloom, opacity, sprite, round, } = render;
 						ctx.beginPath();
 						ctx.globalAlpha = opacity ?? 1;
 						ctx.lineWidth = borderWidth;
