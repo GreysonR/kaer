@@ -42,6 +42,10 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#D58850": "checkpoint",
 			"#BF3232": "spawn",
 			"#82E1BF": "path",
+
+			"#46A325": "tree",
+			"#DDB45F": "zoneHitbox",
+			"#425155": "roadHitbox",
 		}
 
 		function getVertices(rect) {
@@ -88,8 +92,9 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		function getNext() {
 			let iStart = res.indexOf("<rect", index);
 			let iEnd = res.indexOf("/>", iStart);
+			let clipStart = res.indexOf("clipPath");
 
-			if (iStart > index) {
+			if (iStart > index && (iStart < clipStart || clipStart === -1)) {
 				// get string of current rect
 				let rectText = res.slice(iStart + 5, iEnd);
 
@@ -132,9 +137,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),
 					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
 					vertices: vertices[0],
-				}
-				if (name === "checkpoint") {
-					obj.index = Math.round(rect.rx * 100);
 				}
 				if (name === "spawn") {
 					let a = 0;
@@ -251,8 +253,14 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						if (name === "path" && pathObj["stroke-width"] === 6) {
 							path.reverse();
 						}
+
+						if (name === "path") {
+							let decompPoints = path.map(v => [v.x, v.y]);
+							decomp.removeDuplicatePoints(decompPoints, 0.01);
+							path = decompPoints.map(v => ({ x: v[0], y: v[1] }));
+						}
 	
-						if (name === "wall") {
+						if (name === "wall" || name.includes("Hitbox")) {
 							let decompPoints = path.map(v => [v.x, v.y]);
 							decomp.removeDuplicatePoints(decompPoints, 0.01);
 							decomp.makeCCW(decompPoints);

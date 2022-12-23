@@ -33,12 +33,12 @@ Render.on("beforeRender", () => {
 		let now = Performance.lastUpdate;
 		let timescale = 144 / Performance.fps;
 		let lastPercent = curMap.completePercent;
-		let percent = curMap.completePercent = getPercentComplete();
-	
+		curMap.completePercent = getPercentComplete();
+		let percent = curMap.completePercent;
+		
 		if (percent < 0.1 && lastPercent > 0.9) {
 			if (!raceStarted) {
 				raceStarted = true;
-				lapStartTime = now;
 				Render.on("beforeRender", updateRaceTimer);
 			}
 			else if (curMap.maxLapPercent > 0.9) {
@@ -46,6 +46,7 @@ Render.on("beforeRender", () => {
 				console.log("Lap #" + laps);
 
 				let time = (now - lapStartTime);
+				if (time < 1000) return;
 				if (modeName === "time") {
 					if (time < bestLapTime) {
 						bestLapTime = time;
@@ -61,9 +62,9 @@ Render.on("beforeRender", () => {
 	
 					driftScore = 0;
 				}
-				curMap.maxLapPercent = 0;
-				lapStartTime = now;
 			}
+			curMap.maxLapPercent = 0;
+			lapStartTime = now;
 		}
 		else {
 			if (raceStarted) {

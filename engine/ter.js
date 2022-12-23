@@ -776,18 +776,6 @@ var ter = {
 					const inView = !(bounds.max.x < camera.bounds.min.x || bounds.min.x > camera.bounds.max.x
 								 || bounds.max.y < camera.bounds.min.y || bounds.min.y > camera.bounds.max.y);
 
-					function renderVertices() {
-						ctx.moveTo(vertices[0].x, vertices[0].y);
-
-						for (let j = 0; j < vertices.length; j++) {
-							if (j > 0) {
-								let vertice = vertices[j];
-								ctx.lineTo(vertice.x, vertice.y);
-							}
-						}
-			
-						ctx.closePath();
-					}
 					
 					if (visible && inView) {
 						ctx.beginPath();
@@ -831,7 +819,7 @@ var ter = {
 								Render.roundedPolygon(vertices, round);
 							}
 							else { // normal vertices
-								renderVertices();
+								Render.vertices(vertices);
 							}
 						}
 
@@ -889,6 +877,19 @@ var ter = {
 			Render.trigger("afterRestore");
 		}
 		Render.bodies = [new Set()];
+
+		Render.vertices = function(vertices) {
+			ctx.moveTo(vertices[0].x, vertices[0].y);
+
+			for (let j = 0; j < vertices.length; j++) {
+				if (j > 0) {
+					let vertice = vertices[j];
+					ctx.lineTo(vertice.x, vertice.y);
+				}
+			}
+
+			ctx.closePath();
+		}
 
 		// - Camera
 		Render.camera = {

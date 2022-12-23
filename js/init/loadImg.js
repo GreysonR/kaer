@@ -21,4 +21,7 @@
 	Render.loadImg("track3/track.png");
 	Render.loadImg("track3/trackOutline.png");
 	Render.loadImg("track3/envBackground.png");
+	
+	Render.loadImg("chase1/envForeground.png");
+	Render.loadImg("chase1/envBackground.png");
 })();

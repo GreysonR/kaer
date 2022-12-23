@@ -80,10 +80,10 @@
 
 
 
-#trackSelect {
+.trackSelect {
 	display: none;
 }
-#trackSelect.active {
+.trackSelect.active {
     display: block;
 
 	width: max-content;
@@ -105,7 +105,7 @@
 	cursor: pointer;
 }
 
-#trackSelect .track {
+.trackSelect .track {
 	display: inline-block;
 	position: relative;
 	width:  300px;
@@ -117,10 +117,10 @@
 
 	background: linear-gradient(45deg, #492dae, #e33c7f);
 }
-#trackSelect .track:last-child {
+.trackSelect .track:last-child {
 	margin-right: 0;
 }
-#trackSelect .track::before {
+.trackSelect .track::before {
 	content: "";
 	display: block;
 
@@ -133,11 +133,11 @@
 	
 	background: linear-gradient(45deg, #2b2835, #2b2729);
 }
-#trackSelect .track:hover::before {
+.trackSelect .track:hover::before {
 	background: linear-gradient(45deg, #332d52, #3a2c31);
 }
 
-#trackSelect .track span {
+.trackSelect .track span {
 	vertical-align: middle;
 	line-height: normal;
 	position: relative;

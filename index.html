@@ -40,10 +40,10 @@
 				<span>Drift</span>
 			</div>
 			<div class="mode grayed">
-				<span>Evade</span>
+				<span>Chase</span>
 			</div>
 		</div>
-		<div id="trackSelect" class="active">
+		<div id="trackSelect" class="trackSelect">
 			<div class="track" onclick="selectTrack('track1')">
 				<span>Track 1</span>
 			</div>
@@ -53,9 +53,11 @@
 			<div class="track" onclick="selectTrack('track3')">
 				<span>Track 3</span>
 			</div>
-			<!-- <div class="track" onclick="selectTrack('track4')">
-				<span>Track 4</span>
-			</div> -->
+		</div>
+		<div id="chaseSelect" class="trackSelect">
+			<div class="track" onclick="selectTrack('chase1')">
+				<span>Chase 1</span>
+			</div>
 		</div>
 	</div>
 </body>
@@ -87,6 +89,8 @@
 <script src="./js/map/data/track2.js"></script>
 <script src="./js/map/data/track3.js"></script>
 <script src="./js/map/data/track4.js"></script>
+
+<script src="./js/map/data/chase1.js"></script>
 
 <!-- visuals -->
 <script src="./js/vis/skid.js"></script>

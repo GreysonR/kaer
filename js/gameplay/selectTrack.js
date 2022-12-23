@@ -15,7 +15,12 @@ function closeHome() {
 }
 function selectMode(newMode) {
 	document.getElementById("modeSelect").classList.remove("active");
-	document.getElementById("trackSelect").classList.add("active");
+	if (newMode === "chase") {
+		document.getElementById("chaseSelect").classList.add("active");
+	}
+	else {
+		document.getElementById("trackSelect").classList.add("active");
+	}
 
 	modeName = newMode;
 }
@@ -43,5 +48,10 @@ function selectTrack(newTrack) {
 		timerElem.innerHTML = "0.0";
 	}
 
-	loadMap(timedTracks[newTrack], trackName);
+	if (newTrack.includes("chase")) {
+		loadMap(chaseTracks[newTrack], trackName);
+	}
+	else {
+		loadMap(timedTracks[newTrack], trackName);
+	}
 }

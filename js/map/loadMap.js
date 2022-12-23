@@ -14,7 +14,7 @@ let mapBodies = {
 				render: {
 					visible: false,
 					background: "#ffffff",
-					round: 10,
+					round: 0,
 				}
 			});
 			return obj;
@@ -53,10 +53,59 @@ let mapBodies = {
 			for (let v of vertices) {
 				path.push((new vec(v)));
 			}
-		}
+		},
+		tree: function({ x, y }) {
+			let obj = Bodies.circle(70, new vec(x, y), {
+				numSides: 6,
+				static: true,
+				hasCollisions: true,
+
+				render: {
+					visible: false,
+					background: "#592B21",
+					layer: 0,
+				}
+			});
+			return obj;
+		},
+		roadHitbox: function({ x, y, vertices }) {
+			for (let i = 0; i < vertices.length; i++) {
+				vertices[i] = new vec(vertices[i]);
+			}
+			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+				numSides: 6,
+				static: true,
+				hasCollisions: true,
+				isSensor: true,
+
+				render: {
+					visible: false,
+					background: "#42515560",
+					layer: -1,
+				}
+			});
+			obj.on("collisionActive", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === obj ? bodyB : bodyA;
+
+				if (otherBody === car) {
+					car.tireGrip = 4;
+				}
+			});
+			obj.on("collisionEnd", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === obj ? bodyB : bodyA;
+
+				if (otherBody === car) {
+					car.tireGrip = 2;
+				}
+			});
+			return obj;
+		},
 	},
 }
 let timedTracks = {};
+let chaseTracks = {};
 let allMaps = {
 	track1: {
 		objs: [
@@ -150,6 +199,25 @@ let allMaps = {
 				width:  9806,
 				height: 8956,
 				position: new vec(9806/2 - 1830, 8956/2 - 1230),
+				layer: -4,
+			},
+		]
+	},
+
+	chase1: {
+		objs: [
+			{ // foreground
+				sprite: "chase1/envForeground",
+				width:  7762,
+				height: 5600,
+				position: new vec(7762/2, 5600/2),
+				layer: 2,
+			},
+			{ // background
+				sprite: "chase1/envBackground",
+				width:  7762,
+				height: 5600,
+				position: new vec(7762/2, 5600/2),
 				layer: -4,
 			},
 		]
@@ -284,6 +352,7 @@ function getPercentComplete() {
 		let cur = path[i];
 		let next = path[(i + 1) % len];
 		let diff = next.sub(cur);
+		if (diff.length === 0) continue;
 		let carDiff = carPos.sub(cur);
 		let norm = diff.normalize();
 		let perp = norm.normal();
@@ -296,7 +365,6 @@ function getPercentComplete() {
 		if (dist < minDist) {
 			minDist = dist;
 			percent = curLen / totalLen + normDot / totalLen;
-
 		}
 		curLen += diff.length;
 	}
@@ -327,5 +395,5 @@ Render.on("afterRender", () => {
 
 	ctx.strokeStyle = "cyan";
 	ctx.lineWidth = 10;
-	ctx.stroke();*/
+	ctx.stroke();/**/
 });
