@@ -756,10 +756,6 @@ var ter = {
 			ctx.save();
 			ctx.translate(camera.translation.x, camera.translation.y);
 			ctx.scale(camera.scale, camera.scale);
-			
-			if (Render.showBroadphase === true) {
-				Render.broadphase();
-			}
 
 			Render.trigger("beforeRender");
 			let layers = Object.keys(bodies).sort((a, b) => {
@@ -836,6 +832,9 @@ var ter = {
 				Render.trigger("afterLayer" + layerId);
 			}
 			
+			if (Render.showBroadphase === true) {
+				Render.broadphase();
+			}
 			if (Render.showBoundingBox === true) {
 				Render.boundingBox();
 			}

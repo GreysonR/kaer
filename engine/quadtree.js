@@ -121,7 +121,7 @@ class Tree {
 }
 class quadtree {
 	tree;
-	maxDepth = 2;
+	maxDepth = 1;
 	maxBodies = 6;
 	constructor() {
 		this.tree = new Tree();
