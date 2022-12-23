@@ -36,6 +36,9 @@ window.addEventListener("keydown", event => {
 		document.getElementById("mapInput").classList.toggle("active");
 		document.getElementById("pathInput").classList.toggle("active");
 	}
+	if (event.altKey && key === "p") {
+		Performance.enabled = !Performance.enabled;
+	}
 });
 window.addEventListener("keyup", event => {
 	let key = event.key.toLowerCase();

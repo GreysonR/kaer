@@ -221,8 +221,42 @@ let allMaps = {
 				layer: -4,
 			},
 		]
+	},
+	chase2: {
+		objs: [
+		]
+	},
+}
+
+// load chase 2 objs
+for (let x = 0; x < 7; x++) {
+	let w = 2000;
+	let h = 2000;
+	for (let y = 0; y < 7; y++) {
+		// background
+		allMaps.chase2.objs.push(
+			{
+				sprite: `chase2/background-${x}-${y}.png`,
+				width:  w,
+				height: h,
+				position: new vec(w * x + w/2, h * y + h/2),
+				layer: -4,
+			}
+		)
+		
+		// foreground
+		allMaps.chase2.objs.push(
+			{
+				sprite: `chase2/foreground-${x}-${y}.png`,
+				width:  w,
+				height: h,
+				position: new vec(w * x + w/2, h * y + h/2),
+				layer: 2,
+			}
+		)
 	}
 }
+
 var curMap = {
 	spawn: {
 		position: new vec(0, 0),

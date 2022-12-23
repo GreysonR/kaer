@@ -26,6 +26,16 @@ class Body {
 		this.updateAxes();
 		this.updateInertia();
 
+		if (options.render.sprite) {
+			if (options.render.sprite.includes(".png")) {
+				if (!Render.images[options.render.sprite.replace(".png", "")]) {
+					Render.loadImg(options.render.sprite);
+				}
+				
+				options.render.sprite = options.render.sprite.replace(".png", "");
+			}
+		}
+
 		if (options.angle) {
 			this.setAngle(-options.angle);
 			this.last.angle = options.angle;
