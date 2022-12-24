@@ -102,6 +102,38 @@ let mapBodies = {
 			});
 			return obj;
 		},
+		coin: function({ x, y }) {
+			let obj = Bodies.circle(50, new vec(x, y), {
+				numSides: 4,
+				static: true,
+				hasCollisions: true,
+				isSensor: true,
+
+				render: {
+					visible: true,
+					background: "#FF7D1E",
+					border: "#8B6955",
+					borderWidth: 10,
+
+					sprite: "coin",
+					spriteWidth: 40,
+					spriteHeight: 40,
+
+					layer: -1,
+				}
+			});
+
+			obj.on("collisionActive", event => {
+				let { bodyA, bodyB, depth } = event;
+				let otherBody = bodyA === obj ? bodyB : bodyA;
+				
+				if (otherBody === car) {
+					obj.render.sprite = "coinClaimed";
+					obj.hasCollisions = false;
+				}
+			});
+			return obj;
+		},
 	},
 }
 let timedTracks = {};
@@ -239,7 +271,7 @@ for (let x = 0; x < 7; x++) {
 				sprite: `chase2/background-${x}-${y}.png`,
 				width:  w,
 				height: h,
-				position: new vec(w * x + w/2, h * y + h/2),
+				position: new vec((w - 0.4) * x + w/2, (h - 0.4) * y + h/2),
 				layer: -4,
 			}
 		)
@@ -250,7 +282,7 @@ for (let x = 0; x < 7; x++) {
 				sprite: `chase2/foreground-${x}-${y}.png`,
 				width:  w,
 				height: h,
-				position: new vec(w * x + w/2, h * y + h/2),
+				position: new vec((w - 0.4) * x + w/2, (h - 0.4) * y + h/2),
 				layer: 2,
 			}
 		)
@@ -267,6 +299,7 @@ var curMap = {
 	},
 	objs: [],
 	path: [],
+	coins: [],
 	completePercent: 0,
 	maxLapPercent: 0,
 }
@@ -317,6 +350,7 @@ function unloadMap() {
 	}
 	curMap.objs.length = 0;
 	curMap.path.length = 0;
+	curMap.coins.length = 0;
 	curMap.maxLapPercent = 0;
 	trackName = "";
 	modeName = "";

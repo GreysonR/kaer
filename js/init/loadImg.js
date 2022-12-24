@@ -1,9 +1,9 @@
 (function loadImg() {
 	Render.loadImg("car.png");
-	Render.loadImg("smallCar.svg");
-	Render.loadImg("sportsCar.svg");
-	
 	Render.loadImg("policeCar.png");
+	
+	Render.loadImg("coin.png");
+	Render.loadImg("coinClaimed.png");
 })();
 
 (function loadMapImg() {

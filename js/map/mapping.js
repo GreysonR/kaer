@@ -46,6 +46,8 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#46A325": "tree",
 			"#DDB45F": "zoneHitbox",
 			"#425155": "roadHitbox",
+
+			"#FF7D1E": "coin",
 		}
 
 		function getVertices(rect) {

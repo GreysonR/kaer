@@ -51,7 +51,7 @@ function Enemy(position, options = {}) {
 		}
 	}, options);
 
-	let obj = Bodies.rectangle(220*0.6, 100*0.6, new vec(position), options);
+	let obj = Bodies.rectangle(225*0.6, 114*0.6, new vec(position), options);
 
 	Enemy.all.push(obj);
 
@@ -104,7 +104,6 @@ Enemy.update = function(car) {
 	}
 
 	// ~ tire friction
-	let lastDrifting = car.drifting;
 	let maxGrip = tireGrip * 0.1 / timescaleSqrt;
 	let normVel = carNorm.dot(velocity);
 	let grip = Math.abs(normVel) * 0.97;
