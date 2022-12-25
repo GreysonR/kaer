@@ -101,6 +101,17 @@ function updateCar() {
 			}
 		}/** */
 	}
+	
+	// get material properties
+	let material = getCarMaterial();
+	if (!material) material = "grass";
+	let materialProps = Materials[material];
+	tireGrip *= materialProps.tireGrip ?? 1;
+	slide *= materialProps.slide ?? 1;
+	turnSpeed *= materialProps.turnSpeed ?? 1;
+	acceleration *= materialProps.acceleration ?? 1;
+	maxSpeed *= materialProps.maxSpeed ?? 1;
+	maxReverseSpeed *= materialProps.maxReverseSpeed ?? 1;
 
 	let carDir = new vec(Math.cos(angle), Math.sin(angle));
 	let carNorm = carDir.normal();
@@ -259,7 +270,7 @@ function updateCar() {
 
 	// smoke
 	let hadTireSmoke = car.hasTireSmoke;
-	car.hasTireSmoke = avgDrift > maxGrip * 17;
+	car.hasTireSmoke = avgDrift > maxGrip * 17 && materialProps.hasTireSmoke;
 	if (car.hasTireSmoke !== hadTireSmoke) {
 		if (car.hasTireSmoke) {
 			let options = {
@@ -318,6 +329,34 @@ function updateCar() {
 			s.setPath(verts);
 		}
 	}
+}
+function getCarMaterial() {
+	let point = car.position.add(new vec(-30, 0).rotate(car.angle));
+	let bounds = SurfaceGrid.getBounds(car);
+	let materials = new Set();
+	
+	for (let x = bounds.min.x; x <= bounds.max.x; x++) {
+		for (let y = bounds.min.y; y <= bounds.max.y; y++) {
+			let n = SurfaceGrid.pair(new vec(x, y));
+			let node = SurfaceGrid.grid[n];
+			if (!node) continue;
+
+			for (let body of node) {
+				if (body.containsPoint(point)) {
+					if (!body.material) {
+						console.warn("body has no material", body);
+						continue;
+					}
+					
+					materials.add(body.material);
+				}
+			}
+		}
+	}
+
+	if (materials.has("road")) return "road";
+	if (materials.has("dirt")) return "dirt";
+	return "grass";
 }
 
 let lastFov = [];

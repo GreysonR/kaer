@@ -6,6 +6,14 @@ function getCenterOfMass(vertices) { /* https://bell0bytes.eu/centroid-convex/ *
 	let tempDet = 0;
 	let numVertices = vertices.length;
 
+	if (vertices.length < 3) { // return avg
+		for (let i = 0; i < vertices.length; i++) {
+			centroid.add2(vertices[i]);
+		}
+		centroid.div2(vertices.length);
+		return centroid;
+	}
+
 	for (let i = 0; i < vertices.length; i++) {
 		let curVert = vertices[i];
 		let nextVert = vertices[(i + 1) % numVertices];
@@ -45,8 +53,11 @@ document.getElementById("mapInput").addEventListener("input", event => {
 
 			"#46A325": "tree",
 			"#DDB45F": "zoneHitbox",
-			"#425155": "roadHitbox",
 
+			"#425155": "roadHitbox",
+			"#97592D": "dirtHitbox",
+
+			"#955EBF": "job",
 			"#FF7D1E": "coin",
 		}
 

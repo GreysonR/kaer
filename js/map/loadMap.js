@@ -73,33 +73,37 @@ let mapBodies = {
 				vertices[i] = new vec(vertices[i]);
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				numSides: 6,
-				static: true,
-				hasCollisions: true,
-				isSensor: true,
+				material: "road",
+				hasCollisions: false,
 
 				render: {
-					visible: false,
+					visible: true,
 					background: "#42515560",
 					layer: -1,
 				}
 			});
-			obj.on("collisionActive", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === obj ? bodyB : bodyA;
+			obj.delete();
+			SurfaceGrid.addBody(obj);
 
-				if (otherBody === car) {
-					car.tireGrip = 4;
+			return obj;
+		},
+		dirtHitbox: function({ x, y, vertices }) {
+			for (let i = 0; i < vertices.length; i++) {
+				vertices[i] = new vec(vertices[i]);
+			}
+			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+				material: "dirt",
+				hasCollisions: false,
+
+				render: {
+					visible: false,
+					background: "#42515590",
+					layer: -1,
 				}
 			});
-			obj.on("collisionEnd", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === obj ? bodyB : bodyA;
+			obj.delete();
+			SurfaceGrid.addBody(obj);
 
-				if (otherBody === car) {
-					car.tireGrip = 2;
-				}
-			});
 			return obj;
 		},
 		coin: function({ x, y }) {
@@ -134,6 +138,11 @@ let mapBodies = {
 			});
 			return obj;
 		},
+		job: function({ vertices }) {
+			let [ start, end ] = vertices;
+
+			console.log(start, end);
+		},
 	},
 }
 let timedTracks = {};
@@ -143,30 +152,30 @@ let allMaps = {
 		objs: [
 			{ // walls
 				sprite: "track1/walls",
-				width: 7295.91,
-				height: 5624,
-				position: new vec(7295.91/2 + 10, 5624/2 - 25),
+				width: 9806,
+				height: 8964,
+				position: new vec(9806/2, 8964/2),
 				layer: 1,
 			},
 			{ // track
 				sprite: "track1/track",
-				width: 7295.91,
-				height: 5624,
-				position: new vec(7295.91/2 + 10, 5624/2 - 25),
+				width: 9806,
+				height: 8964,
+				position: new vec(9806/2, 8964/2),
 				layer: -3,
 			},
 			{ // track outline
 				sprite: "track1/trackOutline",
-				width: 7295.91,
-				height: 5624,
-				position: new vec(7295.91/2 + 10, 5624/2 - 25),
+				width: 9806,
+				height: 8964,
+				position: new vec(9806/2, 8964/2),
 				layer: -1,
 			},
 			{ // environment background
 				sprite: "track1/envBackground",
-				width:  9827.5,
-				height: 8963.5,
-				position: new vec(9827.5/2 - 1220, 8963.5/2 - 1580),
+				width: 9806,
+				height: 8964,
+				position: new vec(9806/2, 8964/2),
 				layer: -4,
 			},
 		]
@@ -346,7 +355,12 @@ function loadMap(map, name) {
 }
 function unloadMap() {
 	for (let obj of curMap.objs) {
-		obj.delete();
+		if (obj._SurfaceGrids) {
+			SurfaceGrid.removeBody(obj);
+		}
+		else {
+			obj.delete();
+		}
 	}
 	curMap.objs.length = 0;
 	curMap.path.length = 0;
