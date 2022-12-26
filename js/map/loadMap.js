@@ -225,6 +225,7 @@ let mapBodies = {
 							obj.delete();
 						}
 						endObj.add();
+						curMap.jobsStarted++;
 					}
 				}
 			});
@@ -246,6 +247,9 @@ let mapBodies = {
 			});
 			endObj.delete();
 			curMap.objs.push(endObj);
+			endObj.on("delete", () => {
+				Render.off("afterRender", renderEndArrow);
+			});
 			endObj.on("collisionStart", event => {
 				let { bodyA, bodyB } = event;
 				let otherBody = bodyA === endObj ? bodyB : bodyA;
@@ -271,6 +275,7 @@ let mapBodies = {
 					endObj.delete();
 					endObj.jobComplete = true;
 					curMap.curJob = null;
+					curMap.jobsCompleted++;
 					Render.off("afterRender", renderEndArrow);
 
 					for (let obj of curMap.jobStarts) {
@@ -447,8 +452,12 @@ var curMap = {
 	objs: [],
 	path: [],
 	coins: [],
+
 	jobStarts: [],
 	curJob: null,
+	jobsCompleted: 0,
+	jobsStarted: 0,
+
 	completePercent: 0,
 	maxLapPercent: 0,
 }
@@ -492,6 +501,12 @@ function loadMap(map, name) {
 		
 		curMap.objs.push(body);
 	}
+
+	// add event listeners
+	if (modeName === "chase") {
+		Render.on("afterRender", renderJobArrows);
+		Render.on("afterRender", spawnEnemies);
+	}
 }
 function unloadMap() {
 	for (let obj of curMap.objs) {
@@ -502,6 +517,7 @@ function unloadMap() {
 			obj.delete();
 		}
 	}
+	// reset cur map
 	curMap.objs.length = 0;
 	curMap.path.length = 0;
 	curMap.coins.length = 0;
@@ -510,10 +526,10 @@ function unloadMap() {
 	curMap.visual.walls.length = 0;
 
 	curMap.curJob = null;
+	curMap.jobsCompleted = 0;
+	curMap.jobsStarted = 0;
 	
-	trackName = "";
-	modeName = "";
-
+	// reset other vars
 	laps = 0;
 	raceStarted = false;
 	lapStartTime = 0;
@@ -521,7 +537,15 @@ function unloadMap() {
 	driftScore = 0;
 	bestDriftScore = 0;
 
-	Render.off("beforeRender", updateRaceTimer);
+	// remove enemies
+	for (let obj of Enemy.all) {
+		obj.delete();
+	}
+	if (car.removed) {
+		car.add();
+	}
+
+	// reset timer
 	let bestTimeElem = document.getElementById("bestTime");
 	let timerElem = document.getElementById("timer");
 	if (modeName === "time") {
@@ -532,6 +556,16 @@ function unloadMap() {
 		bestTimeElem.innerHTML = "Best: 0.0";
 		timerElem.innerHTML = "0.0";
 	}
+
+	// event listeners
+	if (modeName === "chase") {
+		Render.off("afterRender", renderJobArrows);
+		Render.off("afterRender", spawnEnemies);
+	}
+	Render.off("beforeRender", updateRaceTimer);
+	
+	trackName = "";
+	modeName = "";
 }
 
 function resetCar() {

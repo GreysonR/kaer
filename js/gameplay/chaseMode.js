@@ -1,6 +1,6 @@
 "use strict";
 
-Render.on("afterRender", () => {
+function renderJobArrows() {
 	if (modeName !== "chase") return;
 	if (curMap.curJob) return;
 
@@ -16,10 +16,12 @@ Render.on("afterRender", () => {
 	
 	for (let i = 0; i < Math.min(3, jobs.length); i++) {
 		let diff = carPos.sub(jobs[i].position);
-		if (diff.length > 600) {
+		let dist = diff.length;
+		if (dist > 600) {
 			let angle = diff.angle - Math.PI/2;
+			let scale = Math.min(1, Math.max(0.5, (1500 / dist) ** 0.6)) * 0.7
 			let vertices = [{"x":19,"y":0},{"x":37,"y":37},{"x":19,"y":32},{"x":0,"y":37}];
-			vertices = vertices.map(v => new vec(v).sub2({ x: 37/2, y: 27/2 }).mult2(0.7).add2({ x: 0, y: -150}).rotate2(angle).add(car.position));
+			vertices = vertices.map(v => new vec(v).sub2({ x: 37/2, y: 27/2 }).mult2(scale).add2({ x: 0, y: -150}).rotate2(angle).add(car.position));
 	
 			ctx.beginPath();
 			Render.roundedPolygon(vertices, 5);
@@ -27,4 +29,35 @@ Render.on("afterRender", () => {
 			ctx.fill();
 		}
 	}
-});
+}
+
+
+let lastEnemySpawn = -25000;
+function spawnEnemies() {
+	if (modeName !== "chase") return;
+	if (curMap.jobsStarted === 0) return;
+
+	let now = Performance.aliveTime;
+	let percentComplete = curMap.jobsCompleted / curMap.jobStarts.length;
+	let spawnTime = (1 - percentComplete) * 15000 + 6000;
+	let maxAlive = Math.floor(percentComplete * 5) + 1;
+
+	if (now - lastEnemySpawn < spawnTime) return;
+	if (Enemy.all.length >= maxAlive) return;
+
+	let timescale = 144 / Performance.fps;
+	let timescaleSqrt = Math.sqrt(timescale);
+
+	let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
+	let velDotCar = car.velocity.normalize().dot(carDir) * timescaleSqrt;
+	let velDCS = velDotCar < 0 ? -1 : 1;
+
+	lastEnemySpawn = now;
+	let angleRange = Math.min(Math.PI*2, 4 / Math.pow(car.velocity.length, 0.3));
+	let dist = (Math.random() * 500 + 800) * velDCS;
+	let angle = Common.angleDiff(Math.random() * angleRange, angleRange / 2) + car.angle + Math.PI;
+	let pos = new vec(Math.cos(angle) * dist, Math.sin(angle) * dist).add2(car.position);
+
+	let obj = Enemy(pos);
+	obj.setAngle(pos.sub(car.position).angle + Math.PI);
+}

@@ -27,13 +27,13 @@ function Enemy(position, options = {}) {
 	
 		mass: 100,
 	
-		maxSpeed: 16,
+		maxSpeed: 15,
 		maxReverseSpeed: 5,
 		acceleration: 2,
 		turnSpeed: 1,
 	
-		tireGrip: 4,
-		slide: 0.3,
+		tireGrip: 3,
+		slide: 0.14,
 		drifting: false,
 		driftAmount: 0,
 	
@@ -53,17 +53,25 @@ function Enemy(position, options = {}) {
 
 	let obj = Bodies.rectangle(225*0.6, 114*0.6, new vec(position), options);
 
+	obj.on("delete", () => {
+		Enemy.all.delete(obj);
+	})
+
 	Enemy.all.push(obj);
 
 	return obj;
 }
 Enemy.all = [];
-Enemy.update = function(car) {
+Enemy.update = function(enemy) {
+	if (car.position.sub(enemy.position).length > 2500) {
+		enemy.delete();
+		return;
+	}
 	let timescale = 144 / Performance.fps;
 	let timescaleSqrt = Math.sqrt(timescale);
 	let timescaleSqr = timescale * timescale;
 
-	let { angle, velocity, up, down, left, right, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount } = car;
+	let { angle, velocity, up, down, left, right, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount } = enemy;
 
 	let carDir = new vec(Math.cos(angle), Math.sin(angle));
 	let carNorm = carDir.normal();
@@ -111,18 +119,18 @@ Enemy.update = function(car) {
 		grip = Math.max(maxGrip, Math.abs(normVel) * 0.4 * tireGrip);
 	}
 	if (Math.abs(normVel) > maxGrip * 10) {
-		car.drifting = true;
+		enemy.drifting = true;
 	}
 	else {
-		car.drifting = false;
+		enemy.drifting = false;
 	}
 
 	let gripAmt = Math.min(maxGrip, Math.abs(grip)) * -Math.sign(normVel);
 	addVel.add2(carNorm.mult(gripAmt));
-	car.driftAmount = (normVel - gripAmt);
+	enemy.driftAmount = (normVel - gripAmt);
 
 	// ~ drag
-	let speed = car.velocity.length;
+	let speed = enemy.velocity.length;
 
 	if (!(up || down)) {
 		if (speed > 0.5) {
@@ -135,26 +143,26 @@ Enemy.update = function(car) {
 		else {
 			addVel.sub2(velocity.mult(0.5));
 		}
-		car.frictionAir = 0.01;
+		enemy.frictionAir = 0.01;
 	}
 	else {
-		car.frictionAir = 0.002;
+		enemy.frictionAir = 0.002;
 	}
 
-	let gripRatio = ((1 - car.slide) + Math.max(1, Math.abs(grip / maxGrip) ** 0.5) * car.slide);
-	car.frictionAngular = 0.07 / gripRatio / (Performance.fps / 144)**0.9;
+	let gripRatio = ((1 - enemy.slide) + Math.max(1, Math.abs(grip / maxGrip) ** 0.5) * enemy.slide);
+	enemy.frictionAngular = 0.07 / gripRatio / (Performance.fps / 144)**0.9;
 	addAngle /= gripRatio;
 	
 	addAngle *= 0.5;
-	car.applyForce(addVel.mult(timescaleSqrt));
-	car.applyTorque(addAngle * timescaleSqrt);
-	let torque = car.angle - car.last.angle;
+	enemy.applyForce(addVel.mult(timescaleSqrt));
+	enemy.applyTorque(addAngle * timescaleSqrt);
+	let torque = enemy.angle - enemy.last.angle;
 	maxSpeed *= timescaleSqrt;
 	if (speed > maxSpeed) {
-		car.applyForce(car.velocity.mult(maxSpeed / speed - 1));
+		enemy.applyForce(enemy.velocity.mult(maxSpeed / speed - 1));
 	}
 	if (Math.abs(torque) > maxTurnAmt) {
-		car.applyTorque((maxTurnAmt - Math.abs(torque)) * Math.sign(torque))
+		enemy.applyTorque((maxTurnAmt - Math.abs(torque)) * Math.sign(torque))
 	}
 }
 
