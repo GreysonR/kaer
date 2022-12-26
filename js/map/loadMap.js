@@ -536,6 +536,7 @@ function unloadMap() {
 	bestLapTime = Infinity;
 	driftScore = 0;
 	bestDriftScore = 0;
+	lastEnemySpawn = -20000;
 
 	// remove enemies
 	for (let obj of Enemy.all) {
