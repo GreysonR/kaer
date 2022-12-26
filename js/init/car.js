@@ -123,6 +123,25 @@ function updateCar() {
 
 	velocity = velocity.mult(timescaleSqrt);
 	driftAmount *= timescaleSqrt;
+	
+
+	// ~ tire friction
+	let maxGrip = Math.max(0.0000001, tireGrip) * 0.1;
+	let normVel = carNorm.dot(velocity);
+	let grip = Math.abs(normVel) * 0.97;
+	if (Math.abs(normVel) > maxGrip) { // ~ drifting
+		grip = Math.max(maxGrip, Math.abs(normVel) * 0.4 * tireGrip);
+	}
+	if (Math.abs(normVel) > maxGrip * 10 * timescale) {
+		car.drifting = true;
+	}
+	else {
+		car.drifting = false;
+	}
+	let gripAmt = Math.min(maxGrip, Math.abs(grip)) * -Math.sign(normVel);
+	addVel.add2(carNorm.mult(gripAmt));
+	car.driftAmount = (normVel - gripAmt);
+	let gripPercent = (1 / Math.max(1, Math.abs(car.driftAmount)));
 
 	// ~ handbrake
 	if (handbrake) {
@@ -143,7 +162,7 @@ function updateCar() {
 	// ~ brake
 	if (down) {
 		if (carDir.dot(velocity) > 0.5) { // ~ brake
-			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.08 * down));
+			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.08 * down * gripPercent));
 		}
 		else { // ~ drive backwards
 			addVel.sub2(carDir.mult(0.15));
@@ -160,24 +179,6 @@ function updateCar() {
 	if (right) {
 		addAngle += turnAmt * velDC2 * right;
 	}
-
-	// ~ tire friction
-	let maxGrip = Math.max(0.0000001, tireGrip) * 0.1;
-	let normVel = carNorm.dot(velocity);
-	let grip = Math.abs(normVel) * 0.97;
-	if (Math.abs(normVel) > maxGrip) { // ~ drifting
-		grip = Math.max(maxGrip, Math.abs(normVel) * 0.4 * tireGrip);
-	}
-	if (Math.abs(normVel) > maxGrip * 10 * timescale) {
-		car.drifting = true;
-	}
-	else {
-		car.drifting = false;
-	}
-
-	let gripAmt = Math.min(maxGrip, Math.abs(grip)) * -Math.sign(normVel);
-	addVel.add2(carNorm.mult(gripAmt));
-	car.driftAmount = (normVel - gripAmt);
 
 	// ~ drag
 	let speed = car.velocity.length;

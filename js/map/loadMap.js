@@ -141,7 +141,145 @@ let mapBodies = {
 		job: function({ vertices }) {
 			let [ start, end ] = vertices;
 
-			console.log(start, end);
+			let startObj = Bodies.circle(300, new vec(start), {
+				numSides: 8,
+				static: true,
+				isSensor: true,
+				collisionStartTime: 0,
+				jobTaken: false,
+
+				render: {
+					layer: -1,
+					background: "#29BCFB30",
+					border: "#4DAED890",
+					borderWidth: 30,
+				}
+			});
+			curMap.jobStarts.push(startObj);
+			curMap.objs.push(startObj);
+
+			let collisionDuration = 600;
+			function renderTimerBar() {
+				let obj = startObj.jobTaken ? endObj : startObj;
+				let w = 150;
+				let h = 30;
+				let pos = obj.position;
+				let p = (Performance.lastUpdate - obj.collisionStartTime) / collisionDuration
+
+				// bg
+				ctx.beginPath();
+				ctx.rect(pos.x - w/2, pos.y, w, h);
+				ctx.fillStyle = "#2B2B2B40";
+				ctx.fill();
+
+				// bar
+				ctx.beginPath();
+				ctx.rect(pos.x - w/2, pos.y, w * p, h);
+				ctx.fillStyle = startObj.jobTaken ? "#F9AE78" : "#4DAED8";
+				ctx.fill();
+			}
+			function renderEndArrow() {
+				let diff = car.position.sub(endObj.position);
+				if (diff.length > 600) {
+					let angle = diff.angle - Math.PI/2;
+					let vertices = [{"x":19,"y":0},{"x":37,"y":37},{"x":19,"y":32},{"x":0,"y":37}];
+					vertices = vertices.map(v => new vec(v).sub2({ x: 37/2, y: 27/2 }).mult2(0.7).add2({ x: 0, y: -150}).rotate2(angle).add(car.position));
+	
+					ctx.beginPath();
+					Render.roundedPolygon(vertices, 5);
+					ctx.fillStyle = "#F9A568";
+					ctx.fill();
+				}
+			}
+			
+			startObj.on("collisionStart", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === startObj ? bodyB : bodyA;
+
+				if (otherBody === car) {
+					startObj.collisionStartTime = Performance.lastUpdate;
+					Render.on("beforeLayer0", renderTimerBar);
+				}
+			});
+			startObj.on("collisionEnd", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === startObj ? bodyB : bodyA;
+
+				if (otherBody === car) {
+					Render.off("beforeLayer0", renderTimerBar);
+				}
+			});
+				
+			startObj.on("collisionActive", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === startObj ? bodyB : bodyA;
+				
+				if (otherBody === car && Performance.lastUpdate - startObj.collisionStartTime >= collisionDuration) {
+					startObj.delete();
+					startObj.jobTaken = true;
+					curMap.curJob = startObj;
+					Render.on("afterRender", renderEndArrow);
+
+					for (let obj of curMap.jobStarts) {
+						if (!obj.removed) {
+							obj.delete();
+						}
+						endObj.add();
+					}
+				}
+			});
+
+			
+			let endObj = Bodies.circle(300, new vec(end), {
+				numSides: 8,
+				static: true,
+				isSensor: true,
+				collisionStartTime: 0,
+				jobTaken: false,
+
+				render: {
+					layer: -1,
+					background: "#FB812930",
+					border: "#D8874D90",
+					borderWidth: 30,
+				}
+			});
+			endObj.delete();
+			curMap.objs.push(endObj);
+			endObj.on("collisionStart", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === endObj ? bodyB : bodyA;
+
+				if (otherBody === car) {
+					endObj.collisionStartTime = Performance.lastUpdate;
+					Render.on("beforeLayer0", renderTimerBar);
+				}
+			});
+			endObj.on("collisionEnd", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === endObj ? bodyB : bodyA;
+
+				if (otherBody === car) {
+					Render.off("beforeLayer0", renderTimerBar);
+				}
+			});
+			endObj.on("collisionActive", event => {
+				let { bodyA, bodyB } = event;
+				let otherBody = bodyA === endObj ? bodyB : bodyA;
+				
+				if (otherBody === car && Performance.lastUpdate - endObj.collisionStartTime >= collisionDuration) {
+					endObj.delete();
+					endObj.jobComplete = true;
+					curMap.curJob = null;
+					Render.off("afterRender", renderEndArrow);
+
+					for (let obj of curMap.jobStarts) {
+						if (!obj.jobTaken) {
+							obj.add();
+						}
+					}
+				}
+			});
 		},
 	},
 }
@@ -309,6 +447,8 @@ var curMap = {
 	objs: [],
 	path: [],
 	coins: [],
+	jobStarts: [],
+	curJob: null,
 	completePercent: 0,
 	maxLapPercent: 0,
 }
@@ -365,12 +505,15 @@ function unloadMap() {
 	curMap.objs.length = 0;
 	curMap.path.length = 0;
 	curMap.coins.length = 0;
+	curMap.jobStarts.length = 0;
 	curMap.maxLapPercent = 0;
+	curMap.visual.walls.length = 0;
+
+	curMap.curJob = null;
+	
 	trackName = "";
 	modeName = "";
 
-	curMap.visual.walls.length = 0;
-	
 	laps = 0;
 	raceStarted = false;
 	lapStartTime = 0;
@@ -392,24 +535,26 @@ function unloadMap() {
 }
 
 function resetCar() {
-	let { position, angle } = curMap.spawn;
-	car.setAngle(angle);
-	car.setPosition(new vec(position));
+	if (modeName === "drift" || modeName === "time") {
+		let { position, angle } = curMap.spawn;
+		car.setAngle(angle);
+		car.setPosition(new vec(position));
+		
+		laps = 0;
+		raceStarted = false;
+		lapStartTime = 0;
+		driftScore = 0;
+		curMap.maxLapPercent = 0;
+		curMap.percent = 0;
 	
-	laps = 0;
-	raceStarted = false;
-	lapStartTime = 0;
-	driftScore = 0;
-	curMap.maxLapPercent = 0;
-	curMap.percent = 0;
-
-	Render.off("beforeRender", updateRaceTimer);
-	let timerElem = document.getElementById("timer");
-	if (modeName === "time") {
-		timerElem.innerHTML = "0:00";
-	}
-	else if (modeName === "drift") {
-		timerElem.innerHTML = "0.0";
+		Render.off("beforeRender", updateRaceTimer);
+		let timerElem = document.getElementById("timer");
+		if (modeName === "time") {
+			timerElem.innerHTML = "0:00";
+		}
+		else if (modeName === "drift") {
+			timerElem.innerHTML = "0.0";
+		}
 	}
 }
 

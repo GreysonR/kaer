@@ -39,6 +39,9 @@ window.addEventListener("keydown", event => {
 	if (event.altKey && key === "p") {
 		Performance.enabled = !Performance.enabled;
 	}
+	if (event.altKey && key === "v") {
+		Render.showVertices = !Render.showVertices;
+	}
 });
 window.addEventListener("keyup", event => {
 	let key = event.key.toLowerCase();
