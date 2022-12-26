@@ -57,6 +57,7 @@ let Materials = {
 		acceleration: 1,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
+		driftAcceleration: 1,
 		hasTireSmoke: true,
 	},
 	dirt: {
@@ -66,6 +67,7 @@ let Materials = {
 		acceleration: 0.8,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
+		driftAcceleration: 1.5,
 		hasTireSmoke: false,
 	},
 	grass: {
@@ -75,6 +77,7 @@ let Materials = {
 		acceleration: 0.65,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
+		driftAcceleration: 1,
 		hasTireSmoke: false,
 	},
 }

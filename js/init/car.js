@@ -112,6 +112,7 @@ function updateCar() {
 	acceleration *= materialProps.acceleration ?? 1;
 	maxSpeed *= materialProps.maxSpeed ?? 1;
 	maxReverseSpeed *= materialProps.maxReverseSpeed ?? 1;
+	driftAcceleration = Math.min(1, driftAcceleration * (materialProps.driftAcceleration ?? 1))
 
 	let carDir = new vec(Math.cos(angle), Math.sin(angle));
 	let carNorm = carDir.normal();
