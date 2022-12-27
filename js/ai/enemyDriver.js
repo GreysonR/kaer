@@ -24,6 +24,7 @@ function Enemy(position, options = {}) {
 		frictionAngular: 0,
 
 		isCar: true,
+		state: "attack",
 	
 		mass: 100,
 	
@@ -52,10 +53,20 @@ function Enemy(position, options = {}) {
 	}, options);
 
 	let obj = Bodies.rectangle(225*0.6, 114*0.6, new vec(position), options);
+	let sensor = Bodies.fromVertices([new vec(0, 0), new vec(0, 114 * 0.6), new vec(500, 114 * 0.3 + 300), new vec(500, 114 * 0.3 - 300)], obj.position.add({ x: 300, y: 0 }), {
+		isSensor: true,
+		render: {
+			background: "#FF611D50",
+			layer: 4,
+			visible: false,
+		}
+	});
+	obj.sensor = sensor;
 
 	obj.on("delete", () => {
 		Enemy.all.delete(obj);
-	})
+		sensor.delete();
+	});
 
 	Enemy.all.push(obj);
 
@@ -179,13 +190,39 @@ Render.on("afterRender", () => {
 	let now = Performance.aliveTime;
 
 	for (let enemy of Enemy.all) {
-		let { position, angle, down, reverseTime } = enemy;
+		let { position, angle, state, reverseTime, sensor } = enemy;
 		let dist = position.sub(car.position).length;
 		let angleToPlayer = position.sub(car.position).angle - Math.PI;
 		let angleDiff = subAngle(angleToPlayer, angle);
 
+		sensor.setPosition(enemy.position.add({ x: Math.cos(enemy.angle) * 370, y: Math.sin(enemy.angle) * 370 }));
+		sensor.setAngle(enemy.angle);
 
-		if (!down) {
+		let collisions = sensor.pairs;
+		let avgPoint = new vec(0, 0);
+		let nBodies = 0;
+		for (let collisionId of collisions) {
+			let collision = World.pairs[collisionId];
+			let { bodyA, bodyB } = collision;
+			let otherBody = bodyA === sensor ? bodyB : bodyA;
+
+			if (otherBody.isStatic && otherBody.position.sub(car.position).length > 300) {
+				avgPoint.add2(otherBody.position);
+				nBodies++;
+			}
+		}
+		avgPoint.div2(nBodies);
+
+		if (nBodies > 0) {
+			let enemyNorm = new vec(Math.cos(angle + Math.PI/2), Math.sin(angle + Math.PI/2));
+			let pointDir = avgPoint.sub(car.position);
+			let pointDot = pointDir.dot(enemyNorm);
+			
+			angleDiff += -10000 / Math.max(5, Math.abs(pointDot) ** 1.5) * Math.sign(pointDot);
+		}
+
+
+		if (state === "attack") {
 			if (angleDiff > 0) {
 				enemy.right = true;
 				enemy.left = false;
@@ -206,9 +243,10 @@ Render.on("afterRender", () => {
 				enemy.up = false;
 				enemy.down = true;
 				enemy.reverseTime = Performance.aliveTime;
+				enemy.state = "reverse";
 			}
 		}
-		else {
+		else if (state === "reverse") {
 			if (angleDiff < 0) {
 				enemy.right = true;
 				enemy.left = false;
@@ -220,6 +258,7 @@ Render.on("afterRender", () => {
 
 			if (now - reverseTime > 700) {
 				enemy.down = false;
+				enemy.state = "attack";
 			}
 		}
 

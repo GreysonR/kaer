@@ -37,6 +37,8 @@ function selectTrack(newTrack) {
 	modeName = newMode;
 	trackName = newTrack;
 
+	document.getElementById("overhead").className = newMode;
+
 	let bestTimeElem = document.getElementById("bestTime");
 	let timerElem = document.getElementById("timer");
 	if (modeName === "time") {

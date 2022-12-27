@@ -38,8 +38,8 @@ function spawnEnemies() {
 	if (curMap.jobsStarted === 0) return;
 
 	let now = Performance.aliveTime;
-	let percentComplete = curMap.jobsCompleted / curMap.jobStarts.length;
-	let spawnTime = (1 - percentComplete) * 15000 + 6000;
+	let percentComplete = curMap.jobsCompleted / Math.max(1, curMap.jobStarts.length);
+	let spawnTime = (1 - percentComplete) * 10000 + 2000;
 	let maxAlive = Math.floor(percentComplete * 5) + 1;
 
 	if (now - lastEnemySpawn < spawnTime) return;

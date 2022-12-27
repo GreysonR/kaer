@@ -239,7 +239,7 @@ var ter = {
 			return 4 * (mass / 6) * (numerator / denominator);
 		},
 		update: function(body, delta = ter.Performance.delta) {
-			if (!body.static) {
+			if (!body.isStatic) {
 				this.updateVelocity(body, delta);
 				ter.World.tree.updateBody(body);
 			}
@@ -311,13 +311,13 @@ var ter = {
 					
 					let impulse = (depth - 0.5) * delta / 16.667;
 					if (impulse <= 0) continue;
-					if (bodyA.static || bodyB.static) impulse *= 2;
+					if (bodyA.isStatic || bodyB.isStatic) impulse *= 2;
 
-					if (!bodyA.static) {
+					if (!bodyA.isStatic) {
 						bodyA.last.position.sub2(normal.mult(impulse * contactShare * 0.6));
 						bodyA.angle += offsetA.cross(normal) / 50000 * bodyA.inverseMass;
 					}
-					if (!bodyB.static) {
+					if (!bodyB.isStatic) {
 						bodyB.last.position.add2(normal.mult(impulse * contactShare * 0.6));
 						bodyB.angle -= offsetB.cross(normal) / 50000 * bodyB.inverseMass;
 					}
@@ -338,16 +338,16 @@ var ter = {
 				let totalMass = bodyA.mass + bodyB.mass;
 				let shareA = (bodyB.mass / totalMass) || 0;
 				let shareB = (bodyA.mass / totalMass) || 0;
-				if (bodyA.static) shareB = 1;
-				if (bodyB.static) shareA = 1;
+				if (bodyA.isStatic) shareB = 1;
+				if (bodyB.isStatic) shareA = 1;
 				// if (bodyA === car || bodyB === car) console.log(shareA, shareB, bodyA === car);
-				if (bodyA.static || bodyB.static) impulse.mult(2);
+				if (bodyA.isStatic || bodyB.isStatic) impulse.mult(2);
 
-				if (!bodyA.static) {
+				if (!bodyA.isStatic) {
 					bodyA.translate(impulse.mult(shareA));
 					// bodyA.last.position.add2(impulse.mult(restitution));
 				}
-				if (!bodyB.static) {
+				if (!bodyB.isStatic) {
 					bodyB.translate(impulse.inverse().mult(shareB));
 					// bodyB.last.position.sub2(impulse.mult(restitution));
 				}
@@ -410,7 +410,7 @@ var ter = {
 				let bodyA = pairs[i][0];
 				let bodyB = pairs[i][1];
 
-				if (bodyA.static && bodyB.static) continue;
+				if (bodyA.isStatic && bodyB.isStatic) continue;
 
 				let collision = true;
 
@@ -630,11 +630,11 @@ var ter = {
 
 					// apply forces
 					const impulse = normal.mult(normalImpulse).add2(tangent.mult(tangentImpulse));
-					if (!bodyA.static) {
+					if (!bodyA.isStatic) {
 						bodyA.last.position.add2(impulse.mult(bodyA.inverseMass));
 						bodyA.last.angle += offsetA.cross(impulse) * bodyA.inverseInertia;
 					}
-					if (!bodyB.static) {
+					if (!bodyB.isStatic) {
 						bodyB.last.position.sub2(impulse.mult(bodyB.inverseMass));
 						bodyB.last.angle -= offsetB.cross(impulse) * bodyB.inverseInertia;
 					}
@@ -672,17 +672,17 @@ var ter = {
 				
 
 				let impulse = normal.mult(normal.dot(relVel) * -restitution).sub2(tangent.abs().mult2(relVel).mult2(friction));
-				// if (bodyA.static || bodyB.static) impulse.mult2(1.5);
+				// if (bodyA.isStatic || bodyB.isStatic) impulse.mult2(1.5);
 				let totalMass = bodyA.mass + bodyB.mass;
 				let shareA = (bodyB.mass / totalMass) || 0;
 				let shareB = (bodyA.mass / totalMass) || 0;
-				if (bodyA.static) shareB = 1;
-				if (bodyB.static) shareA = 1;
+				if (bodyA.isStatic) shareB = 1;
+				if (bodyB.isStatic) shareA = 1;
 
-				if (!bodyA.static) {
+				if (!bodyA.isStatic) {
 					bodyA.last.position.add2(impulse.mult(shareA));
 				}
-				if (!bodyB.static) {
+				if (!bodyB.isStatic) {
 					bodyB.last.position.sub2(impulse.mult(shareB));
 				}
 			}

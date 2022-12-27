@@ -7,7 +7,7 @@ let mapBodies = {
 				vertices[i] = new vec(vertices[i]);
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				static: true,
+				isStatic: true,
 				hasCollisions: true,
 				restitution: 0,
 
@@ -24,7 +24,7 @@ let mapBodies = {
 				vertices[i] = new vec(vertices[i]);
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				static: true,
+				isStatic: true,
 				hasCollisions: true,
 				isSensor: true,
 				index: index,
@@ -57,7 +57,7 @@ let mapBodies = {
 		tree: function({ x, y }) {
 			let obj = Bodies.circle(70, new vec(x, y), {
 				numSides: 6,
-				static: true,
+				isStatic: true,
 				hasCollisions: true,
 
 				render: {
@@ -109,7 +109,7 @@ let mapBodies = {
 		coin: function({ x, y }) {
 			let obj = Bodies.circle(50, new vec(x, y), {
 				numSides: 4,
-				static: true,
+				isStatic: true,
 				hasCollisions: true,
 				isSensor: true,
 
@@ -143,7 +143,7 @@ let mapBodies = {
 
 			let startObj = Bodies.circle(300, new vec(start), {
 				numSides: 8,
-				static: true,
+				isStatic: true,
 				isSensor: true,
 				collisionStartTime: 0,
 				jobTaken: false,
@@ -233,7 +233,7 @@ let mapBodies = {
 			
 			let endObj = Bodies.circle(300, new vec(end), {
 				numSides: 8,
-				static: true,
+				isStatic: true,
 				isSensor: true,
 				collisionStartTime: 0,
 				jobTaken: false,
@@ -487,7 +487,7 @@ function loadMap(map, name) {
 	for (let obj of objs) {
 		let { width, height, position, sprite, layer } = obj;
 		let body = Bodies.rectangle(width, height, position, {
-			static: true,
+			isStatic: true,
 			hasCollisions: false,
 	
 			render: {
@@ -513,7 +513,7 @@ function unloadMap() {
 		if (obj._SurfaceGrids) {
 			SurfaceGrid.removeBody(obj);
 		}
-		else {
+		else if (!obj.removed) {
 			obj.delete();
 		}
 	}
@@ -537,16 +537,21 @@ function unloadMap() {
 	driftScore = 0;
 	bestDriftScore = 0;
 	lastEnemySpawn = -20000;
+	car.health = car.maxHealth;
+	updateHealthUI()
 
 	// remove enemies
 	for (let obj of Enemy.all) {
-		obj.delete();
+		if (!obj.removed) {
+			obj.delete();
+		}
 	}
 	if (car.removed) {
 		car.add();
 	}
 
 	// reset timer
+	document.getElementById("overhead").className = "";
 	let bestTimeElem = document.getElementById("bestTime");
 	let timerElem = document.getElementById("timer");
 	if (modeName === "time") {
@@ -581,6 +586,8 @@ function resetCar() {
 		driftScore = 0;
 		curMap.maxLapPercent = 0;
 		curMap.percent = 0;
+		car.health = car.maxHealth;
+		updateHealthUI()
 	
 		Render.off("beforeRender", updateRaceTimer);
 		let timerElem = document.getElementById("timer");

@@ -29,6 +29,10 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	hasTireSkid: false,
 	hasTireSmoke: false,
 
+	// health
+	maxHealth: 10,
+	health: 10,
+
 	// visual
 	driftHistory: [],
 	tireSkid: [],
@@ -49,6 +53,7 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	}
 });
 car.on("collisionStart", event => {
+	// return;
 	if (event.bodyA.isCar || event.bodyB.isCar) {
 		let { bodyA, bodyB, normal } = event;
 		let normalA = new vec(Math.cos(bodyA.angle), Math.sin(bodyA.angle));
@@ -57,7 +62,16 @@ car.on("collisionStart", event => {
 		let contactDir = normalA.dot(event.normal);
 
 		if ((Math.abs(contactDir) < 0.5) && Math.abs(normalDir) > 0.5) { // bodyB is hitting bodyA
-			event.bodyA.delete();
+			if (event.bodyA.health) {
+				event.bodyA.health--;
+				if (event.bodyA.health <= 0) {
+					event.bodyA.delete();
+				}
+				updateHealthUI();
+			}
+			else {
+				event.bodyA.delete();
+			}
 		}
 	}
 });
@@ -126,6 +140,18 @@ function updateCar() {
 	driftAmount *= timescaleSqrt;
 	
 
+	// ~ handbrake
+	if (handbrake) {
+		tireGrip *= 0.3;
+		up *=   0.7;
+		down *= 0.7;
+		maxSpeed *= 0.9;
+		acceleration *=  0.8;
+		turnSpeed *= 0.92;
+		slide = slide + (1 - slide) * 0.3;
+		driftAcceleration *= 0.5;
+	}
+
 	// ~ tire friction
 	let maxGrip = Math.max(0.0000001, tireGrip) * 0.1;
 	let normVel = carNorm.dot(velocity);
@@ -144,17 +170,6 @@ function updateCar() {
 	car.driftAmount = (normVel - gripAmt);
 	let gripPercent = (1 / Math.max(1, Math.abs(car.driftAmount)));
 
-	// ~ handbrake
-	if (handbrake) {
-		tireGrip *= 0.3;
-		up *=   0.7;
-		down *= 0.7;
-		maxSpeed *= 0.9;
-		acceleration *=  0.8;
-		turnSpeed *= 0.92;
-		slide = slide + (1 - slide) * 0.3;
-		driftAcceleration *= 0.5;
-	}
 	// ~ gas
 	if (up) {
 		let acc = (0.15 + (drifting ? (driftAcceleration + (1 - driftAcceleration) / (Math.abs(driftAmount) * timescale ** 1.8)) * 0.2 : 0)) * up;
@@ -392,3 +407,11 @@ Render.on("beforeLayer0", () => {
 	let avgPos = lastPos.reduce((a, b) => a.add(b), new vec(0, 0)).div(lastPos.length);
 	camera.position = avgPos; // car.position.add(car.velocity.mult(-2));
 });
+
+function updateHealthUI() {
+	let healthBar = document.getElementById("health");
+	let healthText = document.getElementById("healthText");
+
+	healthText.innerHTML = car.health + " / " + car.maxHealth;
+	healthBar.style.width = (car.health / car.maxHealth) * 100 + "%";
+}

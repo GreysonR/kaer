@@ -43,7 +43,7 @@ class Body {
 		ter.Common.merge(this, options);
 	}
 	updateInertia() {
-		if (this.static) {
+		if (this.isStatic) {
 			this.mass = Infinity;
 			this.inverseMass = 0;
 		}
@@ -78,7 +78,7 @@ class Body {
 	inertia = 1;
 	inverseInertia = 0.000015;
 	
-	static = false;
+	isStatic = false;
 	isSensor = false;
 	hasCollisions = true;
 
@@ -367,7 +367,7 @@ class Body {
 	applyForce(force) {
 		let { Performance: timing, World } = ter;
 		const timescale = World.timescale * (timing.delta / 16.667);
-		if (this.static) return this;
+		if (this.isStatic) return this;
 
 		this.last.position.x -= force.x * timescale;
 		this.last.position.y -= force.y * timescale;
