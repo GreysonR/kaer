@@ -76,6 +76,7 @@ Enemy.all = [];
 Enemy.update = function(enemy) {
 	if (car.position.sub(enemy.position).length > 2500) {
 		enemy.delete();
+		lastEnemySpawn -= 8000;
 		return;
 	}
 	let timescale = 144 / Performance.fps;

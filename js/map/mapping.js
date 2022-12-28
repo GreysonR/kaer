@@ -50,6 +50,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#D58850": "checkpoint",
 			"#BF3232": "spawn",
 			"#82E1BF": "path",
+			"#2027CD": "policeSpawns",
 
 			"#46A325": "tree",
 			"#DDB45F": "zoneHitbox",

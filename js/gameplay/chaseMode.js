@@ -1,4 +1,5 @@
 "use strict";
+var policeSpawnPoints = new Grid(2000);
 
 function renderJobArrows() {
 	if (modeName !== "chase") return;
@@ -39,25 +40,56 @@ function spawnEnemies() {
 
 	let now = Performance.aliveTime;
 	let percentComplete = curMap.jobsCompleted / Math.max(1, curMap.jobStarts.length);
-	let spawnTime = (1 - percentComplete) * 10000 + 2000;
+	let spawnTime = (1 - percentComplete) * 15000 + 6000;
 	let maxAlive = Math.floor(percentComplete * 5) + 1;
 
 	if (now - lastEnemySpawn < spawnTime) return;
 	if (Enemy.all.length >= maxAlive) return;
 
-	let timescale = 144 / Performance.fps;
-	let timescaleSqrt = Math.sqrt(timescale);
+	/*/* */
 
-	let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
-	let velDotCar = car.velocity.normalize().dot(carDir) * timescaleSqrt;
-	let velDCS = velDotCar < 0 ? -1 : 1;
+	let bounds = policeSpawnPoints.getBounds({
+		bounds: {
+			min: car.position.sub(1500),
+			max: car.position.add(1500),
+		}
+	});
+	
+	let spawns = [];
+	for (let x = bounds.min.x; x <= bounds.max.x; x++) {
+		for (let y = bounds.min.y; y <= bounds.max.y; y++) {
+			let n = policeSpawnPoints.pair(new vec(x, y));
+			let node = policeSpawnPoints.grid[n];
+			if (!node || node.size === 0) continue;
 
-	lastEnemySpawn = now;
-	let angleRange = Math.min(Math.PI*2, 4 / Math.pow(car.velocity.length, 0.3));
-	let dist = (Math.random() * 500 + 800) * velDCS;
-	let angle = Common.angleDiff(Math.random() * angleRange, angleRange / 2) + car.angle + Math.PI;
-	let pos = new vec(Math.cos(angle) * dist, Math.sin(angle) * dist).add2(car.position);
+			for (let s of node) {
+				if (car.position.sub(s).length > 800) {
+					spawns.push(s);
+				}
+			}
+		}
+	}
 
-	let obj = Enemy(pos);
-	obj.setAngle(pos.sub(car.position).angle + Math.PI);
+	if (spawns.length > 0) {
+		let pos = spawns.choose();
+		let obj = Enemy(pos);
+		obj.setAngle(pos.sub(car.position).angle + Math.PI);
+	}
+	else {
+		let timescale = 144 / Performance.fps;
+		let timescaleSqrt = Math.sqrt(timescale);
+	
+		let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
+		let velDotCar = car.velocity.normalize().dot(carDir) * timescaleSqrt;
+		let velDCS = velDotCar < 0 ? -1 : 1;
+	
+		lastEnemySpawn = now;
+		let angleRange = Math.min(Math.PI*2, 4 / Math.pow(car.velocity.length, 0.3));
+		let dist = (Math.random() * 500 + 800) * velDCS;
+		let angle = Common.angleDiff(Math.random() * angleRange, angleRange / 2) + car.angle + Math.PI;
+		let pos = new vec(Math.cos(angle) * dist, Math.sin(angle) * dist).add2(car.position);
+	
+		let obj = Enemy(pos);
+		obj.setAngle(pos.sub(car.position).angle + Math.PI);
+	}
 }

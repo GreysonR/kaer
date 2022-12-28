@@ -30,8 +30,8 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	hasTireSmoke: false,
 
 	// health
-	maxHealth: 10,
-	health: 10,
+	maxHealth: 6,
+	health:    6,
 
 	// visual
 	driftHistory: [],

@@ -47,11 +47,17 @@ let mapBodies = {
 			curMap.spawn.position = new vec(x, y);
 			curMap.spawn.angle = angle;
 		},
-		path: function({ x, y, vertices }) {
+		path: function({ vertices }) {
 			let { path } = curMap;
-			let pos = new vec(x, y);
 			for (let v of vertices) {
 				path.push((new vec(v)));
+			}
+		},
+		policeSpawns: function({ vertices }) {
+			for (let v of vertices) {
+				let pos = new vec(v);
+				curMap.policeSpawnPoints.push(pos);
+				policeSpawnPoints.addBody(pos);
 			}
 		},
 		tree: function({ x, y }) {
@@ -452,6 +458,7 @@ var curMap = {
 	objs: [],
 	path: [],
 	coins: [],
+	policeSpawnPoints: [],
 
 	jobStarts: [],
 	curJob: null,
@@ -509,6 +516,7 @@ function loadMap(map, name) {
 	}
 }
 function unloadMap() {
+	// Remove bodies from grids + world
 	for (let obj of curMap.objs) {
 		if (obj._SurfaceGrids) {
 			SurfaceGrid.removeBody(obj);
@@ -517,10 +525,15 @@ function unloadMap() {
 			obj.delete();
 		}
 	}
+	for (let obj of curMap.policeSpawnPoints) {
+		policeSpawnPoints.removeBody(obj);
+	}
+
 	// reset cur map
 	curMap.objs.length = 0;
 	curMap.path.length = 0;
 	curMap.coins.length = 0;
+	curMap.policeSpawnPoints.length = 0;
 	curMap.jobStarts.length = 0;
 	curMap.maxLapPercent = 0;
 	curMap.visual.walls.length = 0;
