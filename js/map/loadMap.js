@@ -549,7 +549,8 @@ function unloadMap() {
 	bestLapTime = Infinity;
 	driftScore = 0;
 	bestDriftScore = 0;
-	lastEnemySpawn = -20000;
+	lastEnemyDeaths.length = 0;
+	lastEnemySpawn = -25000;
 	car.health = car.maxHealth;
 	updateHealthUI()
 

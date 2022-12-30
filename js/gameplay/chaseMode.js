@@ -33,6 +33,7 @@ function renderJobArrows() {
 }
 
 
+let lastEnemyDeaths = [];
 let lastEnemySpawn = -25000;
 function spawnEnemies() {
 	if (modeName !== "chase") return;
@@ -40,8 +41,22 @@ function spawnEnemies() {
 
 	let now = Performance.aliveTime;
 	let percentComplete = curMap.jobsCompleted / Math.max(1, curMap.jobStarts.length);
-	let spawnTime = (1 - percentComplete) * 15000 + 6000;
+	let spawnTime = (1 - percentComplete) * 6000 + 3000;
 	let maxAlive = Math.floor(percentComplete * 5) + 1;
+
+	for (let i = 0; i < lastEnemyDeaths.length; i++) {
+		if (now - lastEnemyDeaths[i] >= spawnTime) {
+			lastEnemyDeaths.splice(i, 1);
+			i--;
+
+			for (let j = 0; j < lastEnemyDeaths.length; j++) {
+				if (now - lastEnemyDeaths[j] >= spawnTime - 1500) {
+					lastEnemyDeaths[j] = now - spawnTime + 1500;
+				}
+			}
+		}
+	}
+	maxAlive -= lastEnemyDeaths.length;
 
 	if (now - lastEnemySpawn < spawnTime) return;
 	if (Enemy.all.length >= maxAlive) return;
@@ -70,20 +85,19 @@ function spawnEnemies() {
 		}
 	}
 
+	let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
 	if (spawns.length > 0) {
 		let pos = spawns.choose();
 		let obj = Enemy(pos);
-		obj.setAngle(pos.sub(car.position).angle + Math.PI);
+		obj.setAngle(pos.sub(car.position).angle + carDir.dot(car.position.sub(pos)) > 0 ? Math.PI : Math.random() > 0.5 ? -Math.PI/2 : Math.PI/2);
 	}
 	else {
 		let timescale = 144 / Performance.fps;
 		let timescaleSqrt = Math.sqrt(timescale);
 	
-		let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
 		let velDotCar = car.velocity.normalize().dot(carDir) * timescaleSqrt;
 		let velDCS = velDotCar < 0 ? -1 : 1;
-	
-		lastEnemySpawn = now;
+		
 		let angleRange = Math.min(Math.PI*2, 4 / Math.pow(car.velocity.length, 0.3));
 		let dist = (Math.random() * 500 + 800) * velDCS;
 		let angle = Common.angleDiff(Math.random() * angleRange, angleRange / 2) + car.angle + Math.PI;
@@ -91,5 +105,6 @@ function spawnEnemies() {
 	
 		let obj = Enemy(pos);
 		obj.setAngle(pos.sub(car.position).angle + Math.PI);
+		lastEnemySpawn = now
 	}
 }

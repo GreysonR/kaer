@@ -7,7 +7,6 @@ class Grid {
 	constructor(size = 2000) {
 		this.gridSize = size;
 		this.id = Grid.id++;
-		console.log(this.id);
 	}
 	pair = function(pos) {
 		let x = pos.x >= 0 ? pos.x * 2 : pos.x * -2 - 1;

@@ -30,8 +30,12 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	hasTireSmoke: false,
 
 	// health
-	maxHealth: 6,
-	health:    6,
+	maxHealth: 12,
+	health:    12,
+	lastDamage: -5000,
+	damageCooldown: 500,
+	minDamageSpeed: 5,
+	damage: 4,
 
 	// visual
 	driftHistory: [],
@@ -52,29 +56,47 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 		sprite: "car",
 	}
 });
-car.on("collisionStart", event => {
-	// return;
-	if (event.bodyA.isCar || event.bodyB.isCar) {
-		let { bodyA, bodyB, normal } = event;
-		let normalA = new vec(Math.cos(bodyA.angle), Math.sin(bodyA.angle));
-		let normalB = new vec(Math.cos(bodyB.angle), Math.sin(bodyB.angle));
-		let normalDir = normalB.dot(event.normal);
-		let contactDir = normalA.dot(event.normal);
+car.on("collisionStart", carCollision);
+car.on("collisionActive", carCollision);
+function carCollision(event) {
+	if (modeName !== "chase") return;
 
-		if ((Math.abs(contactDir) < 0.5) && Math.abs(normalDir) > 0.5) { // bodyB is hitting bodyA
-			if (event.bodyA.health) {
-				event.bodyA.health--;
-				if (event.bodyA.health <= 0) {
-					event.bodyA.delete();
-				}
-				updateHealthUI();
-			}
-			else {
-				event.bodyA.delete();
-			}
+	let { bodyA, bodyB, contacts, normal, start } = event;
+	let otherBody = bodyA === car ? bodyB : bodyA;
+	let now = Performance.aliveTime;
+
+	if (!(otherBody.isCar || otherBody.isStatic) || otherBody.isSensor) return;
+	if (now - car.lastDamage < car.damageCooldown) return;
+
+	let avgContact = (() => {
+		let avg = new vec(0, 0);
+		for (let i = 0; i < contacts.length; i++) {
+			avg.add2(contacts[i].vertice);
 		}
+		avg.div2(contacts.length);
+
+		return avg;
+	})();
+
+	let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
+	let carDot = avgContact.sub(car.position).dot(carDir);
+	let inFront = carDot >= car.width / 2 - 20;
+
+	if (inFront && otherBody.isCar) return;
+
+	let speed = Math.abs(car.velocity.sub(otherBody.velocity).dot(normal));
+	let damage = speed <= car.minDamageSpeed ? 0 : Math.round((speed - car.minDamageSpeed) ** 0.5 * ((otherBody.damage ?? 1) * 0.7));
+	if (otherBody.isCar && now - start >= car.damageCooldown - 5) damage = Math.max(1, damage);
+
+	// if (inFront && otherBody.isCar) damage = Math.round(damage * 0.3);
+
+	car.lastDamage = now;
+	car.health = Math.max(0, car.health - damage);
+	if (car.health <= 0) {
+		car.delete();
 	}
-});
+	updateHealthUI();
+}
 
 /*
 // Render car rotation point
@@ -147,7 +169,7 @@ function updateCar() {
 		down *= 0.7;
 		maxSpeed *= 0.9;
 		acceleration *=  0.8;
-		turnSpeed *= 0.92;
+		turnSpeed *= 1;
 		slide = slide + (1 - slide) * 0.3;
 		driftAcceleration *= 0.5;
 	}

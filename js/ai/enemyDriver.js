@@ -46,6 +46,13 @@ function Enemy(position, options = {}) {
 		reverseTime: 0,
 		restition: 1,
 
+		maxHealth: 3,
+		health: 3,
+		lastDamage: -1000,
+		damageCooldown: 200,
+		minDamageSpeed: 5,
+		damage: 1,
+
 		render: {
 			background: "#FF9B26",
 			sprite: "policeCar",
@@ -63,6 +70,49 @@ function Enemy(position, options = {}) {
 	});
 	obj.sensor = sensor;
 
+	
+	obj.on("collisionStart", enemyCollision);
+	obj.on("collisionActive", enemyCollision);
+	function enemyCollision(event) {
+		let { bodyA, bodyB, contacts, normal, start } = event;
+		let otherBody = bodyA === obj ? bodyB : bodyA;
+		let now = Performance.aliveTime;
+
+		if (otherBody.isSensor) return;
+		if (now - obj.lastDamage < obj.damageCooldown) return;
+
+		let inFront = true;
+		if (otherBody === car) {
+			let avgContact = (() => {
+				let avg = new vec(0, 0);
+				for (let i = 0; i < contacts.length; i++) {
+					avg.add2(contacts[i].vertice);
+				}
+				avg.div2(contacts.length);
+	
+				return avg;
+			})();
+
+			let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
+			let carDot = avgContact.sub(car.position).dot(carDir);
+			let carCross = avgContact.sub(car.position).cross(carDir);
+			inFront = Math.abs(Common.angleDiff(obj.angle + Math.PI, car.angle)) < Math.PI * 0.2 && Math.abs(carCross) <= obj.height / 2 && carDot >= obj.width / 2 - 20;
+		}
+
+		if (inFront) { // enemy takes damage
+			let speed = Math.abs(obj.velocity.sub(otherBody.velocity).dot(normal));
+			let damage = speed <= obj.minDamageSpeed ? 0 : Math.round((speed - obj.minDamageSpeed) ** 0.5 * ((otherBody.damage ?? 1) * 0.3));
+			if (now - start >= obj.damageCooldown - 5 && otherBody === car) damage = Math.max(1, damage);
+
+			obj.lastDamage = now;
+			obj.health -= damage;
+			if (obj.health <= 0) {
+				obj.delete();
+				lastEnemyDeaths.push(now);
+			}
+		}
+	}
+
 	obj.on("delete", () => {
 		Enemy.all.delete(obj);
 		sensor.delete();
@@ -76,7 +126,8 @@ Enemy.all = [];
 Enemy.update = function(enemy) {
 	if (car.position.sub(enemy.position).length > 2500) {
 		enemy.delete();
-		lastEnemySpawn -= 8000;
+		lastEnemySpawn -= 5000;
+		lastEnemyDeaths.push(Performance.aliveTime - 5000);
 		return;
 	}
 	let timescale = 144 / Performance.fps;

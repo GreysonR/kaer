@@ -41,6 +41,7 @@ window.addEventListener("keydown", event => {
 	}
 	if (event.altKey && key === "v") {
 		Render.showVertices = !Render.showVertices;
+		Render.showCollisions = !Render.showCollisions;
 	}
 });
 window.addEventListener("keyup", event => {

@@ -523,7 +523,7 @@ var ter = {
 						contacts.push({ vertice: new vec(bodyA.position), body: bodyA });
 					}
 
-					if (Render.showCollisionPoints) {
+					if (Render.showCollisions) {
 						globalVectors.push({ position: normalPoint, vector: normal.inverse() });
 						globalPoints.push(...contacts.map(v => v.vertice));
 					}
@@ -543,9 +543,11 @@ var ter = {
 
 						id: pairId,
 						frame: Performance.frame,
+						start: Performance.aliveTime,
 					}
 
 					if (World.pairs[pairId]) { // Collision active
+						pair.start = World.pairs[pairId].start;
 						bodyA.trigger("collisionActive", pair);
 						bodyB.trigger("collisionActive", pair);
 					}
@@ -999,7 +1001,7 @@ var ter = {
 
 		
 		// - Broadphase
-		Render.showCollisionPoints = false;
+		Render.showCollisions = false;
 		Render.showBoundingBox = false;
 		Render.boundingBox = function() {
 			let allBodies = ter.World.bodies;

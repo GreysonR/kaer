@@ -108,7 +108,7 @@ canvas {
 /* chase ui */
 #healthWrapper {
 	position: absolute;
-	top:  40px;
+	top:  60px;
 	left: 50px;
 
 	width: 320px;
@@ -138,4 +138,7 @@ canvas {
 	font-size: 20px;
 	color: white;
 	text-align: center;
+
+	user-select: none;
+	-webkit-user-select: none;
 }
