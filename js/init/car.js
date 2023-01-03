@@ -35,7 +35,7 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	lastDamage: -5000,
 	damageCooldown: 500,
 	minDamageSpeed: 5,
-	damage: 4,
+	damage: 6,
 
 	// visual
 	driftHistory: [],

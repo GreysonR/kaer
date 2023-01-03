@@ -518,7 +518,7 @@ function loadMap(map, name) {
 function unloadMap() {
 	// Remove bodies from grids + world
 	for (let obj of curMap.objs) {
-		if (obj._SurfaceGrids) {
+		if (obj._Grids && obj._Grids[SurfaceGrid.id] !== undefined) {
 			SurfaceGrid.removeBody(obj);
 		}
 		else if (!obj.removed) {

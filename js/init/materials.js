@@ -14,13 +14,13 @@ let Materials = {
 		hasTireSmoke: true,
 	},
 	dirt: {
-		tireGrip: 0.5,
+		tireGrip: 0.6,
 		slide: 1.3,
 		turnSpeed: 1,
-		acceleration: 0.8,
+		acceleration: 1,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
-		driftAcceleration: 1.5,
+		driftAcceleration: 1.7,
 		hasTireSmoke: false,
 	},
 	grass: {
