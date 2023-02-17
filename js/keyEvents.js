@@ -43,6 +43,9 @@ window.addEventListener("keydown", event => {
 		Render.showVertices = !Render.showVertices;
 		Render.showCollisions = !Render.showCollisions;
 	}
+	if (event.altKey && key === "b") {
+		Render.showBroadphase = !Render.showBroadphase;
+	}
 });
 window.addEventListener("keyup", event => {
 	let key = event.key.toLowerCase();

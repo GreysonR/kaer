@@ -55,7 +55,7 @@ function Enemy(position, options = {}) {
 
 		render: {
 			background: "#FF9B26",
-			sprite: "policeCar",
+			sprite: "cars/policeCar",
 		}
 	}, options);
 

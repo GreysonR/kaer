@@ -1,6 +1,6 @@
 (function loadImg() {
-	Render.loadImg("car.png");
-	Render.loadImg("policeCar.png");
+	Render.loadImg("cars/car.png");
+	Render.loadImg("cars/policeCar.png");
 	
 	Render.loadImg("coin.png");
 	Render.loadImg("coinClaimed.png");

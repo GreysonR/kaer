@@ -117,7 +117,7 @@ var ter = {
 		timescale: 1,
 
 		bodies: [],
-		tree: new quadtree(),
+		tree: new Grid(),
 		constraints: [],
 		pairs: {},
 		
@@ -141,17 +141,17 @@ var ter = {
 						ter.World.tree.removeBody(bodyB);
 						continue;
 					}
-					if (!bodyB.hasCollisions)
+					if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic)
 						continue;
 
 
 					const boundsA = bodyA.bounds;
 					const boundsB = bodyB.bounds;
-					const AABBCollision = !(boundsA.min.x > boundsB.max.x ||
-											boundsA.max.x < boundsB.min.x ||
-											boundsA.min.y > boundsB.max.y ||
-											boundsA.max.y < boundsB.min.y);
-					if (AABBCollision) {
+					
+					if (boundsA.min.x <= boundsB.max.x &&
+						boundsA.max.x >= boundsB.min.x &&
+						boundsA.min.y <= boundsB.max.y &&
+						boundsA.max.y >= boundsB.min.y) {
 						pairs.push([ bodyA, bodyB ]);
 					}
 				}
@@ -160,45 +160,23 @@ var ter = {
 			return pairs;
 		},
 		get collisionPairs() {
-			let bodies = ter.World.tree.tree.nodes;
+			let grid = ter.World.tree;
+			let pair = ter.Common.pairCommon;
+			let getPairs = ter.World.getPairs;
 			let pairs = {};
 
-			function crawl(node) {
-				if (node.bodies.size > 1) {
-					if (node[0]) {
-						for (let i = 4; i--;) {
-							if (!node[i]) break;
-							if (node[i].bodies.size > 1) {
-								crawl(node[i]);
-							}
-						}
+			let buckets = grid.grid;
+			let bucketIds = grid.gridIds;
+
+			for (let id of bucketIds) {
+				let curPairs = getPairs(buckets[id]);
+
+				for (let j = 0; j < curPairs.length; j++) {
+					let curPair = curPairs[j];
+					let n = pair(curPair[0].id, curPair[1].id);
+					if (!pairs[n]) {
+						pairs[n] = curPair;
 					}
-					else {
-						let newPairs = ter.World.getPairs(Array.from(node.bodies));
-						for (let i = 0; i < newPairs.length; i++) {
-							let p = newPairs[i];
-							let id = ter.Common.pairCommon(p[0].id, p[1].id);
-							if (!pairs[id]) pairs[id] = p;
-						}
-					}
-				}
-			}
-			
-			let foundBody = false;
-			for (let id in bodies) {
-				if (!isNaN(Number(id))) {
-					if (bodies[id].bodies.size > 1) {
-						foundBody = true;
-						crawl(bodies[id]);
-					}
-				}
-			}
-			if (!foundBody) {
-				let newPairs = ter.World.getPairs(Array.from(bodies.bodies));
-				for (let i = 0; i < newPairs.length; i++) {
-					let p = newPairs[i];
-					let id = ter.Common.pairCommon(p[0].id, p[1].id);
-					if (!pairs[id]) pairs[id] = p;
 				}
 			}
 
@@ -770,29 +748,10 @@ var ter = {
 				Render.trigger("beforeLayer" + layerId);
 				for (let body of layer) {
 					const { position, vertices, render, bounds } = body;
-					const inView = !(bounds.max.x < camera.bounds.min.x || bounds.min.x > camera.bounds.max.x
-								 || bounds.max.y < camera.bounds.min.y || bounds.min.y > camera.bounds.max.y);
 					
-					if (render.visible && inView) {
+					if (render.visible === true && (bounds.max.x >= camera.bounds.min.x && bounds.min.x <= camera.bounds.max.x
+						&& bounds.max.y >= camera.bounds.min.y && bounds.min.y <= camera.bounds.max.y)) {
 						const { background, border, borderWidth, borderType, lineDash, bloom, opacity, sprite, round, } = render;
-						ctx.beginPath();
-						ctx.globalAlpha = opacity ?? 1;
-						ctx.lineWidth = borderWidth;
-						ctx.strokeStyle = border;
-						ctx.fillStyle = background;
-						ctx.lineJoin = borderType;
-	
-						if (bloom) {
-							ctx.shadowColor = border;
-							ctx.shadowBlur = bloom;
-						}
-			
-						if (lineDash) {
-							ctx.setLineDash(lineDash);
-						}
-						else {
-							ctx.setLineDash([]);
-						}
 	
 						if (sprite && Render.images[sprite]) { // sprite render
 							let { spriteX, spriteY, spriteWidth, spriteHeight } = render;
@@ -804,6 +763,24 @@ var ter = {
 							ctx.translate(-position.x, -position.y);
 
 							continue;
+						}
+
+						ctx.globalAlpha = opacity ?? 1;
+						ctx.lineWidth = borderWidth;
+						ctx.strokeStyle = border;
+						ctx.fillStyle = background;
+						ctx.lineJoin = borderType;
+
+						if (bloom) {
+							ctx.shadowColor = border;
+							ctx.shadowBlur = bloom * camera.scale;
+						}
+			
+						if (lineDash) {
+							ctx.setLineDash(lineDash);
+						}
+						else {
+							ctx.setLineDash([]);
 						}
 			
 						ctx.beginPath();
@@ -953,12 +930,13 @@ var ter = {
 
 		// - Images
 		Render.images = {};
+		Render.imgDir = "./img/";
 		Render.loadImg = function(name) {
 			let img = new Image();
-			img.src = "./img/" + name;
+			img.src = Render.imgDir + name;
 
 			img.onload = function() {
-				Render.images[name.split(".")[0]] = img;
+				Render.images[name] = img;
 			}
 		}
 
@@ -1060,34 +1038,21 @@ var ter = {
 		// - Quadtree
 		Render.showBroadphase = false;
 		Render.broadphase = function() {
-			let tree = ter.World.tree.tree;
-			ctx.lineWidth = 0.3;
-			ctx.strokeStyle = "#947849";
+			let tree = ter.World.tree;
+			let size = tree.gridSize;
+
+			ctx.lineWidth = 0.4;
+			ctx.strokeStyle = "#D0A356";
 			ctx.fillStyle = "#947849";
-			ctx.font = "20px Arial";
-			function renderNode(node, position, size, depth) {
-				Object.keys(node).forEach(childId => {
-					childId = Number(childId);
-					if (isNaN(childId)) return;
-		
-					// ctx.fillStyle = "#947849";
-					// ctx.strokeStyle = "#947849";
-
-					let pos = depth === 0 ? tree.unpairNeg(childId) : tree.unpair(childId);
-					let curPos = position.add(pos.mult(size));
-					ctx.strokeRect(curPos.x, curPos.y, size, size);
-					// ctx.globalAlpha = 0.015 * node.bodies.length;
-					// ctx.fillRect(curPos.x, curPos.y, size, size);
-					// ctx.globalAlpha = 1;
-
-					// ctx.fillStyle = "#ffffff80";
-					// let p2 = new vec(curPos);
-					// ctx.fillText(childId, p2.x + 10, p2.y + 10);
-		
-					renderNode(node[childId], curPos, size / 2, depth + 1);
-				});
-			}
-			renderNode(tree.nodes, new vec(0, 0), tree.nodeSize, 0);
+			
+			Object.keys(tree.grid).forEach(n => {
+				let node = tree.grid[n];
+				let pos = tree.unpair(n).mult(size);
+				ctx.strokeRect(pos.x, pos.y, size, size);
+				ctx.globalAlpha = 0.008 * node.length;
+				ctx.fillRect(pos.x, pos.y, size, size);
+				ctx.globalAlpha = 1;
+			});
 		}
 		
 		return Render;

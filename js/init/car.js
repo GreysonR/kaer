@@ -1,6 +1,8 @@
 "use strict";
 
-const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200, 200
+// const car = Bodies.rectangle(246*0.53, 118*0.53, new vec(0, 0), { // default
+// const car = Bodies.rectangle(195*0.58, 118*0.58, new vec(0, 0), { // fiat
+const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	angle: 0,
 	mass: 100,
 	
@@ -21,8 +23,9 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	turnSpeed: 0.9, // [0, Infinity] not recommended to be above 1.5
 
 	// drifting / sliding
-	tireGrip: 4, // [0.0001, Infinity]
-	slide: 0.08, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
+	tireGrip: 4.3, // [0.0001, Infinity] grip for car to before it's sliding
+	slidingGrip: 3.8, // [0.0001, tireGrip] grip for car while it's sliding
+	slide: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 	drifting: false,
 	driftAmount: 0,
 	driftAcceleration: 0.3, // [-1, 1] min amount of acceleration kept when drifting, could also be labeled "power"
@@ -53,7 +56,9 @@ const car = Bodies.rectangle(246*0.53, 111*0.53, new vec(3170, 4100), { // -200,
 	// render options
 	render: {
 		background: "#FF9B26",
-		sprite: "car",
+		// sprite: "cars/car.png",
+		// sprite: "cars/Fiat 124.png",
+		sprite: "cars/Ford Escort RS2000.png",
 	}
 });
 car.on("collisionStart", carCollision);
@@ -85,6 +90,7 @@ function carCollision(event) {
 	if (inFront && otherBody.isCar) return;
 
 	let speed = Math.abs(car.velocity.sub(otherBody.velocity).dot(normal));
+	if (otherBody.isStatic) speed *= 0.6;
 	let damage = speed <= car.minDamageSpeed ? 0 : Math.round((speed - car.minDamageSpeed) ** 0.5 * ((otherBody.damage ?? 1) * 0.7));
 	if (otherBody.isCar && now - start >= car.damageCooldown - 5) damage = Math.max(1, damage);
 
@@ -118,7 +124,7 @@ function updateCar() {
 	let timescaleSqrt = Math.sqrt(timescale);
 	let timescaleSqr = timescale * timescale;
 
-	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, drifting, driftAmount, driftAcceleration, slide, driftHistory } = car;
+	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, drifting, driftAmount, driftAcceleration, slide, driftHistory } = car;
 	let { rotationBounds, rotationSensitivity, rotationPoint} = car;
 
 	if (gamepad.connected) {
@@ -136,6 +142,10 @@ function updateCar() {
 				console.log(i, controller.buttons[i]);
 			}
 		}/** */
+	}
+
+	if (car.drifting) {
+		tireGrip = slidingGrip;
 	}
 	
 	// get material properties

@@ -3,6 +3,7 @@
 class Grid {
 	static id = 0;
 	grid = {};
+	gridIds = new Set();
 	gridSize = 2000;
 	constructor(size = 2000) {
 		this.gridSize = size;
@@ -29,7 +30,7 @@ class Grid {
 				max: body.bounds.max.div(size).floor2(),
 			}
 		}
-		else if (body.x && body.y) {
+		else if (body.x !== undefined && body.y !== undefined) {
 			let x = Math.floor(body.x / size);
 			let y = Math.floor(body.y / size);
 			return {
@@ -43,15 +44,18 @@ class Grid {
 		let bounds = this.getBounds(body);
 
 		if (!body._Grids) body._Grids = {};
-		if (!body._Grids[this.id]) body._Grids[this.id] = new Set();
+		if (!body._Grids[this.id]) body._Grids[this.id] = [];
 
 		for (let x = bounds.min.x; x <= bounds.max.x; x++) {
 			for (let y = bounds.min.y; y <= bounds.max.y; y++) {
 				let n = this.pair(new vec(x, y));
 
-				body._Grids[this.id].add(n);
-				if (!this.grid[n]) this.grid[n] = new Set();
-				this.grid[n].add(body);
+				body._Grids[this.id].push(n);
+				if (!this.grid[n]) {
+					this.grid[n] = [];
+					this.gridIds.add(n);
+				}
+				this.grid[n].push(body);
 			}
 		}
 	}
@@ -60,7 +64,43 @@ class Grid {
 			let node = this.grid[n];
 			
 			node.delete(body);
-			if (node.size === 0) delete this.grid[n];
+			if (node.length === 0) {
+				delete this.grid[n];
+				this.gridIds.delete(n);
+			}
 		}
 	};
+	updateBody = function(body) {
+		let curNodes = body._Grids[this.id];
+		let oldNodes = new Set(curNodes);
+		let bounds = this.getBounds(body);
+
+		for (let x = bounds.min.x; x <= bounds.max.x; x++) {
+			for (let y = bounds.min.y; y <= bounds.max.y; y++) {
+				let n = this.pair(new vec(x, y));
+
+				if (!oldNodes.has(n)) {
+					curNodes.push(n);
+					if (!this.grid[n]) {
+						this.grid[n] = [];
+						this.gridIds.add(n);
+					}
+					this.grid[n].push(body);
+				}
+				else {
+					oldNodes.delete(n);
+				}
+			}
+		}
+
+		for (let n of oldNodes) {
+			let node = this.grid[n];
+			curNodes.delete(n);
+			node.delete(body);
+			if (node.length === 0) {
+				delete this.grid[n];
+				this.gridIds.delete(n);
+			}
+		}
+	}
 }

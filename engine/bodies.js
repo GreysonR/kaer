@@ -26,14 +26,11 @@ class Body {
 		this.updateAxes();
 		this.updateInertia();
 
-		if (options.render.sprite) {
-			if (options.render.sprite.includes(".png")) {
-				if (!Render.images[options.render.sprite.replace(".png", "")]) {
-					Render.loadImg(options.render.sprite);
-				}
-				
-				options.render.sprite = options.render.sprite.replace(".png", "");
+		if (options.render.sprite && !Render.images[options.render.sprite]) {
+			if (options.render.sprite.indexOf(".") === -1) {
+				options.render.sprite += ".png";
 			}
+			Render.loadImg(options.render.sprite);
 		}
 
 		if (options.angle) {
