@@ -367,7 +367,7 @@ var ter = {
 			globalPoints = [];
 			Engine.testCollisions();
 			if (ter.Engine.basicSolver) {
-				Engine.solveVelocitiesBasic();
+				Engine.solveVelocityBasic();
 				Bodies.solvePositionsBasic();
 			}
 			else {
@@ -621,14 +621,14 @@ var ter = {
 				}
 			}
 		},
-		solveVelocitiesBasic: function() {
+		solveVelocityBasic: function() {
 			let { pairs } = ter.World;
 			
 			for (let i in pairs) {
 				let pair = pairs[i];
 				if (!pair || ter.Bodies.cleansePair(pair)) continue;
 
-				const { bodyA, bodyB, normal, tangent } = pair;
+				const { bodyA, bodyB, normal, tangent, contacts } = pair;
 				if (bodyA.isSensor || bodyB.isSensor) continue;
 				
 				// update body velocities
@@ -645,25 +645,60 @@ var ter = {
 				const relVel = bodyB.velocity.sub(bodyA.velocity);
 				const friction = Math.max(bodyA.friction, bodyB.friction);
 
-
 				if (relVel.dot(normal) < 0) {
 					continue;
 				}
-				
 
-				let impulse = normal.mult(normal.dot(relVel) * -restitution).sub2(tangent.abs().mult2(relVel).mult2(friction));
-				// if (bodyA.isStatic || bodyB.isStatic) impulse.mult2(1.5);
+				let impulse = new vec(0, 0);
+				let angImpulseA = 0;
+				let angImpulseB = 0;
+
 				let totalMass = bodyA.mass + bodyB.mass;
 				let shareA = (bodyB.mass / totalMass) || 0;
 				let shareB = (bodyA.mass / totalMass) || 0;
 				if (bodyA.isStatic) shareB = 1;
 				if (bodyB.isStatic) shareA = 1;
 
+				let numContacts = contacts.length;
+
+				for (let c = 0; c < numContacts; c++) {
+					const { vertice } = contacts[c];
+					const offsetA = vertice.sub(bodyA.position).sub(bodyA.velocity);
+					const offsetB = vertice.sub(bodyB.position).sub(bodyB.velocity);
+					const vpA = bodyA.velocity//.add(offsetA.normal().mult(-bodyA.angularVelocity));
+					const vpB = bodyB.velocity//.add(offsetB.normal().mult(-bodyB.angularVelocity));
+					const relativeVelocity = vpA.sub(vpB);
+					const normalVelocity = relativeVelocity.dot(normal);
+					const tangentVelocity = relativeVelocity.dot(tangent);
+
+					// if (normalVelocity > 0) continue;
+					
+					let normalImpulse = (restitution) * normalVelocity;
+
+					// friction
+					let tangentImpulse = tangentVelocity;
+
+					let curImpulse = normal.mult(normalImpulse).add2(tangent.mult(tangentImpulse * friction));
+					impulse.add2(curImpulse);
+					angImpulseA += offsetA.cross(curImpulse) * bodyA.inverseInertia;
+					angImpulseB += offsetB.cross(curImpulse) * bodyB.inverseInertia;
+				}
+
+				impulse.div2(numContacts);
+				angImpulseA /= numContacts;
+				angImpulseB /= numContacts;
+				
+
+				// let impulse = normal.mult(normal.dot(relVel) * -restitution).sub2(tangent.abs().mult2(relVel).mult2(friction));
+				// if (bodyA.isStatic || bodyB.isStatic) impulse.mult2(1.5);
+
 				if (!bodyA.isStatic) {
 					bodyA.last.position.add2(impulse.mult(shareA));
+					bodyA.last.angle += angImpulseA * shareA * 0.12 * relVel.length ** 0.7;
 				}
 				if (!bodyB.isStatic) {
 					bodyB.last.position.sub2(impulse.mult(shareB));
+					bodyB.last.angle -= angImpulseB * shareB * 0.12 * relVel.length ** 0.7;
 				}
 			}
 		},
