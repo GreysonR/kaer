@@ -36,6 +36,10 @@ var ter = {
 		update: function() {
 			let Performance = ter.Performance;
 			let curTime = performance.now();
+			if (curTime - Performance.lastUpdate === 0) {
+				return;
+			}
+
 			Performance.delta = Math.min(35, curTime - Performance.lastUpdate);
 			Performance.fps = 1000 / Performance.delta;
 			Performance.lastUpdate = curTime;
@@ -244,9 +248,17 @@ var ter = {
 			const timescale = delta / 16.667 * ter.World.timescale;
 			const timescaleSqrt = timescale ** 0.5;
 
+			if (isNaN(timescaleSqrt)) {
+				return;
+			}
+
 			let frictionAir = (1 - body.frictionAir) ** timescale;
 			let frictionAngular = (1 - body.frictionAngular) ** timescale;
 			let lastVelocity = body.position.sub(body.last.position);
+
+			if (lastVelocity.isNaN() || isNaN(frictionAir + frictionAngular)) {
+				return;
+			}
 			
 			body.force.add2(World.gravity.mult(body.mass * timescale));
 			body.velocity = lastVelocity.mult2(frictionAir).add2(body.force.div(body.mass)).mult2(timescaleSqrt);
@@ -318,7 +330,6 @@ var ter = {
 				let shareB = (bodyA.mass / totalMass) || 0;
 				if (bodyA.isStatic) shareB = 1;
 				if (bodyB.isStatic) shareA = 1;
-				// if (bodyA === car || bodyB === car) console.log(shareA, shareB, bodyA === car);
 				if (bodyA.isStatic || bodyB.isStatic) impulse.mult(2);
 
 				if (!bodyA.isStatic) {
@@ -610,6 +621,7 @@ var ter = {
 
 					// apply forces
 					const impulse = normal.mult(normalImpulse).add2(tangent.mult(tangentImpulse));
+					if (impulse.isNaN() || isNaN(offsetA.cross(impulse))) continue;
 					if (!bodyA.isStatic) {
 						bodyA.last.position.add2(impulse.mult(bodyA.inverseMass));
 						bodyA.last.angle += offsetA.cross(impulse) * bodyA.inverseInertia;
@@ -630,10 +642,6 @@ var ter = {
 
 				const { bodyA, bodyB, normal, tangent, contacts } = pair;
 				if (bodyA.isSensor || bodyB.isSensor) continue;
-				
-				// update body velocities
-				bodyA.velocity = bodyA.position.sub(bodyA.last.position);
-				bodyB.velocity = bodyB.position.sub(bodyB.last.position);
 
 				// update body velocities
 				bodyA.velocity = bodyA.position.sub(bodyA.last.position);
@@ -694,11 +702,11 @@ var ter = {
 
 				if (!bodyA.isStatic) {
 					bodyA.last.position.add2(impulse.mult(shareA));
-					bodyA.last.angle += angImpulseA * shareA * 0.12 * relVel.length ** 0.7;
+					bodyA.last.angle += angImpulseA * shareA * 0.15 * relVel.length ** 0.7;
 				}
 				if (!bodyB.isStatic) {
 					bodyB.last.position.sub2(impulse.mult(shareB));
-					bodyB.last.angle -= angImpulseB * shareB * 0.12 * relVel.length ** 0.7;
+					bodyB.last.angle -= angImpulseB * shareB * 0.15 * relVel.length ** 0.7;
 				}
 			}
 		},
@@ -787,7 +795,10 @@ var ter = {
 					if (render.visible === true && (bounds.max.x >= camera.bounds.min.x && bounds.min.x <= camera.bounds.max.x
 						&& bounds.max.y >= camera.bounds.min.y && bounds.min.y <= camera.bounds.max.y)) {
 						const { background, border, borderWidth, borderType, lineDash, bloom, opacity, sprite, round, } = render;
-	
+							
+						if (sprite && !Render.images[sprite]) {
+							Render.loadImg(sprite);
+						}
 						if (sprite && Render.images[sprite]) { // sprite render
 							let { spriteX, spriteY, spriteWidth, spriteHeight } = render;
 	

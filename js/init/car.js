@@ -11,10 +11,11 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	rotationPoint: new vec(-40, 0),
 
 	// don't change these it won't do anything
-	friction: 0.085,
 	frictionAir: 0,
 	frictionAngular: 0,
-	restitution: 0.2, // except this
+
+	friction: 0.05, // these will do something
+	restitution: 0.1,
 
 	// car basic stats
 	maxSpeed: 14, // [0, Infinity]
@@ -124,6 +125,10 @@ function updateCar() {
 	let timescaleSqrt = Math.sqrt(timescale);
 	let timescaleSqr = timescale * timescale;
 
+	if (isNaN(timescaleSqrt)) {
+		return;
+	}
+
 	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, drifting, driftAmount, driftAcceleration, slide, driftHistory } = car;
 	let { rotationBounds, rotationSensitivity, rotationPoint} = car;
 
@@ -152,7 +157,7 @@ function updateCar() {
 	let material = getCarMaterial();
 	if (!material) material = "grass";
 	let materialProps = Materials[material];
-	tireGrip *= materialProps.tireGrip ?? 1;
+	tireGrip *= (car.drifting ? (materialProps.slidingGrip ?? materialProps.tireGrip) : materialProps.tireGrip) ?? 1;
 	slide *= materialProps.slide ?? 1;
 	turnSpeed *= materialProps.turnSpeed ?? 1;
 	acceleration *= materialProps.acceleration ?? 1;
@@ -279,6 +284,7 @@ function updateCar() {
 	addAngle *= 0.5;
 	car.applyForce(addVel.mult(timescaleSqrt));
 	car.applyTorque(addAngle * timescaleSqrt);
+
 	let torque = car.angle - car.last.angle;
 	maxSpeed *= timescaleSqrt;
 	if (speed > maxSpeed) {

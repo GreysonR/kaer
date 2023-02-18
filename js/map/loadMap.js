@@ -296,6 +296,7 @@ let mapBodies = {
 }
 let timedTracks = {};
 let chaseTracks = {};
+let rallyTracks = {};
 let allMaps = {
 	track1: {
 		objs: [
@@ -412,10 +413,8 @@ let allMaps = {
 			},
 		]
 	},
-	chase2: {
-		objs: [
-		]
-	},
+	chase2: { objs: [] },
+	rally1: { objs: [] },
 }
 
 // load chase 2 objs
@@ -445,6 +444,32 @@ for (let x = 0; x < 7; x++) {
 			}
 		)
 	}
+}
+// load rally 1 objs
+for (let y = 0; y < 5; y++) {
+	let w = 12640;
+	let h = 2500;
+	// background
+	allMaps.rally1.objs.push(
+		{
+			sprite: `rally1/background-${y}.png`,
+			width:  w,
+			height: h,
+			position: new vec(w/2, (h - 0.4) * y + h/2),
+			layer: -4,
+		}
+	)
+	
+	// foreground
+	// allMaps.chase2.objs.push(
+	// 	{
+	// 		sprite: `chase2/foreground-${y}-${y}.png`,
+	// 		width:  w,
+	// 		height: h,
+	// 		position: new vec((w - 0.4) * y + w/2, (h - 0.4) * y + h/2),
+	// 		layer: 2,
+	// 	}
+	// )
 }
 
 var curMap = {

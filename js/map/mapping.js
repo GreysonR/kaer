@@ -41,6 +41,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		
 		let out = {
 			env: {
+				objs: [],
 			},
 		}
 		

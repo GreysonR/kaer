@@ -15,12 +15,8 @@ function closeHome() {
 }
 function selectMode(newMode) {
 	document.getElementById("modeSelect").classList.remove("active");
-	if (newMode === "chase") {
-		document.getElementById("chaseSelect").classList.add("active");
-	}
-	else {
-		document.getElementById("trackSelect").classList.add("active");
-	}
+	let modeId = newMode === "time" || newMode === "drift" ? "track" : newMode;
+	document.getElementById(modeId + "Select").classList.add("active");
 
 	modeName = newMode;
 }
@@ -53,7 +49,14 @@ function selectTrack(newTrack) {
 	if (newTrack.includes("chase")) {
 		loadMap(chaseTracks[newTrack], trackName);
 	}
+	else if (newTrack.includes("rally")) {
+		generateMap();
+	}
 	else {
 		loadMap(timedTracks[newTrack], trackName);
 	}
 }
+
+window.addEventListener("load", () => {
+	// selectTrack("rally");
+});

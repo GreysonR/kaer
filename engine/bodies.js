@@ -251,6 +251,7 @@ class Body {
 		this.axes = axes;
 	}
 	setAngle(angle) {
+		if (isNaN(angle)) return;
 		if (angle !== this.last.angle) {
 			let vertices = this.vertices;
 			let position = this.position;
@@ -278,6 +279,7 @@ class Body {
 		return this;
 	}
 	translateAngle(angle, silent = false) {
+			if (isNaN(angle)) return;
 			let vertices = this.vertices;
 			let position = this.position;
 			let rotationPoint = this.rotationPoint.rotate(this.angle + angle);
@@ -304,6 +306,7 @@ class Body {
 		return this;
 	}
 	setPosition(position, silent = false) {
+		if (position.isNaN()) return;
 		let last = this.position;
 		if (position.x !== last.x || position.y !== last.y) {
 			let delta = position.sub(last);
@@ -324,6 +327,7 @@ class Body {
 		}
 	}
 	translate(delta, silent = false) {
+		if (delta.isNaN()) return;
 		let vertices = this.vertices;
 		for (let i = 0; i < vertices.length; i++) {
 			vertices[i].add2(delta);
@@ -362,6 +366,7 @@ class Body {
 		return true;
 	}
 	applyForce(force) {
+		if (force.isNaN()) return;
 		let { Performance: timing, World } = ter;
 		const timescale = World.timescale * (timing.delta / 16.667);
 		if (this.isStatic) return this;
@@ -372,6 +377,7 @@ class Body {
 		return this;
 	}
 	applyTorque(force) {
+		if (isNaN(force)) return;
 		this.last.angle -= force;
 		return this;
 	}

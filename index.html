@@ -51,6 +51,9 @@
 			<div class="mode" onclick="selectMode('chase')">
 				<span>Chase</span>
 			</div>
+			<!-- <div class="mode" onclick="selectMode('rally')">
+				<span>Rally</span>
+			</div> -->
 		</div>
 		<div id="trackSelect" class="trackSelect">
 			<div class="track" onclick="selectTrack('track1')">
@@ -68,6 +71,11 @@
 				<span>Chase 1</span>
 			</div>
 		</div>
+		<div id="rallySelect" class="trackSelect">
+			<div class="track" onclick="selectTrack('rally1')">
+				<span>Rally 1</span>
+			</div>
+		</div>
 	</div>
 </body>
 <!-- engine -->
@@ -75,6 +83,7 @@
 <script src="./engine/animations.js"></script>
 <script src="./engine/vec.js"></script>
 <script src="./engine/quadtree.js"></script>
+<script src="./engine/bezier.js"></script>
 <script src="./engine/grid.js"></script>
 <script src="./engine/bodies.js"></script>
 <script src="./engine/ter.js"></script>
@@ -93,6 +102,7 @@
 <!-- map -->
 <script src="./js/map/svg-path-properties.min.js"></script>
 <script src="./js/map/loadMap.js"></script>
+<script src="./js/map/generateMap.js"></script>
 <script src="./js/map/mapping.js"></script>
 <script src="./js/map/getPath.js"></script>
 
@@ -104,6 +114,8 @@
 
 <script src="./js/map/data/chase1.js"></script>
 <script src="./js/map/data/chase2.js"></script>
+
+<script src="./js/map/data/rally1.js"></script>
 
 <!-- visuals -->
 <script src="./js/vis/skid.js"></script>
