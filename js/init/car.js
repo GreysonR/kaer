@@ -90,7 +90,7 @@ function carCollision(event) {
 
 	if (inFront && otherBody.isCar) return;
 
-	let speed = Math.abs(car.velocity.sub(otherBody.velocity).dot(normal));
+	let speed = Math.abs(car.velocity.sub(otherBody.velocity).dot(normal)) * Math.sqrt(Performance.fps / 144);
 	if (otherBody.isStatic) speed *= 0.6;
 	let damage = speed <= car.minDamageSpeed ? 0 : Math.round((speed - car.minDamageSpeed) ** 0.5 * ((otherBody.damage ?? 1) * 0.7));
 	if (otherBody.isCar && now - start >= car.damageCooldown - 5) damage = Math.max(1, damage);
