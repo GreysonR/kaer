@@ -32,19 +32,22 @@ window.addEventListener("keydown", event => {
 		}
 	}
 
-	if (event.altKey && key === "q") {
+	if (event.altKey && key === "q") { // toggle map file input
 		document.getElementById("mapInput").classList.toggle("active");
 		document.getElementById("pathInput").classList.toggle("active");
 	}
-	if (event.altKey && key === "p") {
+	if (event.altKey && key === "p") { // toggle performance render
 		Performance.enabled = !Performance.enabled;
 	}
-	if (event.altKey && key === "v") {
+	if (event.altKey && key === "v") { // toggle vertice render
 		Render.showVertices = !Render.showVertices;
 		Render.showCollisions = !Render.showCollisions;
 	}
-	if (event.altKey && key === "b") {
+	if (event.altKey && key === "b") { // toggle broadphase render
 		Render.showBroadphase = !Render.showBroadphase;
+	}
+	if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing)
+		ctx.imageSmoothingEnabled = !ctx.imageSmoothingEnabled;
 	}
 });
 window.addEventListener("keyup", event => {

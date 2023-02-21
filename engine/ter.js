@@ -1064,20 +1064,19 @@ var ter = {
 				let body = allBodies[i];
 				renderVertices(body.vertices);
 			}
-			ctx.lineWidth = 3;
+			ctx.lineWidth = 2 / this.camera.scale;
 			ctx.strokeStyle = "#FF832A";
 			ctx.stroke();
 		}
 		Render.showCenters = false;
 		Render.allCenters = function() {
-			ctx.lineWidth = 3;
-			ctx.strokeStyle = "#FF832A";
+			ctx.fillStyle = "#FF832A";
 			let allBodies = ter.World.bodies;
 			for (let i = 0; i < allBodies.length; i++) {
 				let body = allBodies[i];
 				ctx.beginPath();
-				ctx.arc(body.position.x, body.position.y, 2, 0, Math.PI*2);
-				ctx.stroke();
+				ctx.arc(body.position.x, body.position.y, 2 / this.camera.scale, 0, Math.PI*2);
+				ctx.fill();
 			}
 		}
 

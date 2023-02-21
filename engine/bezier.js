@@ -36,7 +36,7 @@ class Bezier {
 	get(d) {
 		return this.getAtT(d / this.length);
 	}
-	getDxAtT(t) {
+	getDxAtT(t) { // 1st derivative
 		let x = 3 * ((this.d.x - 3*this.c.x + 3*this.b.x - this.a.x) * t ** 2 + (2*this.c.x - 4*this.b.x + 2*this.a.x) * t + this.b.x - this.a.x);
 		let y = 3 * ((this.d.y - 3*this.c.y + 3*this.b.y - this.a.y) * t ** 2 + (2*this.c.y - 4*this.b.y + 2*this.a.y) * t + this.b.y - this.a.y);
 
@@ -44,5 +44,49 @@ class Bezier {
 	}
 	getDx(d) {
 		return this.getDxAtT(d / this.length);
+	}
+	getDx2AtT(t) { // 2nd derivative
+		let x = 6 * ((this.d.x - 3*this.c.x + 3*this.b.x - this.a.x) * t + this.c.x - 2*this.b.x + this.a.x);
+		let y = 6 * ((this.d.y - 3*this.c.y + 3*this.b.y - this.a.y) * t + this.c.y - 2*this.b.y + this.a.y);
+
+		return new vec(x, y);
+	}
+	getDx2(d) {
+		return this.getDx2AtT(d / this.length);
+	}
+
+	render() {
+		ctx.beginPath();
+		for (let t = 0; t < this.length; t += 10) {
+			let pt = this.get(t);
+
+			if (t === 0) {
+				ctx.moveTo(pt.x, pt.y);
+			}
+			else {
+				ctx.lineTo(pt.x, pt.y);
+			}
+		}
+		ctx.strokeStyle = "#ff0000";
+		ctx.lineWidth = 1 / camera.scale;
+		ctx.stroke();
+	}
+	renderDx() {
+		ctx.strokeStyle = "#000000";
+		ctx.lineWidth = 1 / camera.scale;
+
+
+		for (let t = 10; t < this.length; t += 10) {
+			let pt = this.get(t);
+			let lastPt = this.get(t - 10);
+
+			ctx.lineWidth = this.getDx(t).length ** 2 * 0.0001 / camera.scale;
+
+			ctx.beginPath();
+			ctx.moveTo(lastPt.x, lastPt.y);
+			ctx.lineTo(pt.x, pt.y);
+			ctx.stroke();
+
+		}
 	}
 }

@@ -51,6 +51,8 @@ function selectTrack(newTrack) {
 	}
 	else if (newTrack.includes("rally")) {
 		generateMap();
+		modeName = "rally";
+		trackName = "rally";
 	}
 	else {
 		loadMap(timedTracks[newTrack], trackName);

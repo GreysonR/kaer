@@ -91,6 +91,26 @@ class vec {
 			return this;
 		}
 	}
+	pow(vec2) {
+		if (typeof vec2 === "number") {
+			return new vec(this.x ** vec2, this.y ** vec2);
+		}
+		else {
+			return new vec(this.x ** vec2.x, this.y ** vec2.y);
+		}
+	}
+	pow2(vec2) {
+		if (typeof vec2 === "number") {
+			this.x = this.x ** vec2;
+			this.y = this.y ** vec2;
+			return this;
+		}
+		else {
+			this.x = this.x ** vec2.x;
+			this.y = this.y ** vec2.y;
+			return this;
+		}
+	}
 	mod(vec2) {
 		if (typeof vec2 === "number")
 			return new vec(this.x % vec2, this.y % vec2);
