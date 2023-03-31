@@ -429,7 +429,7 @@ Render.on("afterRender", () => {
 
 let lastFov = [];
 let lastPos = [];
-let baseFov = 2100;
+let baseFov = 2400;
 Render.on("beforeLayer0", () => {
 	let g = 0.1; // higher g = fov more sensitive to speed changes
 	let carUp = new vec(Math.cos(car.angle), Math.sin(car.angle));

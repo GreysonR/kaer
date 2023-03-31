@@ -32,14 +32,6 @@ window.addEventListener("keydown", event => {
 		}
 	}
 
-	if (key === "e") {
-		if (baseFov > 3000) {
-			baseFov = 2800;
-		}
-		else {
-			baseFov = 13000;
-		}
-	}
 	if (key === " ") {
 		// path.getNext();
 	}

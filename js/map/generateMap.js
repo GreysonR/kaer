@@ -819,8 +819,3 @@ class Path {
 }
 
 // new Path(new vec(200, 10), new vec(0.7071, 0.7071));
-
-
-
-baseFov = 3000;
-// Render.showVertices = true;
