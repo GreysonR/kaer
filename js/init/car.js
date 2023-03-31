@@ -4,32 +4,35 @@
 // const car = Bodies.rectangle(195*0.58, 118*0.58, new vec(0, 0), { // fiat
 const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	angle: 0,
-	mass: 100,
+	mass: 3,
 	
 	rotationBounds: [-40, 0],
-	rotationSensitivity: 0.5,
+	rotationSensitivity: 0.2,
 	rotationPoint: new vec(-40, 0),
 
 	// don't change these it won't do anything
 	frictionAir: 0,
 	frictionAngular: 0,
+	last: {
+		angle: 0,
+	},
 
 	friction: 0.05, // these will do something
 	restitution: 0.1,
 
 	// car basic stats
-	maxSpeed: 14, // [0, Infinity]
-	maxReverseSpeed: 7, // [0, Infinity]
-	acceleration: 2, // [0, Infinity]
-	turnSpeed: 0.9, // [0, Infinity] not recommended to be above 1.5
+	maxSpeed: 20, // [0, Infinity]
+	maxReverseSpeed: 12, // [0, Infinity]
+	acceleration: 3.4, // [0, Infinity]
+	turnSpeed: 3.9, // [0, Infinity]
 
 	// drifting / sliding
-	tireGrip: 4.3, // [0.0001, Infinity] grip for car to before it's sliding
-	slidingGrip: 3.8, // [0.0001, tireGrip] grip for car while it's sliding
+	tireGrip: 6, // [0.0001, Infinity] grip for car to before it's sliding
+	slidingGrip: 5, // [0.0001, tireGrip] grip for car while it's sliding
 	slide: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 	drifting: false,
 	driftAmount: 0,
-	driftAcceleration: 0.3, // [-1, 1] min amount of acceleration kept when drifting, could also be labeled "power"
+	driftAcceleration: 0.2, // [-1, 1] min amount of acceleration kept when drifting, could also be labeled "power"
 	hasTireSkid: false,
 	hasTireSmoke: false,
 
@@ -56,6 +59,7 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 
 	// render options
 	render: {
+		layer: 1,
 		background: "#FF9B26",
 		// sprite: "cars/car.png",
 		// sprite: "cars/Fiat 124.png",
@@ -121,7 +125,7 @@ camera.position = car.position;
 camera.fov = 1800;
 
 function updateCar() {
-	let timescale = 144 / Performance.fps;
+	let timescale = Engine.delta;
 	let timescaleSqrt = Math.sqrt(timescale);
 	let timescaleSqr = timescale * timescale;
 
@@ -169,12 +173,12 @@ function updateCar() {
 	let carNorm = carDir.normal();
 	let addVel = new vec(0, 0);
 	let addAngle = 0;
-	let velDotCar = velocity.normalize().dot(carDir) * timescaleSqrt;
+	let velDotCar = velocity.normalize().dot(carDir);
 	let velDCS = velDotCar < 0 ? -1 : 1;
 	let velDC2 = Math.abs(velDotCar) * velDCS;
 
-	velocity = velocity.mult(timescaleSqrt);
-	driftAmount *= timescaleSqrt;
+	// velocity = velocity.mult(timescaleSqrt);
+	// driftAmount *= timescaleSqrt;
 	
 
 	// ~ handbrake
@@ -196,7 +200,7 @@ function updateCar() {
 	if (Math.abs(normVel) > maxGrip) { // ~ drifting
 		grip = Math.max(maxGrip, Math.abs(normVel) * 0.4 * tireGrip);
 	}
-	if (Math.abs(normVel) > maxGrip * 10 * timescale) {
+	if (Math.abs(normVel) > maxGrip * 10) {
 		car.drifting = true;
 	}
 	else {
@@ -209,23 +213,23 @@ function updateCar() {
 
 	// ~ gas
 	if (up) {
-		let acc = (0.15 + (drifting ? (driftAcceleration + (1 - driftAcceleration) / (Math.abs(driftAmount) * timescale ** 1.8)) * 0.2 : 0)) * up;
-		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.sqrt(tireGrip))));
+		let acc = (0.15 + (drifting ? (driftAcceleration + (1 - driftAcceleration) / (Math.abs(driftAmount) ** 2)) * 0.2 : 0)) * up;
+		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.pow(tireGrip, 0.5))));
 	}
 	// ~ brake
 	if (down) {
 		if (carDir.dot(velocity) > 0.5) { // ~ brake
-			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.08 * down * gripPercent));
+			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.14 * down * gripPercent));
 		}
 		else { // ~ drive backwards
-			addVel.sub2(carDir.mult(0.15));
+			addVel.sub2(carDir.mult(0.4));
 			maxSpeed = maxReverseSpeed;
 		}
 	}
 
 	// ~ turn
-	let maxTurnAmt = turnSpeed * 0.03 * timescale;
-	let turnAmt = Math.min(maxTurnAmt * 0.09, (Math.abs(velocity.dot(carDir)) / 20 + velocity.length / 30 / timescale ** 8) * maxTurnAmt * 0.09);
+	let maxTurnAmt = turnSpeed * 0.04;
+	let turnAmt = Math.min(maxTurnAmt * 0.09, (Math.abs(velocity.dot(carDir)) / 30 + velocity.length / 40) * maxTurnAmt * 0.09);
 	if (left) {
 		addAngle -= turnAmt * velDC2 * left;
 	}
@@ -237,7 +241,6 @@ function updateCar() {
 	let speed = car.velocity.length;
 	if (handbrake) {
 		car.frictionAir = 0.015;
-		car.frictionAngular = 0.02;
 	}
 	else if (!(up || down)) {
 		if (speed > 0.5) {
@@ -256,7 +259,6 @@ function updateCar() {
 		car.frictionAir = 0.002;
 	}
 
-	slide /= timescale ** 2;
 	let gripRatio = ((1 - slide) + Math.max(1, Math.abs(grip / maxGrip) ** 0.5) * slide);
 	/*
 	if (!handbrake) {
@@ -268,7 +270,7 @@ function updateCar() {
 			car.frictionAngular = 0.5;
 		}
 	}*/
-	car.frictionAngular = 0.085 / gripRatio;
+	car.frictionAngular = 0.1 / gripRatio;
 	addAngle /= gripRatio;
 
 	
@@ -282,11 +284,10 @@ function updateCar() {
 
 	
 	addAngle *= 0.5;
-	car.applyForce(addVel.mult(timescaleSqrt));
-	car.applyTorque(addAngle * timescaleSqrt);
+	car.applyForce(addVel);
+	car.applyTorque(addAngle);
 
-	let torque = car.angle - car.last.angle;
-	maxSpeed *= timescaleSqrt;
+	let torque = car.torque;
 	if (speed > maxSpeed) {
 		car.applyForce(car.velocity.mult(maxSpeed / speed - 1));
 	}
@@ -295,12 +296,12 @@ function updateCar() {
 	}
 
 	// - Scoring
-	if (Math.abs(normVel) > maxGrip * 15 * timescale && Math.abs(Common.modDiff(curMap.completePercent, curMap.maxLapPercent, 1)) <= 0.01) {
+	if (Math.abs(normVel) > maxGrip * 15 && Math.abs(Common.modDiff(curMap.completePercent, curMap.maxLapPercent, 1)) <= 0.01) {
 		driftScore += Math.abs(Common.angleDiff(car.velocity.angle, car.angle)) * (car.velocity.length / 10) ** 3 / 8;
 	}
 
 	// - Visuals 
-	driftHistory.unshift(Math.abs(normVel) / timescale);
+	driftHistory.unshift(Math.abs(normVel));
 	let avgDrift = driftHistory.reduce((t, c) => t + c) / driftHistory.length;
 
 	let maxDriftHistLen = Math.max(1, Math.round(20 / timescale));
@@ -384,6 +385,8 @@ function updateCar() {
 			s.setPath(verts);
 		}
 	}
+
+	car.last.angle = car.angle;
 }
 function getCarMaterial() {
 	let point = car.position.add(new vec(-30, 0).rotate(car.angle));
@@ -414,16 +417,24 @@ function getCarMaterial() {
 	return "grass";
 }
 
+/*
+// Render car rotation point
+Render.on("afterRender", () => {
+	ctx.beginPath();
+	let pos = car.position.add(car.rotationPoint.rotate(car.angle));
+	ctx.arc(pos.x, pos.y, 7, 0, Math.PI*2);
+	ctx.fillStyle = "red";
+	ctx.fill();
+});/**/
+
 let lastFov = [];
 let lastPos = [];
 let baseFov = 2100;
 Render.on("beforeLayer0", () => {
-	let g = 0.3; // higher g = fov more sensitive to speed changes
+	let g = 0.1; // higher g = fov more sensitive to speed changes
 	let carUp = new vec(Math.cos(car.angle), Math.sin(car.angle));
-	let fps = Performance.history.fps.reduce((t, v) => t + v, 60) / Performance.history.fps.length;
-	let timescale = 144 / fps;
 	
-	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*car.velocity.length / timescale)) / g)) ** 10 * 1800;
+	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*car.velocity.length)) / g)) ** 4 * 1800;
 	lastFov.unshift(curFov);
 	let maxFovLen = Math.max(1, Math.round(Performance.fps * 0.5));
 	if (lastFov.length > maxFovLen) {
@@ -434,7 +445,7 @@ Render.on("beforeLayer0", () => {
 	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
 	camera.fov = avgFov;
 
-	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity.div(timescale ** 0.5)) * 9));
+	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 8));
 	lastPos.unshift(curPos);
 	let maxPosLen = Math.max(1, Math.round(Performance.fps * 0.1));
 	if (lastPos.length > maxPosLen) {

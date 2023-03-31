@@ -1,8 +1,14 @@
 class vec {
 	constructor(x, y) {
 		if (typeof x === "object") {
-			this.x = x.x;
-			this.y = x.y;
+			if (Array.isArray(x)) {
+				this.x = x[0];
+				this.y = x[1];
+			}
+			else {
+				this.x = x.x;
+				this.y = x.y;
+			}
 		}
 		else {
 			this.x = x;
@@ -111,6 +117,14 @@ class vec {
 			return this;
 		}
 	}
+	sign() {
+		return new vec(Math.sign(this.x), Math.sign(this.y));
+	}
+	sign2() {
+		this.x = Math.sign(this.x);
+		this.y = Math.sign(this.y);
+		return this;
+	}
 	mod(vec2) {
 		if (typeof vec2 === "number")
 			return new vec(this.x % vec2, this.y % vec2);
@@ -138,7 +152,14 @@ class vec {
 		return new vec(this.x * weight + vec2.x * weight2, this.y * weight + vec2.y * weight2);
 	}
 	get length() {
-		return Math.sqrt(this.x ** 2 + this.y ** 2);
+		return Math.sqrt(this.x * this.x + this.y * this.y);
+	}
+	set length(len) {
+		let scale = len / this.length;
+		this.x *= scale;
+		this.y *= scale;
+
+		return this;
 	}
 	get angle() {
 		return Math.atan2(this.y, this.x);
@@ -157,6 +178,15 @@ class vec {
 		this.y = Math.abs(this.y);
 		return this;
 	}
+	reflect(vec2) { // vec2 must be normalized
+		// Vect2 = Vect1 - 2 * WallN * (WallN DOT Vect1)
+		let v2 = vec2.normal();
+		return this.sub(v2.mult(v2.dot(this) * 2));
+	}
+	reflect2(vec2) { // vec2 must be normalized
+		let v2 = vec2.normal();
+		return this.sub2(v2.mult(v2.dot(this) * 2));
+	}
 	rotate(angle) {
 		return new vec(Math.cos(angle) * this.x - Math.sin(angle) * this.y, Math.sin(angle) * this.x + Math.cos(angle) * this.y);
 	}
@@ -164,6 +194,29 @@ class vec {
 		let x = Math.cos(angle) * this.x - Math.sin(angle) * this.y;
 		this.y = Math.sin(angle) * this.x + Math.cos(angle) * this.y;
 		this.x = x;
+		return this;
+	}
+	project(vec2, bound = false) { // projects this vector onto the other one
+		let d1 = this.dot(vec2);
+		let d2 = vec2.x * vec2.x + vec2.y * vec2.y;
+
+		if (bound) {
+			d1 = Math.max(0, Math.min(d2, d1));
+		}
+
+		return new vec(d1 * vec2.x / d2, d1 * vec2.y / d2);
+	}
+	project2(vec2, bound = false) { // projects this vector onto the other one
+		let d1 = this.dot(vec2);
+		let d2 = vec2.x * vec2.x + vec2.y * vec2.y;
+
+		if (bound) {
+			d1 = Math.max(0, Math.min(d2, d1));
+		}
+
+		this.x = d1 * vec2.x / d2;
+		this.y = d1 * vec2.y / d2;
+
 		return this;
 	}
 	normalize() {
@@ -178,21 +231,13 @@ class vec {
 		this.y /= len;
 		return this;
 	}
-	normal() {
+	normal() { // left hand normal
 		return new vec(this.y, -this.x);
 	}
-	normal2() {
+	normal2() { // left hand normal
 		let y = this.y;
 		this.y = -this.x;
 		this.x = y;
-		return this;
-	}
-	inverse() {
-		return new vec(-this.x, -this.y);
-	}
-	inverse2() {
-		this.x *= -1;
-		this.y *= -1;
 		return this;
 	}
 	floor() {
@@ -217,6 +262,22 @@ class vec {
 	round2() {
 		this.x = Math.round(this.x);
 		this.y = Math.round(this.y);
+		return this;
+	}
+	min(vec2) {
+		return new vec(Math.min(vec2.x, this.x), Math.min(vec2.y, this.y));
+	}
+	min2(vec2) {
+		this.x = Math.min(this.x, vec2.x);
+		this.y = Math.min(this.y, vec2.y);
+		return this;
+	}
+	max(vec2) {
+		return new vec(Math.max(vec2.x, this.x), Math.max(vec2.y, this.y));
+	}
+	max2(vec2) {
+		this.x = Math.max(this.x, vec2.x);
+		this.y = Math.max(this.y, vec2.y);
 		return this;
 	}
 	clamp(min, max) {

@@ -618,6 +618,9 @@ function resetCar() {
 		let { position, angle } = curMap.spawn;
 		car.setAngle(angle);
 		car.setPosition(new vec(position));
+
+		car.angularVelocity = 0;
+		car.velocity.set({x: 0, y: 0});
 		
 		laps = 0;
 		raceStarted = false;

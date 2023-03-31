@@ -60,5 +60,7 @@ function selectTrack(newTrack) {
 }
 
 window.addEventListener("load", () => {
-	// selectTrack("rally");
+	// selectTrack("chase2");
+	// modeName = "chase";
+	// trackName = "chase2";
 });

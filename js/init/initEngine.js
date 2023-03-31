@@ -70,7 +70,7 @@ function main() {
 		// Performance.render();
 
 		// - run animations
-		animation.run();
+		easings.run();
 	}
 
 	requestAnimationFrame(main);

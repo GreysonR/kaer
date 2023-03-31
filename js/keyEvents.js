@@ -32,6 +32,18 @@ window.addEventListener("keydown", event => {
 		}
 	}
 
+	if (key === "e") {
+		if (baseFov > 3000) {
+			baseFov = 2800;
+		}
+		else {
+			baseFov = 13000;
+		}
+	}
+	if (key === " ") {
+		// path.getNext();
+	}
+
 	if (event.altKey && key === "q") { // toggle map file input
 		document.getElementById("mapInput").classList.toggle("active");
 		document.getElementById("pathInput").classList.toggle("active");
@@ -41,7 +53,7 @@ window.addEventListener("keydown", event => {
 	}
 	if (event.altKey && key === "v") { // toggle vertice render
 		Render.showVertices = !Render.showVertices;
-		Render.showCollisions = !Render.showCollisions;
+		Render.showCollisions = Render.showVertices;
 	}
 	if (event.altKey && key === "b") { // toggle broadphase render
 		Render.showBroadphase = !Render.showBroadphase;
