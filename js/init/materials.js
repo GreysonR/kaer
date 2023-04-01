@@ -5,13 +5,13 @@ let SurfaceGrid = new Grid();
 let Materials = {
 	road: {
 		tireGrip: 1,
-		slidingGrip: 0.95,
+		slidingGrip: 1,
 		slide: 1,
 		turnSpeed: 1,
 		acceleration: 1,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
-		driftAcceleration: 1,
+		power: 1,
 		hasTireSmoke: true,
 	},
 	dirt: {
@@ -22,7 +22,7 @@ let Materials = {
 		acceleration: 1,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
-		driftAcceleration: 1.7,
+		power: 1.7,
 		hasTireSmoke: false,
 	},
 	grass: {
@@ -33,7 +33,7 @@ let Materials = {
 		acceleration: 0.6,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
-		driftAcceleration: 1,
+		power: 1,
 		hasTireSmoke: false,
 	},
 }

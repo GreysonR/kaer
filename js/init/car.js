@@ -21,18 +21,18 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	restitution: 0.1,
 
 	// car basic stats
-	maxSpeed: 20, // [0, Infinity]
+	maxSpeed: 21, // [0, Infinity]
 	maxReverseSpeed: 12, // [0, Infinity]
-	acceleration: 3.4, // [0, Infinity]
-	turnSpeed: 3.9, // [0, Infinity]
+	acceleration: 2, // [0, Infinity]
+	turnSpeed: 3.6, // [0, Infinity]
 
 	// drifting / sliding
 	tireGrip: 6, // [0.0001, Infinity] grip for car to before it's sliding
-	slidingGrip: 5, // [0.0001, tireGrip] grip for car while it's sliding
+	slidingGrip: 6, // [0.0001, tireGrip] grip for car while it's sliding
 	slide: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 	drifting: false,
 	driftAmount: 0,
-	driftAcceleration: 0.2, // [-1, 1] min amount of acceleration kept when drifting, could also be labeled "power"
+	power: 0.3, // [-1, 1] min amount of acceleration kept when drifting
 	hasTireSkid: false,
 	hasTireSmoke: false,
 
@@ -66,6 +66,10 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 		sprite: "cars/Ford Escort RS2000.png",
 	}
 });
+car.accelerationCurve = function(x) {
+	// return x > 0.8 ? 1 : 1.4 * (1 - x) ** 0.4; // d/dx 1 - (1 - x) ** 1.4 (ease out quadratic)
+	return 1;
+}
 car.on("collisionStart", carCollision);
 car.on("collisionActive", carCollision);
 function carCollision(event) {
@@ -124,16 +128,42 @@ Render.on("afterRender", () => {
 camera.position = car.position;
 camera.fov = 1800;
 
-function updateCar() {
-	let timescale = Engine.delta;
-	let timescaleSqrt = Math.sqrt(timescale);
-	let timescaleSqr = timescale * timescale;
-
-	if (isNaN(timescaleSqrt)) {
-		return;
+let graphPts = [];
+Render.on("afterRestore", () => {
+	let speed = car.velocity.length;
+	if (speed > 1) {
+		graphPts.push(speed);
 	}
 
-	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, drifting, driftAmount, driftAcceleration, slide, driftHistory } = car;
+	let w = 800; // width
+	let h = 300; // height
+	let m = 20; // margin
+	ctx.beginPath();
+	ctx.fillStyle = "#444444a0";
+	ctx.fillRect(m, m, w - 2*m, h - 2*m);
+
+	if (graphPts.length > 0) {
+		let ptH = h - 2*m;
+		let ptW = w - 2*m;
+		if (graphPts.length > ptW) {
+			graphPts.shift();
+		}
+		ctx.beginPath();
+		for (let i = 0; i < graphPts.length; i++) {
+			let x = i;
+			if (x <= ptW) {
+				ctx.rect(x + m, ptH - (graphPts[i] / 50) * ptH + m, 4, 4);
+			}
+		}
+		ctx.fillStyle = "#43C7FF";
+		ctx.fill();
+	}
+});
+
+function updateCar() {
+	let timescale = Engine.delta;
+
+	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, drifting, driftAmount, power, slide, driftHistory } = car;
 	let { rotationBounds, rotationSensitivity, rotationPoint} = car;
 
 	if (gamepad.connected) {
@@ -167,7 +197,7 @@ function updateCar() {
 	acceleration *= materialProps.acceleration ?? 1;
 	maxSpeed *= materialProps.maxSpeed ?? 1;
 	maxReverseSpeed *= materialProps.maxReverseSpeed ?? 1;
-	driftAcceleration = Math.min(1, driftAcceleration * (materialProps.driftAcceleration ?? 1))
+	power = Math.min(100, power * (materialProps.power ?? 1))
 
 	let carDir = new vec(Math.cos(angle), Math.sin(angle));
 	let carNorm = carDir.normal();
@@ -176,9 +206,7 @@ function updateCar() {
 	let velDotCar = velocity.normalize().dot(carDir);
 	let velDCS = velDotCar < 0 ? -1 : 1;
 	let velDC2 = Math.abs(velDotCar) * velDCS;
-
-	// velocity = velocity.mult(timescaleSqrt);
-	// driftAmount *= timescaleSqrt;
+	let speed = car.velocity.length;
 	
 
 	// ~ handbrake
@@ -190,7 +218,7 @@ function updateCar() {
 		acceleration *=  0.8;
 		turnSpeed *= 1;
 		slide = slide + (1 - slide) * 0.3;
-		driftAcceleration *= 0.5;
+		power *= 0.5;
 	}
 
 	// ~ tire friction
@@ -213,7 +241,8 @@ function updateCar() {
 
 	// ~ gas
 	if (up) {
-		let acc = (0.15 + (drifting ? (driftAcceleration + (1 - driftAcceleration) / (Math.abs(driftAmount) ** 2)) * 0.2 : 0)) * up;
+		let acc = (0.15 + (drifting ? (power + (1 - power) / (Math.abs(driftAmount) ** 2)) * 0.2 : 0)) * up;
+		if (!car.drifting) acc *= car.accelerationCurve(speed / maxSpeed);
 		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.pow(tireGrip, 0.5))));
 	}
 	// ~ brake
@@ -238,7 +267,6 @@ function updateCar() {
 	}
 
 	// ~ drag
-	let speed = car.velocity.length;
 	if (handbrake) {
 		car.frictionAir = 0.015;
 	}
@@ -270,7 +298,7 @@ function updateCar() {
 			car.frictionAngular = 0.5;
 		}
 	}*/
-	car.frictionAngular = 0.1 / gripRatio;
+	car.frictionAngular = 0.10 / gripRatio;
 	addAngle /= gripRatio;
 
 	
@@ -445,9 +473,9 @@ Render.on("beforeLayer0", () => {
 	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
 	camera.fov = avgFov;
 
-	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 8));
+	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 9));
 	lastPos.unshift(curPos);
-	let maxPosLen = Math.max(1, Math.round(Performance.fps * 0.1));
+	let maxPosLen = Math.max(1, Math.round(Performance.fps * 0.15));
 	if (lastPos.length > maxPosLen) {
 		lastPos.pop();
 		if (Math.abs(lastPos.length - maxPosLen) > 6)

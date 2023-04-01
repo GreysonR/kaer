@@ -74,9 +74,13 @@ let mapBodies = {
 			});
 			return obj;
 		},
-		roadHitbox: function({ x, y, vertices }) {
+		roadHitbox: function({ x, y, position, vertices }) {
 			for (let i = 0; i < vertices.length; i++) {
 				vertices[i] = new vec(vertices[i]);
+			}
+			if (position) {
+				x = position.x;
+				y = position.y;
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				material: "road",
@@ -93,9 +97,13 @@ let mapBodies = {
 
 			return obj;
 		},
-		dirtHitbox: function({ x, y, vertices }) {
+		dirtHitbox: function({ x, y, position, vertices }) {
 			for (let i = 0; i < vertices.length; i++) {
 				vertices[i] = new vec(vertices[i]);
+			}
+			if (position) {
+				x = position.x;
+				y = position.y;
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				material: "dirt",
@@ -414,7 +422,15 @@ let allMaps = {
 		]
 	},
 	chase2: { objs: [] },
-	rally1: { objs: [] },
+	rally1: { objs: [
+		{ // foreground
+			sprite: "rally1/rally1.png",
+			width:  12652,
+			height: 18794,
+			position: new vec(12652/2, 18794/2),
+			layer: -4,
+		},
+	] },
 }
 
 // load chase 2 objs
@@ -444,32 +460,6 @@ for (let x = 0; x < 7; x++) {
 			}
 		)
 	}
-}
-// load rally 1 objs
-for (let y = 0; y < 5; y++) {
-	let w = 12640;
-	let h = 2500;
-	// background
-	allMaps.rally1.objs.push(
-		{
-			sprite: `rally1/background-${y}.png`,
-			width:  w,
-			height: h,
-			position: new vec(w/2, (h - 0.4) * y + h/2),
-			layer: -4,
-		}
-	)
-	
-	// foreground
-	// allMaps.chase2.objs.push(
-	// 	{
-	// 		sprite: `chase2/foreground-${y}-${y}.png`,
-	// 		width:  w,
-	// 		height: h,
-	// 		position: new vec((w - 0.4) * y + w/2, (h - 0.4) * y + h/2),
-	// 		layer: 2,
-	// 	}
-	// )
 }
 
 var curMap = {
