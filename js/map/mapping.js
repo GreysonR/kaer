@@ -41,7 +41,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		
 		let out = {
 			env: {
-				objs: [],
 				roadHitbox: [],
 			},
 		}
@@ -181,6 +180,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		let parsed = svgParse(res);
 
 		function crawlNext(elem) {
+			if (elem.tagName === "clipPath") return;
 			if (Array.isArray(elem.children) && elem.children.length > 0) {
 				for (let child of elem.children) {
 					crawlNext(child);
@@ -196,6 +196,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				if (!out.env[name]) {
 					out.env[name] = [];
 				}
+
 				let vertices = getVertices(rect);
 				let obj = {
 					x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),

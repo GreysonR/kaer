@@ -422,9 +422,18 @@ let allMaps = {
 		]
 	},
 	chase2: { objs: [] },
-	rally1: { objs: [
+	rally1S1: { objs: [
 		{ // foreground
-			sprite: "rally1/rally1.png",
+			sprite: "rally1/section1/rally1S1.png",
+			width:  12652,
+			height: 18794,
+			position: new vec(12652/2, 18794/2),
+			layer: -4,
+		},
+	] },
+	rally1S2: { objs: [
+		{ // foreground
+			sprite: "rally1/section2/rally1S2.png",
 			width:  12652,
 			height: 18794,
 			position: new vec(12652/2, 18794/2),

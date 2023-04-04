@@ -457,7 +457,7 @@ Render.on("afterRender", () => {
 
 let lastFov = [];
 let lastPos = [];
-let baseFov = 2400;
+let baseFov = 2200;
 Render.on("beforeLayer0", () => {
 	let g = 0.1; // higher g = fov more sensitive to speed changes
 	let carUp = new vec(Math.cos(car.angle), Math.sin(car.angle));
@@ -473,9 +473,9 @@ Render.on("beforeLayer0", () => {
 	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
 	camera.fov = avgFov;
 
-	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 9));
+	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 12));
 	lastPos.unshift(curPos);
-	let maxPosLen = Math.max(1, Math.round(Performance.fps * 0.15));
+	let maxPosLen = Math.max(1, Math.round(Performance.history.avgFps * 0.1) * 2);
 	if (lastPos.length > maxPosLen) {
 		lastPos.pop();
 		if (Math.abs(lastPos.length - maxPosLen) > 6)

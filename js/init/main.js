@@ -5,7 +5,6 @@ const ctx = canvas.getContext("2d");
 const { Performance, World, Bodies, Engine, Common, Render } = ter;
 const { camera } = Render;
 let tree = World.tree.tree;
-var focused = true;
 
 ter.init({
 	canvas: canvas,
@@ -28,14 +27,6 @@ window.addEventListener("resize", () => {
 window.addEventListener("contextmenu", event => {
 	event.preventDefault();
 });
-window.addEventListener("focus", () => {
-	Performance.update();
-	focused = true;
-});
-window.addEventListener("blur", () => {
-	focused = false;
-});
-
 
 Performance.enabled = false;
 Performance.getAvg = true;
