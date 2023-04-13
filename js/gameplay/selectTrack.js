@@ -49,11 +49,11 @@ function selectTrack(newTrack) {
 	if (newTrack.includes("chase")) {
 		loadMap(chaseTracks[newTrack], trackName);
 	}
-	// else if (newTrack.includes("rally")) {
-	// 	generateMap();
-	// 	modeName = "rally";
-	// 	trackName = "rally";
-	// }
+	else if (newTrack.includes("rally")) {
+		loadRally(newTrack);
+		modeName = "rally";
+		trackName = "rally";
+	}
 	else {
 		loadMap(timedTracks[newTrack], trackName);
 	}
@@ -64,3 +64,7 @@ window.addEventListener("load", () => {
 	// modeName = "chase";
 	// trackName = "chase2";
 });
+
+function loadRally(name) {
+	
+}

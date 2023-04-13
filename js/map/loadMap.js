@@ -304,7 +304,9 @@ let mapBodies = {
 }
 let timedTracks = {};
 let chaseTracks = {};
-let rallyTracks = {};
+let rallyTracks = {
+	rally1: [],
+};
 let allMaps = {
 	track1: {
 		objs: [
