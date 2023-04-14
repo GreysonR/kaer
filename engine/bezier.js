@@ -20,11 +20,10 @@ class Bezier {
 
 		return new vec(x, y);
 	}
-	getLength() {
+	getLength(dt = 0.01) {
 		let lastPt = this.getAtT(0);
-		let d = 0.01;
 		let len = 0;
-		for (let t = d; t <= 1; t += d) {
+		for (let t = dt; t <= 1; t += dt) {
 			let pt = this.getAtT(t);
 			len += pt.sub(lastPt).length;
 			lastPt = pt;
@@ -88,5 +87,13 @@ class Bezier {
 			ctx.stroke();
 
 		}
+	}
+	toObject() {
+		return {
+			a: this.a.toObject(),
+			b: this.b.toObject(),
+			c: this.c.toObject(),
+			d: this.d.toObject(),
+		};
 	}
 }

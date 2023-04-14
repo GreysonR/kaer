@@ -1,7 +1,7 @@
 "use strict";
 
 // const car = Bodies.rectangle(246*0.53, 118*0.53, new vec(0, 0), { // default
-// const car = Bodies.rectangle(195*0.58, 118*0.58, new vec(0, 0), { // fiat
+// const car = Bodies.rectangle(195*0.58, 118*0.58, new vec(0, 0), { // fiat 124
 const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	angle: 0,
 	mass: 3,
@@ -129,6 +129,7 @@ camera.position = car.position;
 camera.fov = 1800;
 
 let graphPts = [];
+Render.graph = true;
 Render.on("afterRestore", () => {
 	let speed = car.velocity.length;
 	if (speed > 1) {
@@ -148,15 +149,18 @@ Render.on("afterRestore", () => {
 		if (graphPts.length > ptW) {
 			graphPts.shift();
 		}
-		ctx.beginPath();
-		for (let i = 0; i < graphPts.length; i++) {
-			let x = i;
-			if (x <= ptW) {
-				ctx.rect(x + m, ptH - (graphPts[i] / 50) * ptH + m, 4, 4);
+
+		if (Render.graph) {
+			ctx.beginPath();
+			for (let i = 0; i < graphPts.length; i++) {
+				let x = i;
+				if (x <= ptW) {
+					ctx.rect(x + m, ptH - (graphPts[i] / 50) * ptH + m, 4, 4);
+				}
 			}
+			ctx.fillStyle = "#43C7FF";
+			ctx.fill();
 		}
-		ctx.fillStyle = "#43C7FF";
-		ctx.fill();
 	}
 });
 
@@ -212,10 +216,10 @@ function updateCar() {
 	// ~ handbrake
 	if (handbrake) {
 		tireGrip *= 0.3;
-		up *=   0.7;
-		down *= 0.7;
+		up *=   1;
+		down *= 1;
 		maxSpeed *= 0.9;
-		acceleration *=  0.8;
+		acceleration *= 0.8;
 		turnSpeed *= 1;
 		slide = slide + (1 - slide) * 0.3;
 		power *= 0.5;

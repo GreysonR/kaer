@@ -59,7 +59,7 @@ function main() {
 		Render();
 
 		// - run animations
-		easings.run();
+		animations.run();
 	}
 
 	requestAnimationFrame(main);

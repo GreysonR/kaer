@@ -290,9 +290,17 @@ document.getElementById("mapInput").addEventListener("input", event => {
 
 					if (name === "road") {
 						let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
+						let roadPath = generateRoadPath(path, 0);
 						
 						for (let hitbox of roadHitbox) {
 							out.env[name + "Hitbox"].push(hitbox);
+						}
+
+						// if (roadPath[0].a.y < roadPath[roadPath.length - 1].a.y) {
+						// 	roadPath.reverse();
+						// }
+						for (let bezier of roadPath) {
+							out.env[name].push(bezier.toObject());
 						}
 					}
 					else if (name === "wall" || name.includes("Hitbox")) {
@@ -454,7 +462,7 @@ function generateRoadHitbox(path, roadWidth = 700) {
 
 	return hitboxes;
 }
-function generateRoadPath(path) {
+function generateRoadPath(path, dt = 300) {
 	let beziers = [];
 
 	for (let i = 0; i < path.length; i++) {
@@ -465,6 +473,10 @@ function generateRoadPath(path) {
 		beziers.push(new Bezier(new vec(posA), new vec(cPts[0]), new vec(cPts[1]), new vec(posB)));
 	}
 
+	if (dt === 0) {
+		return beziers;
+	}
+
 	// create points for left / right sides
 	let vertices = [];
 	for (let i = 0; i < beziers.length; i++) {
@@ -472,7 +484,7 @@ function generateRoadPath(path) {
 		let bLen = bezier.length;
 		for (let t = i === 0 ? 0 : bLen * 0.1; t <= bLen;) {
 			vertices.push(bezier.get(t));
-			t += 300;
+			t += dt;
 		}
 		
 		// add last pt

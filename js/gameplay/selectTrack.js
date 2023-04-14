@@ -64,7 +64,3 @@ window.addEventListener("load", () => {
 	// modeName = "chase";
 	// trackName = "chase2";
 });
-
-function loadRally(name) {
-	
-}

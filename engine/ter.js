@@ -1008,7 +1008,7 @@ var ter = {
 						bodyBoundsPosition.set(bounds.max.avg(bounds.min));
 					}
 					
-					if (render.visible === true && (Math.abs(cameraPosition.x - bodyBoundsPosition.x) <= cameraBoundSize.x + width && Math.abs(cameraPosition.y - bodyBoundsPosition.y) <= cameraBoundSize.y + height)) {
+					if (render.alwaysRender || render.visible === true && (Math.abs(cameraPosition.x - bodyBoundsPosition.x) <= cameraBoundSize.x + width && Math.abs(cameraPosition.y - bodyBoundsPosition.y) <= cameraBoundSize.y + height)) {
 						if (type === "constraint") { // render constraint
 							Render.constraint(body);
 							continue;

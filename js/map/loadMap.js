@@ -39,13 +39,13 @@ let mapBodies = {
 			return obj;
 		},
 		spawn: function({ x, y, angle }) {
-			car.setAngle(angle);
-			car.setPosition(new vec(x, y));
 			lastFov.length = 0;
 			lastPos.length = 0;
 
 			curMap.spawn.position = new vec(x, y);
 			curMap.spawn.angle = angle;
+
+			resetCar();
 		},
 		path: function({ vertices }) {
 			let { path } = curMap;
@@ -92,7 +92,7 @@ let mapBodies = {
 					layer: -1,
 				}
 			});
-			obj.delete();
+			// obj.delete();
 			SurfaceGrid.addBody(obj);
 
 			return obj;
@@ -426,7 +426,7 @@ let allMaps = {
 	chase2: { objs: [] },
 	rally1S1: { objs: [
 		{ // foreground
-			sprite: "rally1/section1/rally1S1.png",
+			sprite: "rally1/section1/rally1S1.svg",
 			width:  12652,
 			height: 18794,
 			position: new vec(12652/2, 18794/2),
@@ -435,10 +435,19 @@ let allMaps = {
 	] },
 	rally1S2: { objs: [
 		{ // foreground
-			sprite: "rally1/section2/rally1S2.png",
+			sprite: "rally1/section2/rally1S2.svg",
 			width:  12652,
 			height: 18794,
 			position: new vec(12652/2, 18794/2),
+			layer: -4,
+		},
+	] },
+	rally1S3: { objs: [
+		{ // foreground
+			sprite: "rally1/section3/rally1S3.svg",
+			width:  12652,
+			height: 15768,
+			position: new vec(12652/2, 15768/2),
 			layer: -4,
 		},
 	] },
@@ -513,6 +522,15 @@ function loadMap(map, name) {
 				}
 			}
 		}
+	}
+
+	// reset skid marks
+	for (let skid of Skid.all) {
+		Skid.all.delete(skid);
+	}
+	// reset smoke
+	for (let smoke of Smoke.all) {
+		Smoke.all.delete(smoke);
 	}
 
 	// add extra visual stuff
@@ -630,7 +648,7 @@ function resetCar() {
 		curMap.maxLapPercent = 0;
 		curMap.percent = 0;
 		car.health = car.maxHealth;
-		updateHealthUI()
+		updateHealthUI();
 	
 		Render.off("beforeRender", updateRaceTimer);
 		let timerElem = document.getElementById("timer");
@@ -640,6 +658,14 @@ function resetCar() {
 		else if (modeName === "drift") {
 			timerElem.innerHTML = "0.0";
 		}
+	}
+	else {
+		let { position, angle } = curMap.spawn;
+		car.setAngle(angle);
+		car.setPosition(new vec(position));
+
+		car.angularVelocity = 0;
+		car.velocity.set({x: 0, y: 0});
 	}
 }
 

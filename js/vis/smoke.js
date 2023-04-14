@@ -162,7 +162,7 @@ class Smoke {
 		
 		let totalLen = this.openLength + this.closeLength;
 		let endPt = this.endPt;
-		easings.create({
+		animations.create({
 			duration: this.aliveTime * 0.8,
 			curve: ease.linear,
 			callback: function(p) {
@@ -208,7 +208,7 @@ class Smoke {
 				}
 				vertice.curvePts = [ ...vertice.fullCurvePts ];
 
-				easings.create({
+				animations.create({
 					duration: openDLength / totalLength * aliveTime,
 					curve: ease.linear,
 					callback: function(p) {
@@ -217,7 +217,7 @@ class Smoke {
 						vertice.curvePts[1] = vertice.fullCurvePts[1].mult(p);
 					},
 					onend: function() {
-						easings.create({
+						animations.create({
 							duration: closeDLength / totalLength * aliveTime,
 							curve: ease.linear,
 							callback: function(p) {
@@ -291,10 +291,11 @@ class Smoke {
 	stop(callback, onend) {
 		this.stopped = true;
 		
+		let smoke = this;
 		let totalLen = this.openLength + this.closeLength * 2;
 		let startPt = this.startPt;
 		let endPt = this.endPt;
-		easings.create({
+		animations.create({
 			duration: this.aliveTime,
 			curve: ease.linear,
 			callback: function(p) {
@@ -305,7 +306,10 @@ class Smoke {
 
 				if (callback) callback();
 			},
-			onend: onend,
+			onend: () => {
+				Smoke.all.delete(smoke);
+				if (typeof onend === "function") onend();
+			},
 		});
 	}
 	stopped = false;

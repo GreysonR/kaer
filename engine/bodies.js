@@ -239,6 +239,7 @@ class Body {
 		lineDash: false,
 		lineCap: "butt",
 		visible: true,
+		alwaysRender: false,
 		opacity: 1,
 		layer: 0,
 		spriteScale: new vec(1, 1),

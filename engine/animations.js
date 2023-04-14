@@ -1,7 +1,7 @@
 "use strict";
 
 // https://easings.net/
-const easings = {
+const animations = {
 	running: [],
 	run: function() {
 		let i = this.running.length;
@@ -26,7 +26,7 @@ const easings = {
 
 				if (t >= duration) {
 					run = false;
-					easings.running.splice(easings.running.indexOf(loop), 1);
+					animations.running.splice(animations.running.indexOf(loop), 1);
 				}
 				if (t >= duration) {
 					if (typeof onend === "function") {
