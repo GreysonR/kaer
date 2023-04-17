@@ -242,6 +242,7 @@ class Body {
 		alwaysRender: false,
 		opacity: 1,
 		layer: 0,
+		sprite: false,
 		spriteScale: new vec(1, 1),
 	}
 	collisionFilter = {
@@ -321,6 +322,12 @@ class Body {
 					sprite.position.y = -sprite.height / 2;
 				}
 			}
+		}
+
+		if (this.render.useBuffer && !sprite.useBuffer) {
+			sprite.on("load", () => {
+				sprite.buffer();
+			});
 		}
 
 		return sprite;

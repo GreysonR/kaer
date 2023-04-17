@@ -3,6 +3,9 @@ body {
 	background: #6CAC2D;
 	overflow: hidden;
 }
+body.rally {
+	background: #7BC334;
+}
 canvas {
 	position: absolute;
 	top: 0;

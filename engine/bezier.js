@@ -7,10 +7,18 @@ class Bezier {
 		// arc length = ∫a^b √[1 + (dy/dx)^2] dx
 		// arc length = ∫a^b
 
-		this.a = new vec(pt1);
-		this.b = new vec(cp1);
-		this.c = new vec(cp2);
-		this.d = new vec(pt2);
+		if (pt1.a && pt1.b) {
+			this.a = new vec(pt1.a);
+			this.b = new vec(pt1.b);
+			this.c = new vec(pt1.c);
+			this.d = new vec(pt1.d);
+		}
+		else {
+			this.a = new vec(pt1);
+			this.b = new vec(cp1);
+			this.c = new vec(cp2);
+			this.d = new vec(pt2);
+		}
 
 		this.length = this.getLength();
 	}

@@ -139,9 +139,11 @@ Render.on("afterRestore", () => {
 	let w = 800; // width
 	let h = 300; // height
 	let m = 20; // margin
-	ctx.beginPath();
-	ctx.fillStyle = "#444444a0";
-	ctx.fillRect(m, m, w - 2*m, h - 2*m);
+	if (Render.graph) {
+		ctx.beginPath();
+		ctx.fillStyle = "#444444a0";
+		ctx.fillRect(m, m, w - 2*m, h - 2*m);
+	}
 
 	if (graphPts.length > 0) {
 		let ptH = h - 2*m;

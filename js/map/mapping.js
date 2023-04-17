@@ -54,6 +54,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#2027CD": "policeSpawns",
 
 			"#53656A": "road",
+			"#592B21": "rail",
 
 			"#46A325": "tree",
 			"#DDB45F": "zoneHitbox",
@@ -203,6 +204,9 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
 					vertices: vertices[0],
 				}
+				if (name === "tree") {
+					delete obj.vertices;
+				}
 				if (name === "spawn") {
 					let a = 0;
 					if (rect.transform) {
@@ -289,6 +293,9 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					}
 
 					if (name === "road") {
+						if (path[0].x) {
+							path.shift();
+						}
 						let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
 						let roadPath = generateRoadPath(path, 0);
 						
@@ -301,6 +308,16 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						// }
 						for (let bezier of roadPath) {
 							out.env[name].push(bezier.toObject());
+						}
+					}
+					else if (name === "rail") {
+						if (path[0].x) {
+							path.shift();
+						}
+						let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 5, 200);
+						for (let obj of hitbox) {
+							if (!out.env.wall) out.env.wall = [];
+							out.env["wall"].push(obj);
 						}
 					}
 					else if (name === "wall" || name.includes("Hitbox")) {
@@ -370,17 +387,23 @@ function copyToClipboard(text) {
 }
 
 
-function generateRoadHitbox(path, roadWidth = 700) {
+function generateRoadHitbox(path, roadWidth = 700, dt = 300) {
 	let beziers = [];
 	let hitboxes = [];
 	let vertices = [];
 
 	for (let i = 0; i < path.length; i++) {
 		let pt = path[i];
-		let { posA, posB, cPts } = pt;
 
-		if (!posA) continue;
-		beziers.push(new Bezier(new vec(posA), new vec(cPts[0]), new vec(cPts[1]), new vec(posB)));
+		if (pt.a !== undefined) {
+			beziers.push(new Bezier(pt));
+		}
+		else {
+			let { posA, posB, cPts } = pt;
+	
+			if (!posA) continue;
+			beziers.push(new Bezier(new vec(posA), new vec(cPts[0]), new vec(cPts[1]), new vec(posB)));
+		}
 	}
 
 	// create points for left / right sides
@@ -397,7 +420,7 @@ function generateRoadHitbox(path, roadWidth = 700) {
 			let pt = op.add(norm.mult(roadWidth / 2 * 1.1))
 			leftSide.push(pt);
 
-			t += 300;
+			t += typeof dt === "function" ? dt(dx) : dt;
 		}
 		
 		// add last pt

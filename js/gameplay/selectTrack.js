@@ -34,6 +34,7 @@ function selectTrack(newTrack) {
 	trackName = newTrack;
 
 	document.getElementById("overhead").className = newMode;
+	document.body.classList.remove("rally");
 
 	let bestTimeElem = document.getElementById("bestTime");
 	let timerElem = document.getElementById("timer");
@@ -50,6 +51,7 @@ function selectTrack(newTrack) {
 		loadMap(chaseTracks[newTrack], trackName);
 	}
 	else if (newTrack.includes("rally")) {
+		document.body.classList.add("rally");
 		loadRally(newTrack);
 		modeName = "rally";
 		trackName = "rally";

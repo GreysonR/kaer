@@ -2,9 +2,13 @@
 
 let mapBodies = {
 	env: {
-		wall: function({ x, y, vertices }) {
+		wall: function({ x, y, position, vertices }) {
 			for (let i = 0; i < vertices.length; i++) {
 				vertices[i] = new vec(vertices[i]);
+			}
+			if (position) {
+				x = position.x;
+				y = position.y;
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				isStatic: true,
@@ -92,10 +96,13 @@ let mapBodies = {
 					layer: -1,
 				}
 			});
-			// obj.delete();
+			obj.delete();
 			SurfaceGrid.addBody(obj);
 
 			return obj;
+		},
+		road: function(path) {
+			curMap.road.push(path);
 		},
 		dirtHitbox: function({ x, y, position, vertices }) {
 			for (let i = 0; i < vertices.length; i++) {
@@ -425,8 +432,8 @@ let allMaps = {
 	},
 	chase2: { objs: [] },
 	rally1S1: { objs: [
-		{ // foreground
-			sprite: "rally1/section1/rally1S1.svg",
+		{
+			sprite: "rally1/section1/rally1S1.png",
 			width:  12652,
 			height: 18794,
 			position: new vec(12652/2, 18794/2),
@@ -434,8 +441,8 @@ let allMaps = {
 		},
 	] },
 	rally1S2: { objs: [
-		{ // foreground
-			sprite: "rally1/section2/rally1S2.svg",
+		{
+			sprite: "rally1/section2/rally1S2.png",
 			width:  12652,
 			height: 18794,
 			position: new vec(12652/2, 18794/2),
@@ -443,11 +450,18 @@ let allMaps = {
 		},
 	] },
 	rally1S3: { objs: [
-		{ // foreground
-			sprite: "rally1/section3/rally1S3.svg",
-			width:  12652,
+		{
+			sprite: "rally1/section3/rally1S3FG.svg",
+			width:  13918,
 			height: 15768,
-			position: new vec(12652/2, 15768/2),
+			position: new vec(13918/2, 15768/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/section3/rally1S3BG.svg",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
 			layer: -4,
 		},
 	] },
@@ -492,6 +506,7 @@ var curMap = {
 	},
 	objs: [],
 	path: [],
+	road: [],
 	coins: [],
 	policeSpawnPoints: [],
 
@@ -514,11 +529,16 @@ function loadMap(map, name) {
 			let objFunc = mapBodies[categoryName][typeName];
 			if (!objFunc) continue;
 			let types = category[typeName];
-	
-			for (let options of types) {
-				let obj = objFunc(options);
-				if (obj) {
-					curMap.objs.push(obj);
+
+			if (typeName === "road") {
+				objFunc(types);
+			}
+			else {
+				for (let options of types) {
+					let obj = objFunc(options);
+					if (obj) {
+						curMap.objs.push(obj);
+					}
 				}
 			}
 		}

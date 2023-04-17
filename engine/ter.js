@@ -59,16 +59,16 @@ var ter = {
 				let fps = (() => {
 					let v = 0;
 					for (let i = 0; i < Performance.history.fps.length; i++) {
-						v += Performance.history.fps[i] / Performance.history.fps.length;
+						v += Performance.history.fps[i];
 					}
-					return v;
+					return v / Performance.history.fps.length;
 				})();
 				let delta = (() => {
 					let v = 0;
 					for (let i = 0; i < Performance.history.delta.length; i++) {
-						v += Performance.history.delta[i] / Performance.history.delta.length;
+						v += Performance.history.delta[i];
 					}
-					return v;
+					return v / Performance.history.delta.length;
 				})();
 
 				Performance.history.avgFps = fps;
@@ -126,7 +126,7 @@ var ter = {
 		time: 0,
 
 		bodies: [],
-		tree: new Grid(1000),
+		tree: new Grid(2000),
 		constraints: [],
 		pairs: {},
 		
@@ -1017,17 +1017,7 @@ var ter = {
 						const { background, border, borderWidth, borderType, lineDash, lineCap, bloom, opacity, sprite, round, } = render;
 						
 						if (sprite && sprite.loaded) { // sprite render
-							let { position: spritePos, width, height, scale } = sprite;
-							scale = scale.mult(render.spriteScale);
-	
-							ctx.translate(position.x, position.y);
-							ctx.rotate(body.angle);
-							ctx.scale(scale.x, scale.y);
-							ctx.drawImage(sprite.image, spritePos.x, spritePos.y, width, height);
-							ctx.scale(1 / scale.x, 1 / scale.y);
-							ctx.rotate(-body.angle);
-							ctx.translate(-position.x, -position.y);
-
+							sprite.render(position, body.angle, ctx, render.spriteScale);
 							continue;
 						}
 
@@ -1357,7 +1347,7 @@ var ter = {
 					renderVertices(body.vertices);
 				}
 			}
-			ctx.lineWidth = 1 / this.camera.scale;
+			ctx.lineWidth = 1.5 / this.camera.scale;
 			ctx.strokeStyle = "#FF832A";
 			ctx.stroke();
 		}

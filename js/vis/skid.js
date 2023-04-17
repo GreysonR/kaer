@@ -1,10 +1,5 @@
 "use strict";
 
-const subcanv = document.getElementById("subcanv");
-const subctx = subcanv.getContext("2d");
-const skidMarkCanv = document.getElementById("skidMarkCanv");
-const skidMarkCtx = subcanv.getContext("2d");
-
 class Skid {
 	static all = new Set();
 	

@@ -12,17 +12,9 @@ ter.init({
 	width: window.innerWidth,
 	height: window.innerHeight,
 });
-subcanv.width =  window.innerWidth;
-subcanv.height = window.innerHeight;
-skidMarkCanv.width =  window.innerWidth;
-skidMarkCanv.height = window.innerHeight;
 
 window.addEventListener("resize", () => {
 	ter.setSize(window.innerWidth, window.innerHeight);
-	subcanv.width =  window.innerWidth;
-	subcanv.height = window.innerHeight;
-	skidMarkCanv.width =  window.innerWidth;
-	skidMarkCanv.height = window.innerHeight;
 });
 window.addEventListener("contextmenu", event => {
 	event.preventDefault();
