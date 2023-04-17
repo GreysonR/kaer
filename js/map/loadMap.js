@@ -102,7 +102,7 @@ let mapBodies = {
 			return obj;
 		},
 		road: function(path) {
-			curMap.road.push(path);
+			// curMap.road.push(path);
 		},
 		dirtHitbox: function({ x, y, position, vertices }) {
 			for (let i = 0; i < vertices.length; i++) {

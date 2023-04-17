@@ -99,24 +99,5 @@ function loadRally(name) {
 	resetCar();
 }
 
-Render.on("afterRender", () => {
-	let roads = curMap.road;
-
-	ctx.beginPath();
-
-	for (let road of roads) {
-		if (road.length === 0) continue;
-
-		for (let bezier of road) {
-			ctx.moveTo(bezier.a.x, bezier.a.y);
-			ctx.lineTo(bezier.d.x, bezier.d.y);
-		}
-	}
-
-	ctx.lineWidth = 2 / camera.scale;
-	ctx.strokeStyle = "blue";
-	ctx.stroke();
-});
-
 // car.acceleration *= 3;
 // car.maxSpeed *= 3;
