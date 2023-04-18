@@ -245,12 +245,6 @@ function updateCar() {
 	car.driftAmount = (normVel - gripAmt);
 	let gripPercent = (1 / Math.max(1, Math.abs(car.driftAmount)));
 
-	// ~ gas
-	if (up) {
-		let acc = (0.15 + (drifting ? (power + (1 - power) / (Math.abs(driftAmount) ** 2)) * 0.2 : 0)) * up;
-		if (!car.drifting) acc *= car.accelerationCurve(speed / maxSpeed);
-		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.pow(tireGrip, 0.5))));
-	}
 	// ~ brake
 	if (down) {
 		let dirDotVel = carDir.dot(velocity);
@@ -258,12 +252,22 @@ function updateCar() {
 			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.14 * down * gripPercent));
 		}
 		else { // ~ drive backwards
-			addVel.sub2(carDir.mult(0.4));
-
-			if (dirDotVel < 0 && velocity.length <= 4) {
+			let reverseAcceleration = 0.4;
+			if (dirDotVel < 0 && car.velocity.length < maxReverseSpeed * 1.2) {
 				maxSpeed = maxReverseSpeed;
 			}
+			else {
+				reverseAcceleration *= 0.1;
+			}
+			addVel.sub2(carDir.mult(reverseAcceleration));
 		}
+	}
+
+	// ~ gas
+	if (up) {
+		let acc = (0.15 + (drifting ? (power + (1 - power) / (Math.abs(driftAmount) ** 2)) * 0.2 : 0)) * up;
+		if (!car.drifting) acc *= car.accelerationCurve(speed / maxSpeed);
+		addVel.add2(carDir.mult(acceleration * acc * Math.min(1, Math.pow(tireGrip, 0.5))));
 	}
 
 	// ~ turn
