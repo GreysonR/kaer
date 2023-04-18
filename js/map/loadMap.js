@@ -442,7 +442,7 @@ let allMaps = {
 	] },
 	rally1S2: { objs: [
 		{
-			sprite: "rally1/section2/rally1S2.png",
+			sprite: "rally1/section2/rally1S2BG.png",
 			width:  12652,
 			height: 18794,
 			position: new vec(12652/2, 18794/2),
@@ -451,14 +451,14 @@ let allMaps = {
 	] },
 	rally1S3: { objs: [
 		{
-			sprite: "rally1/section3/rally1S3FG.svg",
+			sprite: "rally1/section3/rally1S3FG.png",
 			width:  13918,
 			height: 15768,
 			position: new vec(13918/2, 15768/2),
 			layer: 2,
 		},
 		{
-			sprite: "rally1/section3/rally1S3BG.svg",
+			sprite: "rally1/section3/rally1S3BG.png",
 			width:  13918,
 			height: 15768,
 			position: new vec(13918/2, 15768/2),

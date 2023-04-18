@@ -253,12 +253,16 @@ function updateCar() {
 	}
 	// ~ brake
 	if (down) {
-		if (carDir.dot(velocity) > 0.5) { // ~ brake
+		let dirDotVel = carDir.dot(velocity);
+		if (dirDotVel > 0.5) { // ~ brake
 			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.14 * down * gripPercent));
 		}
 		else { // ~ drive backwards
 			addVel.sub2(carDir.mult(0.4));
-			maxSpeed = maxReverseSpeed;
+
+			if (dirDotVel < 0 && velocity.length <= 4) {
+				maxSpeed = maxReverseSpeed;
+			}
 		}
 	}
 

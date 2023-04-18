@@ -239,6 +239,7 @@ class Body {
 		lineDash: false,
 		lineCap: "butt",
 		visible: true,
+		inView: false,
 		alwaysRender: false,
 		opacity: 1,
 		layer: 0,

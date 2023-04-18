@@ -37,11 +37,29 @@ function loadRally(name) {
 					background: "transparent",
 					border: "transparent",
 					sprite: sprite,
-					useBuffer: true,
+					useBuffer: false,
 					layer: layer,
 					opacity: 1,
 				}
 			});
+
+			// keep object in view so it doesn't load out
+			setTimeout(() => {
+				let realPosition = new vec(body.position);
+				body.on("beforeUpdate", () => {
+					let { bounds: cameraBounds } = camera;
+					let bounds = {
+						min: realPosition.sub({ x: width/2, y: height/2 }),
+						max: realPosition.add({ x: width/2, y: height/2 }),
+					}
+					if (cameraBounds.min.y > bounds.max.y || cameraBounds.max.y < bounds.min.y || cameraBounds.min.x > bounds.max.x || cameraBounds.max.x < bounds.min.x) {
+						body.setPosition(cameraBounds.max.add(bounds.max.sub(bounds.min).mult(0.5)).sub(20));
+					}
+					else if (!body.position.equals(realPosition)) {
+						body.setPosition(new vec(realPosition));
+					}
+				});
+			}, 1000);
 			
 			curMap.objs.push(body);
 		}

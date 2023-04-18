@@ -1009,6 +1009,7 @@ var ter = {
 					}
 					
 					if (render.alwaysRender || render.visible === true && (Math.abs(cameraPosition.x - bodyBoundsPosition.x) <= cameraBoundSize.x + width && Math.abs(cameraPosition.y - bodyBoundsPosition.y) <= cameraBoundSize.y + height)) {
+						render.inView = true;
 						if (type === "constraint") { // render constraint
 							Render.constraint(body);
 							continue;
@@ -1077,6 +1078,9 @@ var ter = {
 							ctx.shadowBlur = 0;
 						}
 						ctx.globalAlpha = 1;
+					}
+					else {
+						render.inView = false;
 					}
 				}
 				Render.trigger("afterLayer" + layerId);
