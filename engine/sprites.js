@@ -53,8 +53,9 @@ class Sprite {
 			console.log(width, height);
 			buffer.width = width;
 			buffer.height = height;
+			buffer.style.opacity = 0.0001;
 
-			console.log(buffer, this);
+			// console.log(buffer, this);
 			buffer.getContext("2d").drawImage(image, 0, 0, width, height);
 			this.image = buffer;
 			Sprite.allBuffers[src] = buffer;

@@ -442,10 +442,17 @@ let allMaps = {
 	] },
 	rally1S2: { objs: [
 		{
+			sprite: "rally1/section2/rally1S2FG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: 2,
+		},
+		{
 			sprite: "rally1/section2/rally1S2BG.png",
-			width:  12652,
-			height: 18794,
-			position: new vec(12652/2, 18794/2),
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
 			layer: -4,
 		},
 	] },
