@@ -16,6 +16,12 @@ function loadRally(name) {
 	// - load map
 	let trackPosition = new vec(0, 0);
 	let madeSpawn = false;
+	let objsLoaded = 0;
+	let objsTotal = finalTrack.reduce((total, cur, i, arr, ) => {
+		let objs = allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
+		return total + objs.length;
+	}, 0);
+
 	for (let i = 0; i < finalTrack.length; i++) {
 		let map = finalTrack[i];
 		let start = new vec(map.env.road[0].a);
@@ -49,6 +55,7 @@ function loadRally(name) {
 			let realPosition = new vec(body.position);
 			body.render.sprite.on("load", () => {
 				console.log(body.render.sprite.src + " loaded");
+				objsLoaded++;
 
 				// let image = body.render.sprite.image;
 				// document.body.appendChild(image);
@@ -127,6 +134,31 @@ function loadRally(name) {
 		Smoke.all.delete(smoke);
 	}
 	resetCar();
+
+	function renderLoadingBar() {
+		let width = 100;
+		let height = 15;
+		let p = objsLoaded / objsTotal;
+		let position = new vec(canv.width/2, canv.height/2);
+
+		if (p >= 1) {
+			Render.off("afterRestore", renderLoadingBar);
+		}
+
+		ctx.beginPath();
+		ctx.strokeStyle = "white";
+		ctx.fillStyle = "white";
+		ctx.lineWidth = 2;
+		ctx.strokeRect(position.x - width/2, position.y - height/2, width, height);
+		ctx.beginPath();
+		ctx.fillRect(position.x - width/2, position.y - height/2, width * p, height);
+
+		ctx.beginPath();
+		ctx.textAlign = "center";
+		ctx.font = "16px sans-serif";
+		ctx.fillText("Loading", position.x, position.y + height/2 + 15);
+	}
+	Render.on("afterRestore", renderLoadingBar);
 }
 
 // car.acceleration *= 3;
