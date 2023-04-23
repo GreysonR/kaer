@@ -323,6 +323,7 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: 1,
+				useBuffer: true,
 			},
 			{ // track
 				sprite: "track1/track",
@@ -330,6 +331,7 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: -3,
+				useBuffer: true,
 			},
 			{ // track outline
 				sprite: "track1/trackOutline",
@@ -337,6 +339,7 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: -1,
+				useBuffer: true,
 			},
 			{ // environment background
 				sprite: "track1/envBackground",
@@ -344,6 +347,7 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: -4,
+				useBuffer: true,
 			},
 		]
 	},
