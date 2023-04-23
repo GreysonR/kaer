@@ -129,7 +129,7 @@ camera.position = car.position;
 camera.fov = 1800;
 
 let graphPts = [];
-Render.graph = true;
+Render.graph = false;
 Render.on("afterRestore", () => {
 	let speed = car.velocity.length;
 	if (speed > 1) {

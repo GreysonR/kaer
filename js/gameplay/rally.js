@@ -6,7 +6,6 @@ function loadRally(name) {
 	let tracks = rallyTracks[name];
 
 	for (let i = 0; i < tracks.length; i++) {
-		if (i === 0) continue;
 		let track = tracks[i];
 		let n = Math.floor(Math.random() * (finalTrack.length + 1));
 		finalTrack.splice(n, 0, track);

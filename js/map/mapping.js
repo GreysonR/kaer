@@ -314,7 +314,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						if (path[0].x) {
 							path.shift();
 						}
-						let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 5, 200);
+						let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
 						for (let obj of hitbox) {
 							if (!out.env.wall) out.env.wall = [];
 							out.env["wall"].push(obj);
@@ -387,7 +387,7 @@ function copyToClipboard(text) {
 }
 
 
-function generateRoadHitbox(path, roadWidth = 700, dt = 300) {
+function generateRoadHitbox(path, roadWidth = 700, dt = 300, removeIntersections = true) {
 	let beziers = [];
 	let hitboxes = [];
 	let vertices = [];
@@ -463,8 +463,10 @@ function generateRoadHitbox(path, roadWidth = 700, dt = 300) {
 			}
 		}
 	}
-	removeIntersections(rightSide);
-	removeIntersections(leftSide);
+	if (removeIntersections) {
+		removeIntersections(rightSide);
+		removeIntersections(leftSide);
+	}
 
 
 	vertices = vertices.concat(leftSide).concat(rightSide.reverse());
