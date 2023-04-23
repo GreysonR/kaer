@@ -63,7 +63,7 @@ class Sprite {
 		let cache = Sprite.allBuffers[src];
 		if (!cache) {
 			let buffer = document.createElement("canvas");
-			let scale = 0.4 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1700 ** 2))
+			let scale = 0.5 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1500 ** 2))
 			console.log(scale);
 			buffer.width =  width  * scale;
 			buffer.height = height * scale;

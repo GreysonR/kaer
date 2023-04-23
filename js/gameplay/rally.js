@@ -129,6 +129,6 @@ function loadRally(name) {
 	resetCar();
 }
 
-car.acceleration *= 3;
-car.maxSpeed *= 3;
-car.hasCollisions = false
+// car.acceleration *= 3;
+// car.maxSpeed *= 3;
+// car.hasCollisions = false
