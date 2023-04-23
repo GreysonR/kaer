@@ -31,6 +31,7 @@ Render.showVertices = false
 Render.setPixelRatio(devicePixelRatio);
 
 var runEngine = true;
+var runRender = true;
 function main() {
 	// - run engine
 	if (Performance.fps / Math.max(1, Performance.history.avgFps) < 0.5) { // prevent freeze jumps
@@ -48,7 +49,9 @@ function main() {
 		updateCar();
 
 		// - render
-		Render();
+		if (runRender) {
+			Render();
+		}
 
 		// - run animations
 		animations.run();

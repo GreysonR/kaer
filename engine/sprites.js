@@ -18,6 +18,17 @@ class Sprite {
 		
 		if (!cache) {
 			let img = new Image();
+			img.decoding = "async";
+			img.loading = "eager";
+			
+			document.body.appendChild(img);
+			img.id = src + "-image";
+			img.style.position = "absolute";
+			img.style.top =  "0px";
+			img.style.left = "0px";
+			img.style.opacity = 0.001;
+			img.width =  width ;
+			img.height = height;
 
 			// cache image
 			Sprite.all[src] = img;
@@ -26,6 +37,8 @@ class Sprite {
 			// img.decode().then(() => {
 			// 	sprite.image = img;
 			// 	sprite.loaded = true;
+			// 	sprite.trigger("load");
+			// 	sprite.events.load.length = 0;
 			// }).catch(err => {
 			// 	console.log(Sprite.imgDir + src, err, img);
 			// });
@@ -50,13 +63,13 @@ class Sprite {
 		let cache = Sprite.allBuffers[src];
 		if (!cache) {
 			let buffer = document.createElement("canvas");
-			console.log(width, height);
-			buffer.width = width;
-			buffer.height = height;
-			buffer.style.opacity = 0.0001;
+			let scale = 0.4 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1700 ** 2))
+			console.log(scale);
+			buffer.width =  width  * scale;
+			buffer.height = height * scale;
 
 			// console.log(buffer, this);
-			buffer.getContext("2d").drawImage(image, 0, 0, width, height);
+			buffer.getContext("2d").drawImage(image, 0, 0, buffer.width, buffer.height);
 			this.image = buffer;
 			Sprite.allBuffers[src] = buffer;
 
@@ -64,6 +77,7 @@ class Sprite {
 			buffer.style.position = "absolute";
 			buffer.style.top = "0px";
 			buffer.style.left = "0px";
+			buffer.style.opacity = 0.0001;
 			document.body.appendChild(buffer);
 		}
 		else {

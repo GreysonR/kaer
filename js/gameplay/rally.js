@@ -6,8 +6,10 @@ function loadRally(name) {
 	let tracks = rallyTracks[name];
 
 	for (let i = 0; i < tracks.length; i++) {
+		if (i === 0) continue;
 		let track = tracks[i];
-		finalTrack.splice(Math.floor(Math.random() * (finalTrack.length + 1)), 0, track);
+		let n = Math.floor(Math.random() * (finalTrack.length + 1));
+		finalTrack.splice(n, 0, track);
 	}
 	
 
@@ -20,8 +22,7 @@ function loadRally(name) {
 		let end = new vec(map.env.road[map.env.road.length - 1].d);
 		let offset = start.mult(-1);
 		trackPosition.add2(offset);
-
-		console.log(rallyTracks[name].indexOf(map) + 1);
+		// console.log(rallyTracks[name].indexOf(map) + 1);
 
 		// add extra visual stuff
 		let objs = allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)].objs : [];
@@ -43,23 +44,33 @@ function loadRally(name) {
 				}
 			});
 
+
 			// keep object in view so it doesn't load out
 			let realPosition = new vec(body.position);
 			body.render.sprite.on("load", () => {
 				console.log(body.render.sprite.src + " loaded");
-				body.on("beforeUpdate", () => {
-					let { bounds: cameraBounds } = camera;
-					let bounds = {
-						min: realPosition.sub({ x: width/2, y: height/2 }),
-						max: realPosition.add({ x: width/2, y: height/2 }),
-					}
-					if (cameraBounds.min.y > bounds.max.y || cameraBounds.max.y < bounds.min.y || cameraBounds.min.x > bounds.max.x || cameraBounds.max.x < bounds.min.x) {
-						body.setPosition(cameraBounds.max.add(bounds.max.sub(bounds.min).mult(0.5)).sub(100));
-					}
-					else if (!body.position.equals(realPosition)) {
-						body.setPosition(new vec(realPosition));
-					}
-				});
+
+				// let image = body.render.sprite.image;
+				// document.body.appendChild(image);
+				// image.id = image.src + "-image";
+				// image.style.position = "absolute";
+				// image.style.top =  "0px";
+				// image.style.left = "0px";
+				// image.style.opacity = 0.001;
+
+				// body.on("beforeUpdate", () => {
+				// 	let { bounds: cameraBounds } = camera;
+				// 	let bounds = {
+				// 		min: realPosition.sub({ x: width/2, y: height/2 }),
+				// 		max: realPosition.add({ x: width/2, y: height/2 }),
+				// 	}
+				// 	if (cameraBounds.min.y > bounds.max.y || cameraBounds.max.y < bounds.min.y || cameraBounds.min.x > bounds.max.x || cameraBounds.max.x < bounds.min.x) {
+				// 		body.setPosition(cameraBounds.max.add(bounds.max.sub(bounds.min).mult(0.5)).sub(100));
+				// 	}
+				// 	else if (!body.position.equals(realPosition)) {
+				// 		body.setPosition(new vec(realPosition));
+				// 	}
+				// });
 			});
 			
 			curMap.objs.push(body);
@@ -118,5 +129,6 @@ function loadRally(name) {
 	resetCar();
 }
 
-// car.acceleration *= 3;
-// car.maxSpeed *= 3;
+car.acceleration *= 3;
+car.maxSpeed *= 3;
+car.hasCollisions = false
