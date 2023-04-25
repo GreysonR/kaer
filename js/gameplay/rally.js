@@ -1,5 +1,27 @@
 "use strict";
 
+var innerHitboxGrid = new Grid();
+function getCarOnRally() {
+	let point = car.position;
+	let bounds = innerHitboxGrid.getBounds(car);
+	
+	for (let x = bounds.min.x; x <= bounds.max.x; x++) {
+		for (let y = bounds.min.y; y <= bounds.max.y; y++) {
+			let n = innerHitboxGrid.pair(new vec(x, y));
+			let node = innerHitboxGrid.grid[n];
+			if (!node) continue;
+
+			for (let body of node) {
+				if (body.containsPoint(point)) {
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 function loadRally(name) {
 	// - create map
 	let finalTrack = [];
@@ -10,6 +32,8 @@ function loadRally(name) {
 		let n = Math.floor(Math.random() * (finalTrack.length + 1));
 		finalTrack.splice(n, 0, track);
 	}
+
+	finalTrack.length = 4;
 	
 
 	// - load map

@@ -101,6 +101,28 @@ let mapBodies = {
 
 			return obj;
 		},
+		innerHitbox: function({ x, y, position, vertices }) {
+			for (let i = 0; i < vertices.length; i++) {
+				vertices[i] = new vec(vertices[i]);
+			}
+			if (position) {
+				x = position.x;
+				y = position.y;
+			}
+			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+				hasCollisions: false,
+
+				render: {
+					visible: true,
+					background: "#FA5F3D60",
+					layer: -1,
+				}
+			});
+			obj.delete();
+			innerHitboxGrid.addBody(obj);
+
+			return obj;
+		},
 		road: function(path) {
 			// curMap.road.push(path);
 		},
@@ -483,6 +505,22 @@ let allMaps = {
 			layer: -4,
 		},
 	] },
+	rally1S4: { objs: [
+		{
+			sprite: "rally1/section4/rally1S4FG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/section4/rally1S4BG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: -4,
+		},
+	] },
 }
 
 // load chase 2 objs
@@ -603,7 +641,10 @@ function unloadMap() {
 		if (obj._Grids && obj._Grids[SurfaceGrid.id] !== undefined) {
 			SurfaceGrid.removeBody(obj);
 		}
-		else if (!obj.removed) {
+		if (obj._Grids && obj._Grids[innerHitboxGrid.id] !== undefined) {
+			innerHitboxGrid.removeBody(obj);
+		}
+		if (!obj.removed) {
 			obj.delete();
 		}
 	}

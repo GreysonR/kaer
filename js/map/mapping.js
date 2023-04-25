@@ -54,6 +54,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#2027CD": "policeSpawns",
 
 			"#53656A": "road",
+			"#FA5F3D": "innerHitbox",
 			"#592B21": "rail",
 
 			"#46A325": "tree",
@@ -180,6 +181,18 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		
 		let parsed = svgParse(res);
 
+		function roundVert(vert) {
+			if (Array.isArray(vert)) {
+				for (let v of vert) {
+					roundVert(v);
+				}
+			}
+			else {
+				vert.x = Number((Math.round(vert.x / 0.01) * 0.01).toFixed(2));
+				vert.y = Number((Math.round(vert.y / 0.01) * 0.01).toFixed(2));
+			}
+		}
+
 		function crawlNext(elem) {
 			if (elem.tagName === "clipPath") return;
 			if (Array.isArray(elem.children) && elem.children.length > 0) {
@@ -300,6 +313,8 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						let roadPath = generateRoadPath(path, 0);
 						
 						for (let hitbox of roadHitbox) {
+							roundVert(hitbox.position);
+							roundVert(hitbox.vertices);
 							out.env[name + "Hitbox"].push(hitbox);
 						}
 
@@ -310,6 +325,15 @@ document.getElementById("mapInput").addEventListener("input", event => {
 							out.env[name].push(bezier.toObject());
 						}
 					}
+					else if (name === "innerHitbox") {
+						if (!out.env[name]) out.env[name] = [];
+						let roadHitbox = generateRoadHitbox(path, 550);
+						for (let hitbox of roadHitbox) {
+							roundVert(hitbox.position);
+							roundVert(hitbox.vertices);
+							out.env[name].push(hitbox);
+						}
+					}
 					else if (name === "rail") {
 						if (path[0].x) {
 							path.shift();
@@ -317,6 +341,8 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
 						for (let obj of hitbox) {
 							if (!out.env.wall) out.env.wall = [];
+							roundVert(obj.position);
+							roundVert(obj.vertices);
 							out.env["wall"].push(obj);
 						}
 					}
@@ -327,7 +353,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						let convex = decomp.quickDecomp(decompPoints);
 
 						for (let shape of convex) {
-							let verts = shape.map(v => ({ x: v[0], y: v[1] }));
+							let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
 							let center = getCenterOfMass(verts);
 							out.env[name].push({
 								x: Math.round(center.x),

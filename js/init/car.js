@@ -156,12 +156,17 @@ Render.on("afterRestore", () => {
 			ctx.beginPath();
 			for (let i = 0; i < graphPts.length; i++) {
 				let x = i;
-				if (x <= ptW) {
-					ctx.rect(x + m, ptH - (graphPts[i] / 50) * ptH + m, 4, 4);
+
+				if (i === 0) {
+					ctx.moveTo(x + m, ptH - (graphPts[i] / 50) * ptH + m);
+				}
+				else if (x <= ptW) {
+					ctx.lineTo(x + m, ptH - (graphPts[i] / 50) * ptH + m);
 				}
 			}
-			ctx.fillStyle = "#43C7FF";
-			ctx.fill();
+			ctx.lineWidth = 4;
+			ctx.strokeStyle = "#43C7FF";
+			ctx.stroke();
 		}
 	}
 });
