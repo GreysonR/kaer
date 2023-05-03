@@ -34,6 +34,15 @@ function loadRally(name) {
 	}
 
 	finalTrack.length = 4;
+
+	if (tracks.start) {
+		tracks.start.name = "Start";
+		finalTrack.unshift(tracks.start);
+	}
+	if (tracks.end) {
+		tracks.end.name = "End";
+		finalTrack.push(tracks.end);
+	}
 	
 
 	// - load map
@@ -41,7 +50,7 @@ function loadRally(name) {
 	let madeSpawn = false;
 	let objsLoaded = 0;
 	let objsTotal = finalTrack.reduce((total, cur, i, arr, ) => {
-		let objs = allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
+		let objs = cur.name ? allMaps[name + cur.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
 		return total + objs.length;
 	}, 0);
 
@@ -54,7 +63,7 @@ function loadRally(name) {
 		// console.log(rallyTracks[name].indexOf(map) + 1);
 
 		// add extra visual stuff
-		let objs = allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)].objs : [];
+		let objs = map.name ? allMaps[name + map.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)].objs : [];
 		for (let obj of objs) {
 			let { width, height, position, sprite, layer } = obj;
 			let body = Bodies.rectangle(width, height, trackPosition.add(position), {

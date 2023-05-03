@@ -56,6 +56,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#53656A": "road",
 			"#FA5F3D": "innerHitbox",
 			"#592B21": "rail",
+			"#9A9A9A": "rail",
 
 			"#46A325": "tree",
 			"#DDB45F": "zoneHitbox",
@@ -65,97 +66,10 @@ document.getElementById("mapInput").addEventListener("input", event => {
 
 			"#955EBF": "job",
 			"#FF7D1E": "coin",
+
+			"#14FF00": "startLine",
+			"#E35F26": "trafficCone",
 		}
-		
-		function getPolygons() {
-			let iStart = res.indexOf("<path", index);
-			// if (res.indexOf("<path", index) > -1) iStart = Math.min(res.indexOf("<path", index), iStart);
-			let iEnd = res.indexOf("/>", index);
-
-			if (iStart > index) {
-				index = iEnd + 2;
-				
-				// get string of current path
-				let pathText = res.slice(iStart + 5, iEnd);
-				
-				// create object from string
-				if (pathText == "") return;
-				let pathObjArr = pathText.trim().split('"');
-				let pathObj = (() => {
-					let obj  = {};
-					for (let i = 0; i < Math.floor(pathObjArr.length / 2) * 2; i += 2) {
-						obj[pathObjArr[i].replace("=", "").replace(/[" "]/g, "")] = !isNaN(Number(pathObjArr[i + 1])) ? Number(pathObjArr[i + 1]) : pathObjArr[i + 1];
-					}
-					return obj;
-				})();
-
-				let text = res.slice(iStart + 5, iEnd);
-				if (text == "") return;
-				let polyArr = text.trim().split('"').flatMap((v, i, arr) => {
-					if (i % 2 === 0 && v !== "") {
-						return [ [ v, arr[i + 1] ] ];
-					}
-					else {
-						return [];
-					}
-				});
-				let obj = (() => {
-					let obj  = {};
-					for (let i = 0; i < polyArr.length; i++) {
-						obj[polyArr[i][0].replace("=", "").replace(/[" "]/g, "")] = polyArr[i][1];
-					}
-					return obj;
-				})();
-
-				// parse path
-				let pathArr = obj["d"].replace(/M/g, "!M").replace(/H/g, "!H").replace(/V/g, "!V").replace(/L/g, "!L").replace(/Z/g, "!Z").split("!").filter(v => v != "");
-				let x = 0;
-				let y = 0;
-				let paths = [[]];
-				let pathNum = 0;
-				for (let i = 0; i < pathArr.length; i++) {
-					let func = pathArr[i][0]
-					let part = pathArr[i].slice(1).split(" ");
-
-					if (func === "M") {
-						x = Math.round(Number(part[0]));
-						y = Math.round(Number(part[1]));
-					}
-					else if (func === "H") {
-						x = Math.round(Number(part[0]));
-
-						if (isNaN(Number(part[0]))) console.error(part, pathArr);
-					}
-					else if (func === "V") {
-						y = Math.round(Number(part[0]));
-					}
-					else if (func === "L") {
-						x = Math.round(Number(part[0]));
-						y = Math.round(Number(part[1].replace("Z", "")));
-					}
-					else if (func === "Z") {
-						console.warn("More than 1 path");
-						// paths.push([]);
-						// pathNum++;
-					}
-					else {
-						console.error(func, part);
-						console.error(pathArr, i);
-					}
-
-					paths[pathNum].push({ x: Math.round(x), y: Math.round(y) });
-				}
-				
-				for (let path of paths) {
-					if (path.length > 1) {
-					}
-				}
-			}
-			else {
-				index = -1;
-			}
-		}
-
 		
 		function getVertices(rect) {
 			let a = 0;
@@ -174,7 +88,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				new vec(vx).round(),
 				new vec(vx.add(vy)).round(),
 				new vec(vy).round(),
-			]
+			];
 
 			return [vertices, vx, vy];
 		}
@@ -227,6 +141,17 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						a = transform[0] / 180 * Math.PI;
 					}
 					obj.angle = a;
+					delete obj.vertices;
+				}
+				if (name === "trafficCone") {
+					let a = 0;
+					if (rect.transform) {
+						let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
+						a = transform[0] / 180 * Math.PI;
+					}
+					obj.angle = a;
+					obj.width = Math.round(rect.width / 0.1) * 0.1;
+					obj.height = Math.round(rect.height / 0.1) * 0.1;
 					delete obj.vertices;
 				}
 				out.env[name].push(obj);
@@ -327,7 +252,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					}
 					else if (name === "innerHitbox") {
 						if (!out.env[name]) out.env[name] = [];
-						let roadHitbox = generateRoadHitbox(path, 550);
+						let roadHitbox = generateRoadHitbox(path, 650);
 						for (let hitbox of roadHitbox) {
 							roundVert(hitbox.position);
 							roundVert(hitbox.vertices);
@@ -338,6 +263,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						if (path[0].x) {
 							path.shift();
 						}
+						console.log(path);
 						let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
 						for (let obj of hitbox) {
 							if (!out.env.wall) out.env.wall = [];
@@ -355,6 +281,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						for (let shape of convex) {
 							let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
 							let center = getCenterOfMass(verts);
+							console.log(...verts, path);
 							out.env[name].push({
 								x: Math.round(center.x),
 								y: Math.round(center.y),

@@ -329,6 +329,22 @@ let mapBodies = {
 				}
 			});
 		},
+		trafficCone: function({ x, y, angle }) {
+			let obj = Bodies.rectangle(49, 49, new vec(x, y), {
+				isStatic: false,
+				frictionAngular: 0.05,
+				frictionAir: 0.08,
+				mass: 0.6,
+				hasCollisions: true,
+				render: {
+					visible: true,
+					sprite: "roadBlock/trafficCone.png",
+					layer: 0,
+				}
+			});
+			obj.setAngle(angle);
+			return obj;
+		},
 	},
 }
 let timedTracks = {};
@@ -345,7 +361,6 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: 1,
-				useBuffer: true,
 			},
 			{ // track
 				sprite: "track1/track",
@@ -353,7 +368,6 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: -3,
-				useBuffer: true,
 			},
 			{ // track outline
 				sprite: "track1/trackOutline",
@@ -361,7 +375,6 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: -1,
-				useBuffer: true,
 			},
 			{ // environment background
 				sprite: "track1/envBackground",
@@ -369,7 +382,6 @@ let allMaps = {
 				height: 8964,
 				position: new vec(9806/2, 8964/2),
 				layer: -4,
-				useBuffer: true,
 			},
 		]
 	},
@@ -518,6 +530,22 @@ let allMaps = {
 			width:  13918,
 			height: 15768,
 			position: new vec(13918/2, 15768/2),
+			layer: -4,
+		},
+	] },
+	rally1Start: { objs: [
+		{
+			sprite: "rally1/start/rally1StartFG.png",
+			width:  11781,
+			height: 2232,
+			position: new vec(11781/2, 2232/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/start/rally1StartBG.png",
+			width:  11781,
+			height: 2232,
+			position: new vec(11781/2, 2232/2),
 			layer: -4,
 		},
 	] },

@@ -471,9 +471,7 @@ class Body {
 		if (angle !== this.angle) {
 			let delta = ter.Common.angleDiff(angle, this.angle);
 			
-			this.translateAngle(delta, true);
-			
-			this.angle = angle;
+			this.translateAngle(delta);
 		}
 
 		return this;
