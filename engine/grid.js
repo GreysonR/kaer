@@ -45,6 +45,7 @@ class Grid {
 
 		if (!body._Grids) body._Grids = {};
 		if (!body._Grids[this.id]) body._Grids[this.id] = [];
+		else return;
 
 		for (let x = bounds.min.x; x <= bounds.max.x; x++) {
 			for (let y = bounds.min.y; y <= bounds.max.y; y++) {
@@ -84,6 +85,8 @@ class Grid {
 				}
 			}
 		}
+		body._Grids[this.id].length = 0;
+		console.log(body._Grids[this.id]);
 	};
 	updateBody = function(body) {
 		let curNodes = body._Grids[this.id];

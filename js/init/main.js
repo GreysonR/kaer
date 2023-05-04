@@ -4,7 +4,7 @@ const canvas = document.getElementById("canv");
 const ctx = canvas.getContext("2d");
 const { Performance, World, Bodies, Engine, Common, Render } = ter;
 const { camera } = Render;
-let tree = World.tree.tree;
+let tree = World.dynamicGrid.tree;
 
 ter.init({
 	canvas: canvas,
@@ -44,9 +44,6 @@ function main() {
 		}
 		else 
 			Performance.update();
-		
-		// - move car
-		updateCar();
 
 		// - render
 		if (runRender) {

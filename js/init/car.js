@@ -350,7 +350,6 @@ function updateCar() {
 	// - Visuals 
 	driftHistory.unshift(Math.abs(normVel));
 	let avgDrift = driftHistory.reduce((t, c) => t + c) / driftHistory.length;
-
 	let maxDriftHistLen = Math.max(1, Math.round(20 / timescale));
 	if (driftHistory.length > maxDriftHistLen) driftHistory.length = maxDriftHistLen;
 
@@ -435,6 +434,7 @@ function updateCar() {
 
 	car.last.angle = car.angle;
 }
+car.on("beforeUpdate", updateCar);
 function getCarMaterial() {
 	let point = car.position.add(new vec(-30, 0).rotate(car.angle));
 	let bounds = SurfaceGrid.getBounds(car);

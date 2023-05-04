@@ -10,7 +10,7 @@ class Boid {
 	static id = 0;
 	static update() {
 		let boidGrid = Boid.grid;
-		let worldGrid = ter.World.tree;
+		let worldGrid = ter.World.dynamicGrid;
 		let angleDiff = ter.Common.angleDiff;
 		let delta = ter.Engine.delta;
 

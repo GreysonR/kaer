@@ -89,6 +89,7 @@ let mapBodies = {
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				material: "road",
 				hasCollisions: false,
+				isStatic: true,
 
 				render: {
 					visible: true,
@@ -111,6 +112,7 @@ let mapBodies = {
 			}
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				hasCollisions: false,
+				isStatic: true,
 
 				render: {
 					visible: true,
@@ -137,6 +139,7 @@ let mapBodies = {
 			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
 				material: "dirt",
 				hasCollisions: false,
+				isStatic: true,
 
 				render: {
 					visible: false,
@@ -176,7 +179,7 @@ let mapBodies = {
 				
 				if (otherBody === car) {
 					obj.render.sprite = "coinClaimed";
-					obj.hasCollisions = false;
+					obj.setCollisions(false);
 				}
 			});
 			return obj;
@@ -338,6 +341,7 @@ let mapBodies = {
 				hasCollisions: true,
 				render: {
 					visible: true,
+					background: "#E35F26",
 					sprite: "roadBlock/trafficCone.png",
 					layer: 0,
 				}

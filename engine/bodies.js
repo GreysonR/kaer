@@ -39,13 +39,13 @@ class Body {
 			for (let i = 0; i < concaveVertices.length; i++) {
 				let vertices = concaveVertices[i].map(v => new vec(v[0], v[1]));
 				let center = this.getCenterOfMass(vertices);
-				let body = new fromVertices(vertices, position.add(center).sub(parentCenter));
+				let body = new fromVertices(vertices, position.add(center).sub(parentCenter), {
+					isSensor: this.isSensor,
+					isStatic: this.isStatic,
+					hasCollisions: this.hasCollisions,
+				});
 				body.resetVertices(true);
 				body.makeConvex();
-
-				body.isSensor = this.isSensor;
-				body.isStatic = this.isStatic;
-				body.hasCollisions = this.hasCollisions;
 				
 				options.children.push(body);
 			}
@@ -103,11 +103,18 @@ class Body {
 		let len = vertices.length;
 
 		let last = vertices[0].sub(vertices[1]);
+		let sign = 0;
 		for (let i = 1; i < len; i++) {
 			let cur = vertices[i].sub(vertices[(i + 1) % len]);
+			let curSign = Math.sign(cur.cross(last));
 
-			if (cur.cross(last) > 0) {
-				return false;
+			if (sign === 0) {
+				sign = curSign;
+			}
+			else if (curSign !== 0) {
+				if (sign !== curSign) {
+					return false;
+				}
 			}
 			last = cur;
 		}
@@ -187,6 +194,52 @@ class Body {
 		}
 		return area * 0.5;
 	}
+	setStatic(isStatic) {
+		let { dynamicGrid, staticGrid } = ter.World;
+		let lastStatic = this.isStatic;
+		if (isStatic === lastStatic) return;
+		
+		this.isStatic = isStatic;
+
+		if (this.hasCollisions) {
+			if (lastStatic) {
+				staticGrid.removeBody(this);
+			}
+			else {
+				dynamicGrid.removeBody(this);
+			}
+			if (isStatic) {
+				staticGrid.addBody(this);
+			}
+			else {
+				dynamicGrid.addBody(this);
+			}
+		}
+	}
+	setCollisions(hasCollisions) {
+		let { dynamicGrid, staticGrid } = ter.World;
+		if (hasCollisions === this.hasCollisions) return;
+
+		this.hasCollisions = hasCollisions;
+
+		if (this.hasCollisions) {
+			if (this.isStatic) {
+				staticGrid.addBody(this);
+			}
+			else {
+				dynamicGrid.addBody(this);
+			}
+		}
+		else {
+			if (this.isStatic) {
+				staticGrid.removeBody(this);
+			}
+			else {
+				dynamicGrid.removeBody(this);
+				console.log("remove", this);
+			}
+		}
+	}
 
 	id = 0;
 
@@ -225,7 +278,7 @@ class Body {
 	pairs = [];
 	lastSeparations = {};
 	numContacts = 0;
-	sink = 0.001;
+	slop = 0.001;
 
 	bounds = {
 		min: new vec({ x: 0, y: 0 }),
@@ -262,7 +315,12 @@ class Body {
 
 			World.bodies.delete(this);
 			if (this.children.length === 0) {
-				World.tree.removeBody(this);
+				if (this.isStatic) {
+					World.staticGrid.addBody(this);
+				}
+				else {
+					World.dynamicGrid.addBody(this);
+				}
 			}
 
 			for (let i = 0; i < this.pairs.length; i++) {
@@ -273,8 +331,6 @@ class Body {
 		for (let i = 0; i < this.children.length; i++) {
 			this.children[i].delete();
 		}
-
-		return this;
 	}
 	add() {
 		let { World, Render} = ter;
@@ -283,8 +339,14 @@ class Body {
 			
 			World.bodies.push(this);
 
-			if (this.children.length === 0) {
-				World.tree.addBody(this);
+			if (this.children.length === 0 && this.hasCollisions) {
+				if (this.isStatic) {
+					World.staticGrid.addBody(this);
+				}
+				else {
+					console.log(this);
+					World.dynamicGrid.addBody(this);
+				}
 			}
 
 			if (!this.parent) {
@@ -298,8 +360,6 @@ class Body {
 				this.children[i].add();
 			}
 		}
-
-		return this;
 	}
 	centerSprite(sprite = this.render.sprite) {
 		let options = this;
@@ -419,8 +479,6 @@ class Body {
 		this.bounds.min.y = minY;
 		this.bounds.max.x = maxX;
 		this.bounds.max.y = maxY;
-
-		return this;
 	}
 	updateAxes() {
 		let verts = this.vertices;
@@ -473,8 +531,6 @@ class Body {
 			
 			this.translateAngle(delta);
 		}
-
-		return this;
 	}
 	translate(delta, silent = false, ignoreChildren = false) {
 		if (delta.isNaN()) return;
@@ -488,7 +544,7 @@ class Body {
 		}
 		this.updateBounds();
 
-		let tree = ter.World.tree;
+		let tree = ter.World.dynamicGrid;
 		if (this._Grids && this._Grids[tree.id]) {
 			tree.updateBody(this);
 		}
@@ -502,39 +558,37 @@ class Body {
 		}
 	}
 	translateAngle(angle, silent = false) {
-			if (isNaN(angle)) return;
-			let vertices = this.vertices;
-			let position = this.position;
-			let rotationPoint = this.rotationPoint.rotate(this.angle + angle);
-			if (this.parent) {
-				rotationPoint.add2(this.position.sub(this.parent.position));
-			}
-			let sin = Math.sin(angle);
-			let cos = Math.cos(angle);
+		if (isNaN(angle)) return;
+		let vertices = this.vertices;
+		let position = this.position;
+		let rotationPoint = this.rotationPoint.rotate(this.angle + angle);
+		if (this.parent) {
+			rotationPoint.add2(this.position.sub(this.parent.position));
+		}
+		let sin = Math.sin(angle);
+		let cos = Math.cos(angle);
 
-			for (let i = vertices.length; i-- > 0;) {
-				let vert = vertices[i];
-				let dist = vert.sub(position);
-				vert.x = position.x + (dist.x * cos - dist.y * sin);
-				vert.y = position.y + (dist.x * sin + dist.y * cos);
-			}
+		for (let i = vertices.length; i-- > 0;) {
+			let vert = vertices[i];
+			let dist = vert.sub(position);
+			vert.x = position.x + (dist.x * cos - dist.y * sin);
+			vert.y = position.y + (dist.x * sin + dist.y * cos);
+		}
 
-			let posOffset = rotationPoint.sub(rotationPoint.rotate(angle));
-			this.translate(posOffset);
-			if (!silent) {
-				this.angle += angle;
-			}
+		let posOffset = rotationPoint.sub(rotationPoint.rotate(angle));
+		this.translate(posOffset);
+		if (!silent) {
+			this.angle += angle;
+		}
 
-			this.updateBounds();
-			this.updateAxes();
+		this.updateBounds();
+		this.updateAxes();
 
-			let children = this.children;
-			for (let i = 0; i < children.length; i++) {
-				let child = children[i];
-				child.translateAngle(angle, silent);
-			}
-
-		return this;
+		let children = this.children;
+		for (let i = 0; i < children.length; i++) {
+			let child = children[i];
+			child.translateAngle(angle, silent);
+		}
 	}
 	getSupport(vector, position=this.position) {
 		let vertices = this.vertices;
@@ -565,17 +619,12 @@ class Body {
 	}
 	applyForce(force, delta = Engine.delta) { // set delta to 1 if you want to apply a force for only 1 frame
 		if (force.isNaN()) return;
-		if (this.isStatic) return this;
-
-		
+		if (this.isStatic) return;
 		this.force.add2(force.mult(delta));
-		
-		return this;
 	}
 	applyTorque(force, delta = Engine.delta) { // set delta to 1 if you want to apply a force for only 1 frame
 		if (isNaN(force)) return;
 		this.torque += force * delta;
-		return this;
 	}
 
 	events = {
@@ -584,7 +633,7 @@ class Body {
 		collisionEnd: [],
 		beforeUpdate: [], // apply forces to current body
 		duringUpdate: [], // clear forces from current body
-		afterUpdate: [], // apply forces to current + other bodies
+		// afterUpdate: [], // deprecated: use your main game loop instead | apply forces to current + other bodies
 		delete: [],
 	}
 	on(event, callback) {
@@ -600,15 +649,14 @@ class Body {
 		}
 	}
 	trigger(event, arg1, arg2) {
-		this.events[event].forEach(callback => {
-			callback(arg1, arg2);
-		});
+		let events = this.events[event];
+		for (let i = 0; i < events.length; i++) {
+			events[i](arg1, arg2);
+		}
 
 		if (this.parent) {
 			this.parent.trigger(event, arg1, arg2);
 		}
-
-		return this;
 	}
 }
 class rectangle extends Body {

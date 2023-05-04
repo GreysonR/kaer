@@ -126,7 +126,8 @@ var ter = {
 		time: 0,
 
 		bodies: [],
-		tree: new Grid(2000),
+		dynamicGrid: new Grid(2000),
+		staticGrid: new Grid(2000), // bucket size MUST be the same as dynamicGrid
 		constraints: [],
 		pairs: {},
 		
@@ -136,7 +137,12 @@ var ter = {
 			for (let i = 0; i < bodies.length - 1; i++) {
 				let bodyA = bodies[i];
 				if (bodyA.removed) {
-					ter.World.tree.removeBody(bodyA);
+					if (bodyA.isStatic) {
+						ter.World.staticGrid.removeBody(bodyA);
+					}
+					else {
+						ter.World.dynamicGrid.removeBody(bodyA);
+					}
 					continue;
 				}
 				if (!bodyA.hasCollisions || bodyA.children.length > 0)
@@ -147,7 +153,12 @@ var ter = {
 					let bodyB = bodies[j];
 
 					if (bodyB.removed) {
-						ter.World.tree.removeBody(bodyB);
+						if (bodyB.isStatic) {
+							ter.World.staticGrid.removeBody(bodyB);
+						}
+						else {
+							ter.World.dynamicGrid.removeBody(bodyB);
+						}
 						continue;
 					}
 					if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
@@ -169,27 +180,58 @@ var ter = {
 			return pairs;
 		},
 		get collisionPairs() {
-			let grid = ter.World.tree;
+			let dynamicGrid = ter.World.dynamicGrid;
+			let staticGrid = ter.World.staticGrid;
 			let pair = ter.Common.pairCommon;
 			let getPairs = ter.World.getPairs;
-			let pairs = {};
+			let pairIds = new Set();
+			let pairs = [];
 
-			let buckets = grid.grid;
-			let bucketIds = grid.gridIds;
+			let dynamicBuckets = dynamicGrid.grid;
+			let staticBuckets = staticGrid.grid;
+			let bucketIds = dynamicGrid.gridIds;
 
 			for (let id of bucketIds) {
-				let curPairs = getPairs(buckets[id]);
+				let curDynamicBucket = dynamicBuckets[id];
+				let curStaticBucket = staticBuckets[id];
+				if (!curStaticBucket) continue;
+				let curPairs = getPairs(curDynamicBucket); // pair dynamic bodies
+
+				// add static bodies
+				for (let j = 0; j < curDynamicBucket.length; j++) {
+					let bodyA = curDynamicBucket[j];
+					if (!bodyA.hasCollisions || bodyA.children.length > 0)
+						continue;
+					for (let k = 0; k < curStaticBucket.length; k++) {
+						let bodyB = curStaticBucket[k];
+
+						if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
+							continue;
+	
+	
+						const boundsA = bodyA.bounds;
+						const boundsB = bodyB.bounds;
+						
+						if (boundsA.min.x <= boundsB.max.x &&
+							boundsA.max.x >= boundsB.min.x &&
+							boundsA.min.y <= boundsB.max.y &&
+							boundsA.max.y >= boundsB.min.y) {
+							curPairs.push([ bodyA, bodyB ]);
+						}
+					}
+				}
 
 				for (let j = 0; j < curPairs.length; j++) {
 					let curPair = curPairs[j];
 					let n = pair(curPair[0].id, curPair[1].id);
-					if (!pairs[n]) {
-						pairs[n] = curPair;
+					if (!pairIds.has(n)) {
+						pairIds.add(n);
+						pairs.push(curPair);
 					}
 				}
 			}
 
-			return Object.values(pairs);
+			return pairs;
 		},
 	},
 	Bodies: {
@@ -215,8 +257,8 @@ var ter = {
 				if (!body.parent) {
 					this.updateVelocity(body, delta);
 				}
-				if (body.children.length === 0) {
-					ter.World.tree.updateBody(body);
+				if (body.children.length === 0 && body.hasCollisions) {
+					ter.World.dynamicGrid.updateBody(body);
 				}
 			}
 		},
@@ -267,13 +309,12 @@ var ter = {
 			// apply forces
 			body.velocity.add2(body.force).add2(World.gravity.mult(delta));
 			body.angularVelocity += body.torque;
-		},
-		postUpdate: function(body) {
+
 			// clear forces
 			body.force.x = 0;
 			body.force.y = 0;
 			body.torque = 0;
-		}
+		},
 	},
 	Constraints: {
 		create: function(bodyA, bodyB, options = {}) {
@@ -383,13 +424,6 @@ var ter = {
 					let body = bodies[i];
 					body.trigger("duringUpdate");
 					ter.Bodies.update(body, delta);
-				}
-	
-				// Clear forces
-				for (let i = 0; i < bodies.length; i++) {
-					let body = bodies[i];
-					ter.Bodies.postUpdate(body);
-					body.trigger("afterUpdate");
 				}
 			}
 
@@ -569,7 +603,7 @@ var ter = {
 				const restitution = 1 + Math.max(bodyA.restitution, bodyB.restitution);
 				const relVel = bodyB.velocity.sub(bodyA.velocity);
 				const friction = Math.max(bodyA.friction, bodyB.friction) / 2; // divide friction by 2 to make it more stable
-				const sink = Math.max(bodyA.sink, bodyB.sink);
+				const slop = Math.max(bodyA.slop, bodyB.slop);
 
 				if (relVel.dot(normal) < 0) {
 					continue;
@@ -598,7 +632,7 @@ var ter = {
 					const vpA = bodyA.velocity.add(offsetA.normal().mult(-bodyA.angularVelocity));
 					const vpB = bodyB.velocity.add(offsetB.normal().mult(-bodyB.angularVelocity));
 					var relativeVelocity = vpA.sub(vpB);
-					const normalVelocity = relativeVelocity.abs().mult(0.9).sub(sink).mult(relativeVelocity.sign()).dot(normal);
+					const normalVelocity = relativeVelocity.abs().mult(0.9).sub(slop).mult(relativeVelocity.sign()).dot(normal);
 					const tangentVelocity = relativeVelocity.dot(tangent);
 
 					if (normalVelocity > 0) continue;
@@ -849,7 +883,7 @@ var ter = {
 			let minVert = -1;
 
 			if (bodies === undefined) {
-				let grid = World.tree;
+				let grid = World.dynamicGrid;
 				let size = grid.gridSize;
 				let bounds = { min: start.min(end).div2(size).floor2(), max: start.max(end).div2(size).floor2() };
 				bodies = [];
@@ -905,7 +939,7 @@ var ter = {
 			let collision = false;
 
 			if (bodies === undefined) {
-				let grid = World.tree;
+				let grid = World.dynamicGrid;
 				let size = grid.gridSize;
 				let bounds = { min: start.min(end).div2(size).floor2(), max: start.max(end).div2(size).floor2() };
 				bodies = [];
@@ -1371,7 +1405,7 @@ var ter = {
 
 		// - Quadtree
 		Render.showBroadphase = false;
-		Render.broadphase = function(tree = ter.World.tree) {
+		Render.broadphase = function(tree = ter.World.dynamicGrid) {
 			let size = tree.gridSize;
 
 			ctx.lineWidth = 0.4 / this.camera.scale;

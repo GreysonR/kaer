@@ -195,4 +195,4 @@ function loadRally(name) {
 
 // car.acceleration *= 3;
 // car.maxSpeed *= 3;
-// car.hasCollisions = false
+// car.setCollisions(false);
