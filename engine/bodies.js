@@ -236,7 +236,6 @@ class Body {
 			}
 			else {
 				dynamicGrid.removeBody(this);
-				console.log("remove", this);
 			}
 		}
 	}
@@ -344,7 +343,6 @@ class Body {
 					World.staticGrid.addBody(this);
 				}
 				else {
-					console.log(this);
 					World.dynamicGrid.addBody(this);
 				}
 			}
