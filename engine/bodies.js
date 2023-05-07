@@ -313,12 +313,12 @@ class Body {
 			this.removed = true;
 
 			World.bodies.delete(this);
-			if (this.children.length === 0) {
-				if (this.isStatic) {
-					World.staticGrid.addBody(this);
+			if (this.children.length === 0 && this._Grids) {
+				if (this.isStatic && this._Grids[World.staticGrid.id]) {
+					World.staticGrid.removeBody(this);
 				}
-				else {
-					World.dynamicGrid.addBody(this);
+				else if (this._Grids[World.dynamicGrid.id]) {
+					World.dynamicGrid.removeBody(this);
 				}
 			}
 

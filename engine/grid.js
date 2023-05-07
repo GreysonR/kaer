@@ -86,7 +86,6 @@ class Grid {
 			}
 		}
 		body._Grids[this.id].length = 0;
-		console.log(body._Grids[this.id]);
 	};
 	updateBody = function(body) {
 		let curNodes = body._Grids[this.id];
