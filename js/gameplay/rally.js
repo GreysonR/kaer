@@ -42,6 +42,7 @@ function loadRally(name) {
 	if (tracks.end) {
 		tracks.end.name = "End";
 		finalTrack.push(tracks.end);
+		console.log(finalTrack);
 	}
 	
 

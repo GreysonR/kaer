@@ -553,6 +553,22 @@ let allMaps = {
 			layer: -4,
 		},
 	] },
+	rally1End: { objs: [
+		{
+			sprite: "rally1/end/rally1EndFG.png",
+			width:  11781,
+			height: 2232,
+			position: new vec(11781/2, 2232/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/end/rally1EndBG.png",
+			width:  11781,
+			height: 2232,
+			position: new vec(11781/2, 2232/2),
+			layer: -4,
+		},
+	] },
 }
 
 // load chase 2 objs

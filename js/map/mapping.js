@@ -68,6 +68,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#FF7D1E": "coin",
 
 			"#14FF00": "startLine",
+			"#FF1F00": "endLine",
 			"#E35F26": "trafficCone",
 		}
 		

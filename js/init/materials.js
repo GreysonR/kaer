@@ -1,6 +1,6 @@
 "use strict";
 
-let SurfaceGrid = new Grid();
+let SurfaceGrid = new Grid(2000);
 
 let Materials = {
 	road: {
