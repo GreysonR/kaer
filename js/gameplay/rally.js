@@ -42,7 +42,6 @@ function loadRally(name) {
 	if (tracks.end) {
 		tracks.end.name = "End";
 		finalTrack.push(tracks.end);
-		console.log(finalTrack);
 	}
 	
 
@@ -50,7 +49,7 @@ function loadRally(name) {
 	let trackPosition = new vec(0, 0);
 	let madeSpawn = false;
 	let objsLoaded = 0;
-	let objsTotal = finalTrack.reduce((total, cur, i, arr, ) => {
+	let objsTotal = finalTrack.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
 		let objs = cur.name ? allMaps[name + cur.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
 		return total + objs.length;
 	}, 0);
@@ -85,7 +84,7 @@ function loadRally(name) {
 
 
 			// keep object in view so it doesn't load out
-			let realPosition = new vec(body.position);
+			// let realPosition = new vec(body.position);
 			body.render.sprite.on("load", () => {
 				console.log(body.render.sprite.src + " loaded");
 				objsLoaded++;
@@ -134,7 +133,7 @@ function loadRally(name) {
 					for (let options of types) {
 						newTypes.push(new Bezier(trackPosition.add(options.a), trackPosition.add(options.b), trackPosition.add(options.c), trackPosition.add(options.d)));
 					}
-					objFunc(types);
+					objFunc(newTypes);
 				}
 				else {
 					for (let options of types) {
@@ -158,6 +157,42 @@ function loadRally(name) {
 		trackPosition.sub2(offset);
 		trackPosition.add2(new vec(0, 20).add2(end.sub(start)));
 	}
+
+	// add checkpoints
+	let lastCheckpoint = null;
+	for (let bezier of curMap.road) {
+		let pt = bezier.a;
+		let dx = bezier.getDxAtT(0).normalize();
+		let angle = dx.angle;
+
+		let obj = Bodies.rectangle(70, 850, new vec(pt), {
+			isStatic: true,
+			isSensor: true,
+			isCheckpoint: true,
+			render: {
+				background: "red",
+				visible: false,
+			}
+		});
+		obj.setAngle(angle);
+
+		if (!lastCheckpoint) {
+			lastCheckpoint = 1;
+		}
+		else if (lastCheckpoint === 1) {
+			lastCheckpoint = obj;
+		}
+
+		obj.on("collisionStart", event => {
+			let otherBody = event.bodyA === obj ? event.bodyB : event.bodyA;
+
+			if (otherBody === car) {
+				lastCheckpoint = obj;
+			}
+		});
+	}
+
+
 	// reset skid marks
 	for (let skid of Skid.all) {
 		Skid.all.delete(skid);
@@ -192,6 +227,24 @@ function loadRally(name) {
 		ctx.fillText("Loading", position.x, position.y + height/2 + 15);
 	}
 	Render.on("afterRestore", renderLoadingBar);
+
+	function checkToResetCar() {
+		let onRally = getCarOnRally();
+
+		if (!onRally) {
+			// reset car
+			car.setPosition(new vec(lastCheckpoint.position));
+			car.velocity.set(new vec(0, 0));
+			car.setAngle(lastCheckpoint.angle);
+			car.angularVelocity = 0;
+		}
+	}
+	Render.on("afterRestore", checkToResetCar);
+
+	window.addEventListener("unloadMap", function unloadRally() {
+		Render.off("afterRestore", checkToResetCar);
+		window.removeEventListener("unloadMap", unloadRally);
+	});
 }
 
 // car.acceleration *= 3;

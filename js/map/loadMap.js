@@ -126,7 +126,7 @@ let mapBodies = {
 			return obj;
 		},
 		road: function(path) {
-			// curMap.road.push(path);
+			curMap.road.push(...path);
 		},
 		dirtHitbox: function({ x, y, position, vertices }) {
 			for (let i = 0; i < vertices.length; i++) {
@@ -708,6 +708,7 @@ function unloadMap() {
 	curMap.jobStarts.length = 0;
 	curMap.maxLapPercent = 0;
 	curMap.visual.walls.length = 0;
+	curMap.road.length = 0;
 
 	curMap.curJob = null;
 	curMap.jobsCompleted = 0;
@@ -757,6 +758,8 @@ function unloadMap() {
 	
 	trackName = "";
 	modeName = "";
+
+	window.dispatchEvent(new CustomEvent("unloadMap"));
 }
 
 function resetCar() {
