@@ -178,6 +178,7 @@ function loadRally(name) {
 			}
 		});
 		obj.setAngle(angle);
+		curMap.objs.push(obj);
 
 		if (!lastCheckpoint) {
 			lastCheckpoint = 1;
@@ -217,7 +218,7 @@ function loadRally(name) {
 				let carName = driver.car;
 				if (!trackTimes[trackName][carName]) {
 					let lowTime = getTrackTime(track, carName);
-					let highTime = lowTime * 1.8;
+					let highTime = lowTime * 2;
 					trackTimes[trackName][carName] = [lowTime, highTime];
 				}
 			}
@@ -283,6 +284,7 @@ function loadRally(name) {
 	Render.on("afterRestore", checkToResetCar);
 
 	let startTime = 0;
+	let unloaded = false;
 	function startCountdown() {
 		let rallyOverhead = document.getElementById("rallyOverhead");
 		let rallyCountdown = document.getElementById("rallyCountdown");
@@ -294,6 +296,7 @@ function loadRally(name) {
 		let t = 3;
 		rallyCountdown.innerHTML = t;
 		function count() {
+			if (unloaded) return;
 			t--;
 			if (t) {
 				rallyCountdown.innerHTML = t;
@@ -305,7 +308,9 @@ function loadRally(name) {
 				startTime = Performance.aliveTime;
 
 				setTimeout(() => {
-					rallyCountdown.classList.remove("active");
+					if (!unloaded) {
+						rallyCountdown.classList.remove("active");
+					}
 				}, 1500);
 			}
 		}
@@ -315,8 +320,12 @@ function loadRally(name) {
 	window.addEventListener("unloadMap", function unloadRally() {
 		Render.off("afterRestore", checkToResetCar);
 		window.removeEventListener("unloadMap", unloadRally);
+		window.removeEventListener("finishRally", finishRally);
+		rallyCountdown.classList.remove("active");
+		unloaded = true;
 	});
-	window.addEventListener("finishRally", function finishRally() {
+	window.addEventListener("finishRally", finishRally);
+	function finishRally() {
 		Render.off("afterRestore", checkToResetCar);
 		window.removeEventListener("finishRally", finishRally);
 
@@ -339,7 +348,8 @@ function loadRally(name) {
 		car.locked = true;
 		car.handbrake = true;
 
-		window.addEventListener("leaderboardContinue", function leaderboardContinue() {
+		window.addEventListener("leaderboardContinue", leaderboardContinue);
+		function leaderboardContinue() {
 			window.removeEventListener("leaderboardContinue", leaderboardContinue);
 			rallyFinish.classList.remove("active");
 			rallyFinishText.classList.remove("active");
@@ -349,7 +359,7 @@ function loadRally(name) {
 			car.handbrake = false;
 			openHome();
 			unloadMap();
-		});
+		}
 
 		setTimeout(() => {
 			leaderboardWrap.classList.add("active");
@@ -410,7 +420,7 @@ function loadRally(name) {
 			// car.locked = false;
 			// car.handbrake = false;
 		}, 3200);
-	});
+	}
 }
 
 // car.acceleration *= 3;
