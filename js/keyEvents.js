@@ -82,7 +82,7 @@ window.addEventListener("keyup", event => {
 		else if (key === "d" || key === "arrowright") {
 			car.right = false;
 		}
-		else if (key === " ") {
+		else if (key === " " && !car.locked) {
 			car.handbrake = false;
 		}
 	}

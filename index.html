@@ -10,7 +10,7 @@
 	<!-- fonts -->
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-	<link href="https://fonts.googleapis.com/css2?family=Poppins&family=Roboto:wght@500;700&Inter:wght@400;700&display=swap" rel="stylesheet">
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,500;0,600;0,700;0,800;1,600;1,700&family=Roboto:wght@300;400;500;700;800&Inter:wght@400;700&family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 	<!-- css -->
 	<link rel="stylesheet" href="./css/main.css">
@@ -18,10 +18,15 @@
 
 </head>
 <body>
-	<canvas id="canv"></canvas>
+	<div id="canvWrapper">
+		<canvas id="canv"></canvas>
+	</div>
 	<input id="mapInput" type="file" accept="image/svg+xml">
 	<input id="pathInput" type="file" accept="image/svg+xml">
 
+	<div id="rallyOverhead">
+		<div id="rallyCountdown">3</div>
+	</div>
 	<div id="overhead">
 		<div id="timingOverhead">
 			<div id="timer">0:00</div>
@@ -72,6 +77,110 @@
 		<div id="rallySelect" class="trackSelect">
 			<div class="track" onclick="selectTrack('rally1')">
 				<span>Rally 1</span>
+			</div>
+		</div>
+	</div>
+	<div id="rallyFinish" class="">
+		<div id="rallyFinishText" class="">
+			<div class="rallyFinishTitle">FINISH</div>
+			<div id="rallyFinishTime">0:00.00</div>
+		</div>
+		<div id="leaderboardWrap" class="">
+			<div>
+				<div id="trackName">Rally 1</div>
+				<div class="leaderboardTitle">LEADERBOARD</div>
+	
+				<div id="leaderboard">
+					<div class="leaderboardLabel">
+						<div>#</div>
+						<div>DRIVER</div>
+						<div>CAR</div>
+						<div>TIME</div>
+					</div>
+					<div id="leaderboardData">
+						<div class="leaderboardItem player">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">01</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">02</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">03</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">04</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">05</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">06</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">07</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">Volvo 66</div>
+								<div class="leaderboardTime">5:14.502</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">08</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">09</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+						<div class="leaderboardItem">
+							<div class="leaderboardItemValues">
+								<div class="leaderboardNumber">10</div>
+								<div class="leaderboardName">Player</div>
+								<div class="leaderboardCar">RS2000</div>
+								<div class="leaderboardTime">3:23.456</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="continueButton" onclick="window.dispatchEvent(new CustomEvent('leaderboardContinue'))">CONTINUE</div>
 			</div>
 		</div>
 	</div>
@@ -126,6 +235,11 @@
 <!-- visuals -->
 <script src="./js/vis/skid.js"></script>
 <script src="./js/vis/smoke.js"></script>
+
+<!-- data -->
+<script src="./js/data/driverNames.js"></script>
+<script src="./js/data/cars.js"></script>
+<script src="./js/data/drivers.js"></script>
 
 <!-- ai -->
 <script src="./js/ai/enemyDriver.js"></script>

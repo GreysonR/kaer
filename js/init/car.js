@@ -56,6 +56,9 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	right: false,
 	left: false,
 	handbrake: false,
+	locked: false,
+
+	name: "Ford Escort Mk2",
 
 	// render options
 	render: {
@@ -63,7 +66,7 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 		background: "#FF9B26",
 		// sprite: "cars/car.png",
 		// sprite: "cars/Fiat 124.png",
-		sprite: "cars/Ford Escort RS2000.png",
+		sprite: "cars/Ford Escort Mk2.png",
 	}
 });
 car.accelerationCurve = function(x) {
@@ -174,7 +177,7 @@ Render.on("afterRestore", () => {
 function updateCar() {
 	let timescale = Engine.delta;
 
-	let { angle, velocity, up, down, left, right, handbrake, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, drifting, driftAmount, power, slide, driftHistory } = car;
+	let { angle, velocity, up, down, left, right, handbrake, locked, maxSpeed, acceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, drifting, driftAmount, power, slide, driftHistory } = car;
 	let { rotationBounds, rotationSensitivity, rotationPoint} = car;
 
 	if (gamepad.connected) {
@@ -192,6 +195,13 @@ function updateCar() {
 				console.log(i, controller.buttons[i]);
 			}
 		}/** */
+	}
+
+	if (locked) {
+		up = false;
+		down = false;
+		right = false;
+		left = false;
 	}
 
 	if (car.drifting) {
@@ -225,11 +235,11 @@ function updateCar() {
 		tireGrip *= 0.3;
 		up *=   1;
 		down *= 1;
-		maxSpeed *= 0.9;
-		acceleration *= 0.8;
+		maxSpeed *= 0.95;
+		// acceleration *= 0.8;
 		turnSpeed *= 1;
 		slide = slide + (1 - slide) * 0.3;
-		power *= 0.5;
+		power *= 0.8;
 	}
 
 	// ~ tire friction
@@ -249,12 +259,13 @@ function updateCar() {
 	addVel.add2(carNorm.mult(gripAmt));
 	car.driftAmount = (normVel - gripAmt);
 	let gripPercent = (1 / Math.max(1, Math.abs(car.driftAmount)));
+	if (handbrake) gripPercent *= 0.7;
 
 	// ~ brake
 	if (down) {
 		let dirDotVel = carDir.dot(velocity);
 		if (dirDotVel > 0.5) { // ~ brake
-			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.14 * down * gripPercent));
+			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.12 * down * gripPercent));
 		}
 		else { // ~ drive backwards
 			let reverseAcceleration = 0.4;
@@ -265,6 +276,12 @@ function updateCar() {
 				reverseAcceleration *= 0.1;
 			}
 			addVel.sub2(carDir.mult(reverseAcceleration));
+		}
+	}
+	if (handbrake) {
+		let dirDotVel = carDir.dot(velocity);
+		if (Math.abs(dirDotVel) > 0.3) { // ~ brake
+			addVel.sub2(carDir.mult((velocity.length * 0.4 + 2) * 0.08 * gripPercent * Math.sign(dirDotVel)));
 		}
 	}
 
@@ -287,7 +304,7 @@ function updateCar() {
 
 	// ~ drag
 	if (handbrake) {
-		car.frictionAir = 0.015;
+		car.frictionAir = 0.016;
 	}
 	else if (!(up || down)) {
 		if (speed > 0.5) {

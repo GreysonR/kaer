@@ -336,7 +336,7 @@ let mapBodies = {
 			let obj = Bodies.rectangle(49, 49, new vec(x, y), {
 				isStatic: false,
 				frictionAngular: 0.05,
-				frictionAir: 0.08,
+				frictionAir: 0.04,
 				mass: 0.6,
 				hasCollisions: true,
 				render: {
@@ -347,6 +347,28 @@ let mapBodies = {
 				}
 			});
 			obj.setAngle(angle);
+			return obj;
+		},
+		endLine: function({ x, y, vertices }) {
+			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+				hasCollisions: true,
+				isStatic: true,
+				isSensor: true,
+				render: {
+					visible: false,
+					background: "#FF1F0020",
+					layer: 2,
+				}
+			});
+
+			obj.on("collisionStart", collision => {
+				let bodyB = collision.bodyB === obj ? collision.bodyA : collision.bodyB;
+
+				if (bodyB === car) {
+					console.log("Finish");
+					window.dispatchEvent(new CustomEvent("finishRally"));
+				}
+			});
 			return obj;
 		},
 	},

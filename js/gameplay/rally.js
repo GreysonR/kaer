@@ -23,17 +23,20 @@ function getCarOnRally() {
 }
 
 function loadRally(name) {
+	car.locked = true; // lock car so you can't move
+
 	// - create map
 	let finalTrack = [];
 	let tracks = rallyTracks[name];
 
 	for (let i = 0; i < tracks.length; i++) {
 		let track = tracks[i];
+		track.name = name + "S" + (i + 1);
 		let n = Math.floor(Math.random() * (finalTrack.length + 1));
 		finalTrack.splice(n, 0, track);
 	}
 
-	finalTrack.length = 4;
+	finalTrack.length = 2;
 
 	if (tracks.start) {
 		tracks.start.name = "Start";
@@ -50,7 +53,7 @@ function loadRally(name) {
 	let madeSpawn = false;
 	let objsLoaded = 0;
 	let objsTotal = finalTrack.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
-		let objs = cur.name ? allMaps[name + cur.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
+		let objs = cur.name === "Start" || cur.name === "End" ? allMaps[name + cur.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
 		return total + objs.length;
 	}, 0);
 
@@ -63,7 +66,7 @@ function loadRally(name) {
 		// console.log(rallyTracks[name].indexOf(map) + 1);
 
 		// add extra visual stuff
-		let objs = map.name ? allMaps[name + map.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)].objs : [];
+		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)].objs : [];
 		for (let obj of objs) {
 			let { width, height, position, sprite, layer } = obj;
 			let body = Bodies.rectangle(width, height, trackPosition.add(position), {
@@ -203,6 +206,43 @@ function loadRally(name) {
 	}
 	resetCar();
 
+	// - Get track times for cars in rally
+	let trackTimes = {}
+	for (let track of finalTrack) {
+		let trackName = track.name;
+		if (trackName !== "Start" && trackName !== "End") {
+			if (!trackTimes[trackName]) trackTimes[trackName] = {};
+			
+			for (let driver of Driver.all) {
+				let carName = driver.car;
+				if (!trackTimes[trackName][carName]) {
+					let lowTime = getTrackTime(track, carName);
+					let highTime = lowTime * 1.8;
+					trackTimes[trackName][carName] = [lowTime, highTime];
+				}
+			}
+		}
+	}
+
+	// - Get track times for drivers
+	for (let driver of Driver.all) {
+		let car = driver.car;
+		let variation = driver.variation * gaussianRandom(0, 1);
+		let performance = 1 - Math.min(1, Math.max(0, driver.skill + variation));
+		if (performance === 1) performance -= Math.random() * 0.05;
+		if (performance === 0) performance += Math.random() * 0.05;
+		let time = 0;
+
+		for (let track of finalTrack) {
+			let trackName = track.name;
+			if (trackName !== "Start" && trackName !== "End") {
+				let times = trackTimes[trackName][car];
+				time += times[0] + (times[1] - times[0]) * performance;
+			}
+		}
+		driver.time = time + 1512 + 1000 * performance;
+	}
+
 	function renderLoadingBar() {
 		let width = 100;
 		let height = 15;
@@ -211,6 +251,7 @@ function loadRally(name) {
 
 		if (p >= 1) {
 			Render.off("afterRestore", renderLoadingBar);
+			startCountdown();
 		}
 
 		ctx.beginPath();
@@ -241,9 +282,134 @@ function loadRally(name) {
 	}
 	Render.on("afterRestore", checkToResetCar);
 
+	let startTime = 0;
+	function startCountdown() {
+		let rallyOverhead = document.getElementById("rallyOverhead");
+		let rallyCountdown = document.getElementById("rallyCountdown");
+
+		rallyOverhead.classList.add("active");
+		rallyCountdown.classList.add("active");
+		car.locked = true;
+		
+		let t = 3;
+		rallyCountdown.innerHTML = t;
+		function count() {
+			t--;
+			if (t) {
+				rallyCountdown.innerHTML = t;
+				setTimeout(count, 1000);
+			}
+			else {
+				rallyCountdown.innerHTML = "GO";
+				car.locked = false;
+				startTime = Performance.aliveTime;
+
+				setTimeout(() => {
+					rallyCountdown.classList.remove("active");
+				}, 1500);
+			}
+		}
+		setTimeout(count, 1000);
+	}
+
 	window.addEventListener("unloadMap", function unloadRally() {
 		Render.off("afterRestore", checkToResetCar);
 		window.removeEventListener("unloadMap", unloadRally);
+	});
+	window.addEventListener("finishRally", function finishRally() {
+		Render.off("afterRestore", checkToResetCar);
+		window.removeEventListener("finishRally", finishRally);
+
+		let rallyFinish = document.getElementById("rallyFinish");
+		let rallyFinishText = document.getElementById("rallyFinishText");
+		let rallyFinishTime = document.getElementById("rallyFinishTime");
+		let leaderboardWrap = document.getElementById("leaderboardWrap");
+		let canvWrapper = document.getElementById("canvWrapper");
+
+		let lapTime = Performance.aliveTime - startTime;
+
+		rallyFinish.classList.add("active");
+		rallyFinishText.classList.add("active");
+
+		let minutes = (Math.floor(lapTime / 60000) / 100).toFixed(2).replace("0.", "");
+		let seconds = (Math.floor(lapTime % 60000 / 1000) / 100).toFixed(2).replace("0.", "");
+		let ms = ((lapTime % 60000 % 1000) / 1000).toFixed(3).replace("0.", "");
+		
+		rallyFinishTime.innerHTML = `${ minutes }:${ seconds }.${ ms }`;
+		car.locked = true;
+		car.handbrake = true;
+
+		window.addEventListener("leaderboardContinue", function leaderboardContinue() {
+			window.removeEventListener("leaderboardContinue", leaderboardContinue);
+			rallyFinish.classList.remove("active");
+			rallyFinishText.classList.remove("active");
+			leaderboardWrap.classList.remove("active");
+			canvWrapper.classList.remove("leaderboardZoom");
+			car.locked = false;
+			car.handbrake = false;
+			openHome();
+			unloadMap();
+		});
+
+		setTimeout(() => {
+			leaderboardWrap.classList.add("active");
+
+			canvWrapper.style.width =  window.innerWidth + "px";
+			canvWrapper.style.height = window.innerHeight + "px";
+			canvWrapper.classList.add("leaderboardZoom");
+
+			document.getElementById("leaderboardData").innerHTML = "";
+			let data = ([...Driver.all, {
+				name: "You",
+				isPlayer: true,
+				car: car.name,
+				time: lapTime,
+			}]).sort((a, b) => a.time - b.time);
+
+			let leaderboardData = document.getElementById("leaderboardData");
+			for (let i = 0; i < data.length; i++) {
+				let val = data[i];
+				let lapTime = val.time;
+				let minutes = (Math.floor(lapTime / 60000) / 100).toFixed(2).replace("0.", "");
+				let seconds = (Math.floor(lapTime % 60000 / 1000) / 100).toFixed(2).replace("0.", "");
+				let ms = ((lapTime % 60000 % 1000) / 1000).toFixed(3).replace("0.", "");
+
+				let leaderboardItem = createElement("div", {
+					class: "leaderboardItem" + (val.isPlayer ? " player" : ""),
+					parent: leaderboardData,
+				});
+				let leaderboardItemValues = createElement("div", {
+					class: "leaderboardItemValues",
+					parent: leaderboardItem,
+				});
+				let leaderboardNumber = createElement("div", {
+					class: "leaderboardNumber",
+					parent: leaderboardItemValues,
+					innerHTML: ((i + 1) / 100).toFixed(2).replace("0.", ""),
+				});
+				let leaderboardName = createElement("div", {
+					class: "leaderboardName",
+					parent: leaderboardItemValues,
+					innerHTML: val.name,
+				});
+				let leaderboardCar = createElement("div", {
+					class: "leaderboardCar",
+					parent: leaderboardItemValues,
+					innerHTML: val.car,
+				});
+				let leaderboardTime = createElement("div", {
+					class: "leaderboardTime",
+					parent: leaderboardItemValues,
+					innerHTML: `${ minutes }:${ seconds }.${ ms }`,
+				});
+			}
+		}, 2900);
+		setTimeout(() => {
+			// rallyFinish.classList.remove("active");
+			rallyFinishText.classList.remove("active");
+			// car.locked = false;
+			// car.handbrake = false;
+		}, 3200);
 	});
 }
 

@@ -63,7 +63,8 @@ class Sprite {
 		let cache = Sprite.allBuffers[src];
 		if (!cache) {
 			let buffer = document.createElement("canvas");
-			let scale = 0.5 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1700 ** 2));
+			// let scale = 0.5 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1700 ** 2));
+			let scale = camera.scale * 0.9;
 			buffer.width =  width  * scale;
 			buffer.height = height * scale;
 
