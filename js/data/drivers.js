@@ -16,7 +16,7 @@ function createDrivers() {
 	for (let i = 0; i < 9; i++) {
 		let name = driverNames[Math.floor(random() * driverNames.length)];
 		let skill = Math.floor(random() / 0.001) * 0.001;
-		let variation = random() * 0.3;
+		let variation = random() * 0.15 + 0.1;
 		let car = Car.types[Math.floor(Car.types.length * random())];
 
 		new Driver({
@@ -29,7 +29,7 @@ function createDrivers() {
 
 	Driver.all.sort((a, b) => a.skill - b.skill);
 	for (let i = 0; i < Driver.all.length; i++) {
-		Driver.all[i].skill = (1 - (1 - Math.round(i / Driver.all.length / 0.001) * 0.001)) ** 3 * 0.92;
+		Driver.all[i].skill = (1 - (1 - Math.round(i / Driver.all.length / 0.001) * 0.001) ** 3) * 0.92;
 		// Driver.all[i].skill = Math.round(i / Driver.all.length / 0.001) * 0.001;
 	}
 }

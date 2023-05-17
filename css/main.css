@@ -4,7 +4,7 @@ body {
 	overflow: hidden;
 }
 body.rally {
-	background: #7BC334;
+	background: #71B132;/*7BC334*/
 }
 canvas {
 	position: absolute;
@@ -417,7 +417,7 @@ canvas {
 	width: min-content;
 	margin-left: auto;
 	margin-right: 0;
-	margin-top: 40px;
+	margin-top: 20px;
 	text-shadow: 3px 3px 5px rgba(23, 23, 23, 0.1);
 
 	position: relative;
