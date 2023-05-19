@@ -3,7 +3,7 @@
 class Smoke {
 	static all = new Set();
 	static update = function() {
-		let now = Performance.lastUpdate;
+		let now = World.time;
 		for (let smoke of Smoke.all) {
 			Smoke.render(smoke);
 			smoke.update(now);

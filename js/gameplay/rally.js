@@ -2,7 +2,8 @@
 
 var innerHitboxGrid = new Grid();
 function getCarOnRally() {
-	let point = car.position;
+	let pointA = car.position;
+	let pointB = car.position.add({ x: Math.cos(car.angle) * 40, y: Math.sin(car.angle) * 40 });
 	let bounds = innerHitboxGrid.getBounds(car);
 	
 	for (let x = bounds.min.x; x <= bounds.max.x; x++) {
@@ -12,7 +13,7 @@ function getCarOnRally() {
 			if (!node) continue;
 
 			for (let body of node) {
-				if (body.containsPoint(point)) {
+				if (body.containsPoint(pointA) || body.containsPoint(pointB)) {
 					return true;
 				}
 			}
@@ -36,8 +37,8 @@ function loadRally(name) {
 		finalTrack.splice(n, 0, track);
 	}
 
-	finalTrack.length = 4;
-	// finalTrack.push(tracks[1]);
+	finalTrack.length = 0;
+	finalTrack.push(tracks[1]);
 
 	if (tracks.start) {
 		tracks.start.name = "Start";
@@ -60,8 +61,8 @@ function loadRally(name) {
 
 	for (let i = 0; i < finalTrack.length; i++) {
 		let map = finalTrack[i];
-		let start = new vec(map.env.road[0].a);
-		let end = new vec(map.env.road[map.env.road.length - 1].d);
+		let start = new vec(map.road[0].a);
+		let end = new vec(map.road[map.road.length - 1].d);
 		let offset = start.mult(-1);
 		trackPosition.add2(offset);
 		// console.log(rallyTracks[name].indexOf(map) + 1);
@@ -119,40 +120,36 @@ function loadRally(name) {
 			curMap.objs.push(body);
 		}
 
-		for (let categoryName of Object.keys(map)) {
-			if (!mapBodies[categoryName]) continue;
-		
-			let category = map[categoryName];
-			for (let typeName of Object.keys(category)) {
-				if (typeName === "spawn") {
-					if (madeSpawn) continue;
-					madeSpawn = true;
+		for (let typeName of Object.keys(map)) {
+			if (typeName === "spawn") {
+				if (madeSpawn) continue;
+				madeSpawn = true;
+			}
+
+			let objFunc = mapBodies[typeName];
+			if (!objFunc) continue;
+			let types = map[typeName];
+	
+			if (typeName === "road") {
+				let newTypes = [];
+				for (let options of types) {
+					newTypes.push(new Bezier(trackPosition.add(options.a), trackPosition.add(options.b), trackPosition.add(options.c), trackPosition.add(options.d)));
 				}
-				let objFunc = mapBodies[categoryName][typeName];
-				if (!objFunc) continue;
-				let types = category[typeName];
-		
-				if (typeName === "road") {
-					let newTypes = [];
-					for (let options of types) {
-						newTypes.push(new Bezier(trackPosition.add(options.a), trackPosition.add(options.b), trackPosition.add(options.c), trackPosition.add(options.d)));
+				objFunc(newTypes);
+			}
+			else {
+				for (let options of types) {
+					let newOptions = { ...options };
+					if (options.position) {
+						newOptions.position = new vec(options.position).add(trackPosition);
 					}
-					objFunc(newTypes);
-				}
-				else {
-					for (let options of types) {
-						let newOptions = { ...options };
-						if (options.position) {
-							newOptions.position = new vec(options.position).add(trackPosition);
-						}
-						else if (options.x && options.y) {
-							newOptions.x += trackPosition.x;
-							newOptions.y += trackPosition.y;
-						}
-						let obj = objFunc(newOptions);
-						if (obj) {
-							curMap.objs.push(obj);
-						}
+					else if (options.x && options.y) {
+						newOptions.x += trackPosition.x;
+						newOptions.y += trackPosition.y;
+					}
+					let obj = objFunc(newOptions);
+					if (obj) {
+						curMap.objs.push(obj);
 					}
 				}
 			}
@@ -306,7 +303,7 @@ function loadRally(name) {
 			else {
 				rallyCountdown.innerHTML = "GO";
 				car.locked = false;
-				startTime = Performance.aliveTime;
+				startTime = World.time;
 
 				setTimeout(() => {
 					if (!unloaded) {
@@ -323,6 +320,17 @@ function loadRally(name) {
 		window.removeEventListener("unloadMap", unloadRally);
 		window.removeEventListener("finishRally", finishRally);
 		rallyCountdown.classList.remove("active");
+
+		car.locked = false;
+
+		// unload image cache
+		for (let obj of curMap.objs) {
+			if (obj.render.sprite && obj.render.sprite.useBuffer) {
+				let sprite = obj.render.sprite;
+				sprite.deleteCache();
+			}
+		}
+
 		unloaded = true;
 	});
 	window.addEventListener("finishRally", finishRally);
@@ -336,7 +344,7 @@ function loadRally(name) {
 		let leaderboardWrap = document.getElementById("leaderboardWrap");
 		let canvWrapper = document.getElementById("canvWrapper");
 
-		let lapTime = Performance.aliveTime - startTime;
+		let lapTime = World.time - startTime;
 
 		rallyFinish.classList.add("active");
 		rallyFinishText.classList.add("active");

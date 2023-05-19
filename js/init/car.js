@@ -48,6 +48,7 @@ const car = Bodies.rectangle(240*0.53, 127*0.53, new vec(0, 0), { // ford rs2000
 	driftHistory: [],
 	tireSkid: [],
 	path: [],
+	pathFrame: 0,
 	smoke: [],
 
 	// controls
@@ -370,9 +371,10 @@ function updateCar() {
 	let maxDriftHistLen = Math.max(1, Math.round(20 / timescale));
 	if (driftHistory.length > maxDriftHistLen) driftHistory.length = maxDriftHistLen;
 
-	car.path.unshift(new vec(car.position));
-	if (car.path.length > 200) {
-		car.path.length = 200;
+	car.pathFrame = (car.pathFrame + 1) % 3;
+	if (car.pathFrame === 0) car.path.unshift(new vec(car.position));
+	if (car.path.length > 100 / World.timescale) {
+		car.path.length = Math.ceil(100 / World.timescale);
 	}
 
 	// skid marks

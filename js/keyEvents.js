@@ -39,6 +39,9 @@ window.addEventListener("keydown", event => {
 				}
 			}
 		}
+		else if (key === "f") {
+			World.timescale = World.timescale === 1 ? 0.5 : 1;
+		}
 	
 		if (key === " ") {
 			// path.getNext();

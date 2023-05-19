@@ -47,7 +47,7 @@ function getTrackTime(track, car) {
 	*/
 	// v_max = sqrt(mu_track * r_corner * g)
 	if (typeof car === "string") car = Car.all[car];
-	if (track.env) track = track.env.road;
+	if (track.road) track = track.road;
 	track = track.map(v => new Bezier(v));
 	let grip = car.tireGrip * Materials.road.tireGrip;
 	let { maxSpeed } = car;

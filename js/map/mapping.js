@@ -40,13 +40,10 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		let index = 0;
 		
 		let out = {
-			env: {
-				roadHitbox: [],
-			},
+			roadHitbox: [],
 		}
 		
-		const envColors = {
-			// ~ env
+		const objColors = {
 			"white": "wall",
 			"#D58850": "checkpoint",
 			"#BF3232": "spawn",
@@ -108,23 +105,25 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			}
 		}
 
-		function crawlNext(elem) {
+		function crawlNext(elem, isMarker = false) {
 			if (elem.tagName === "clipPath") return;
 			if (Array.isArray(elem.children) && elem.children.length > 0) {
+				isMarker = isMarker || elem.properties?.id === "markers";
 				for (let child of elem.children) {
-					crawlNext(child);
+					crawlNext(child, isMarker);
 				}
 			}
 
 			if (elem.tagName === "rect") {
 				let rect = elem.properties;
 				let name = "wall";
-				if (envColors[rect.fill]) {
-					name = envColors[rect.fill];
+				if (objColors[rect.fill]) {
+					name = objColors[rect.fill];
 				}
-				if (!out.env[name]) {
-					out.env[name] = [];
+				if (!out[name]) {
+					out[name] = [];
 				}
+
 
 				let vertices = getVertices(rect);
 				let obj = {
@@ -132,30 +131,36 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
 					vertices: vertices[0],
 				}
-				if (name === "tree") {
-					delete obj.vertices;
+				if (isMarker) {
+					console.log(obj);
+					name = "";
 				}
-				if (name === "spawn") {
-					let a = 0;
-					if (rect.transform) {
-						let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
-						a = transform[0] / 180 * Math.PI;
+				else {
+					if (name === "tree") {
+						delete obj.vertices;
 					}
-					obj.angle = a;
-					delete obj.vertices;
-				}
-				if (name === "trafficCone") {
-					let a = 0;
-					if (rect.transform) {
-						let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
-						a = transform[0] / 180 * Math.PI;
+					if (name === "spawn") {
+						let a = 0;
+						if (rect.transform) {
+							let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
+							a = transform[0] / 180 * Math.PI;
+						}
+						obj.angle = a;
+						delete obj.vertices;
 					}
-					obj.angle = a;
-					obj.width = Math.round(rect.width / 0.1) * 0.1;
-					obj.height = Math.round(rect.height / 0.1) * 0.1;
-					delete obj.vertices;
+					if (name === "trafficCone") {
+						let a = 0;
+						if (rect.transform) {
+							let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
+							a = transform[0] / 180 * Math.PI;
+						}
+						obj.angle = a;
+						obj.width = Math.round(rect.width / 0.1) * 0.1;
+						obj.height = Math.round(rect.height / 0.1) * 0.1;
+						delete obj.vertices;
+					}
+					out[name].push(obj);
 				}
-				out.env[name].push(obj);
 			}
 			else if (elem.tagName === "path") {
 				// parse path
@@ -212,94 +217,98 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				if (path.length > 1) {
 					let pathObj = elem.properties;
 					let name = "wall";
-					if (envColors[pathObj.fill] || envColors[pathObj.stroke]) {
-						name = envColors[pathObj.fill] || envColors[pathObj.stroke];
+					if (objColors[pathObj.fill] || objColors[pathObj.stroke]) {
+						name = objColors[pathObj.fill] || objColors[pathObj.stroke];
 					}
-					if (!out.env[name]) {
-						out.env[name] = [];
+					if (!out[name]) {
+						out[name] = [];
 					}
 					let center = getCenterOfMass(path);
-					
-					if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
-						path.reverse();
-					}
 
-					if (name === "path") {
-						let decompPoints = path.map(v => [v.x, v.y]);
-						decomp.makeCCW(decompPoints);
-						decomp.removeDuplicatePoints(decompPoints, 0.01);
-						path = decompPoints.map(v => ({ x: v[0], y: v[1] }));
-					}
-
-					if (name === "road") {
-						if (path[0].x) {
-							path.shift();
-						}
-						let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
-						let roadPath = generateRoadPath(path, 0);
-						
-						for (let hitbox of roadHitbox) {
-							roundVert(hitbox.position);
-							roundVert(hitbox.vertices);
-							out.env[name + "Hitbox"].push(hitbox);
-						}
-
-						// if (roadPath[0].a.y < roadPath[roadPath.length - 1].a.y) {
-						// 	roadPath.reverse();
-						// }
-						for (let bezier of roadPath) {
-							out.env[name].push(bezier.toObject());
-						}
-					}
-					else if (name === "innerHitbox") {
-						if (!out.env[name]) out.env[name] = [];
-						let roadHitbox = generateRoadHitbox(path, 650);
-						for (let hitbox of roadHitbox) {
-							roundVert(hitbox.position);
-							roundVert(hitbox.vertices);
-							out.env[name].push(hitbox);
-						}
-					}
-					else if (name === "rail") {
-						if (path[0].x) {
-							path.shift();
-						}
+					if (isMarker) {
 						console.log(path);
-						let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
-						for (let obj of hitbox) {
-							if (!out.env.wall) out.env.wall = [];
-							roundVert(obj.position);
-							roundVert(obj.vertices);
-							out.env["wall"].push(obj);
-						}
-					}
-					else if (name === "wall" || name.includes("Hitbox")) {
-						let decompPoints = path.map(v => [v.x, v.y]);
-						decomp.removeDuplicatePoints(decompPoints, 0.01);
-						decomp.makeCCW(decompPoints);
-						let convex = decomp.quickDecomp(decompPoints);
-
-						for (let shape of convex) {
-							let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
-							let center = getCenterOfMass(verts);
-							console.log(...verts, path);
-							out.env[name].push({
-								x: Math.round(center.x),
-								y: Math.round(center.y),
-								vertices: verts,
-							});
-						}
 					}
 					else {
-						if (new vec(path[0]).equals(path[path.length - 1])) {
-							path.pop();
+						if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
+							path.reverse();
 						}
-		
-						out.env[name].push({
-							x: Math.round(center.x),
-							y: Math.round(center.y),
-							vertices: path,
-						});
+	
+						if (name === "path") {
+							let decompPoints = path.map(v => [v.x, v.y]);
+							decomp.makeCCW(decompPoints);
+							decomp.removeDuplicatePoints(decompPoints, 0.01);
+							path = decompPoints.map(v => ({ x: v[0], y: v[1] }));
+						}
+	
+						if (name === "road") {
+							if (path[0].x) {
+								path.shift();
+							}
+							let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
+							let roadPath = generateRoadPath(path, 0);
+							
+							for (let hitbox of roadHitbox) {
+								roundVert(hitbox.position);
+								roundVert(hitbox.vertices);
+								out[name + "Hitbox"].push(hitbox);
+							}
+	
+							// if (roadPath[0].a.y < roadPath[roadPath.length - 1].a.y) {
+							// 	roadPath.reverse();
+							// }
+							for (let bezier of roadPath) {
+								out[name].push(bezier.toObject());
+							}
+						}
+						else if (name === "innerHitbox") {
+							if (!out[name]) out[name] = [];
+							let roadHitbox = generateRoadHitbox(path, 650);
+							for (let hitbox of roadHitbox) {
+								roundVert(hitbox.position);
+								roundVert(hitbox.vertices);
+								out[name].push(hitbox);
+							}
+						}
+						else if (name === "rail") {
+							if (path[0].x) {
+								path.shift();
+							}
+							console.log(path);
+							let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
+							for (let obj of hitbox) {
+								if (!out.wall) out.wall = [];
+								roundVert(obj.position);
+								roundVert(obj.vertices);
+								out["wall"].push(obj);
+							}
+						}
+						else if (name === "wall" || name.includes("Hitbox")) {
+							let decompPoints = path.map(v => [v.x, v.y]);
+							decomp.removeDuplicatePoints(decompPoints, 0.01);
+							decomp.makeCCW(decompPoints);
+							let convex = decomp.quickDecomp(decompPoints);
+	
+							for (let shape of convex) {
+								let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
+								let center = getCenterOfMass(verts);
+								out[name].push({
+									x: Math.round(center.x),
+									y: Math.round(center.y),
+									vertices: verts,
+								});
+							}
+						}
+						else {
+							if (new vec(path[0]).equals(path[path.length - 1])) {
+								path.pop();
+							}
+			
+							out[name].push({
+								x: Math.round(center.x),
+								y: Math.round(center.y),
+								vertices: path,
+							});
+						}
 					}
 				}
 			}

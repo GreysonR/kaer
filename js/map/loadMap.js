@@ -1,376 +1,374 @@
 "use strict";
 
 let mapBodies = {
-	env: {
-		wall: function({ x, y, position, vertices }) {
-			for (let i = 0; i < vertices.length; i++) {
-				vertices[i] = new vec(vertices[i]);
+	wall: function({ x, y, position, vertices }) {
+		for (let i = 0; i < vertices.length; i++) {
+			vertices[i] = new vec(vertices[i]);
+		}
+		if (position) {
+			x = position.x;
+			y = position.y;
+		}
+		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+			isStatic: true,
+			hasCollisions: true,
+			restitution: 0,
+
+			render: {
+				visible: false,
+				background: "#ffffff",
+				round: 0,
 			}
-			if (position) {
-				x = position.x;
-				y = position.y;
+		});
+		return obj;
+	},
+	checkpoint: function({ x, y, vertices, index }) {
+		for (let i = 0; i < vertices.length; i++) {
+			vertices[i] = new vec(vertices[i]);
+		}
+		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+			isStatic: true,
+			hasCollisions: true,
+			isSensor: true,
+			index: index,
+
+			render: {
+				visible: true,
+				background: "#FC9473",
+				layer: -2,
 			}
-			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				isStatic: true,
-				hasCollisions: true,
-				restitution: 0,
+		});
 
-				render: {
-					visible: false,
-					background: "#ffffff",
-					round: 0,
-				}
-			});
-			return obj;
-		},
-		checkpoint: function({ x, y, vertices, index }) {
-			for (let i = 0; i < vertices.length; i++) {
-				vertices[i] = new vec(vertices[i]);
+		return obj;
+	},
+	spawn: function({ x, y, angle }) {
+		lastFov.length = 0;
+		lastPos.length = 0;
+
+		curMap.spawn.position = new vec(x, y);
+		curMap.spawn.angle = angle;
+
+		resetCar();
+	},
+	path: function({ vertices }) {
+		let { path } = curMap;
+		for (let v of vertices) {
+			path.push((new vec(v)));
+		}
+	},
+	policeSpawns: function({ vertices }) {
+		for (let v of vertices) {
+			let pos = new vec(v);
+			curMap.policeSpawnPoints.push(pos);
+			policeSpawnPoints.addBody(pos);
+		}
+	},
+	tree: function({ x, y }) {
+		let obj = Bodies.circle(70, new vec(x, y), {
+			numSides: 6,
+			isStatic: true,
+			hasCollisions: true,
+
+			render: {
+				visible: false,
+				background: "#592B21",
+				layer: 0,
 			}
-			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				isStatic: true,
-				hasCollisions: true,
-				isSensor: true,
-				index: index,
+		});
+		return obj;
+	},
+	roadHitbox: function({ x, y, position, vertices }) {
+		for (let i = 0; i < vertices.length; i++) {
+			vertices[i] = new vec(vertices[i]);
+		}
+		if (position) {
+			x = position.x;
+			y = position.y;
+		}
+		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+			material: "road",
+			hasCollisions: false,
+			isStatic: true,
 
-				render: {
-					visible: true,
-					background: "#FC9473",
-					layer: -2,
-				}
-			});
-
-			return obj;
-		},
-		spawn: function({ x, y, angle }) {
-			lastFov.length = 0;
-			lastPos.length = 0;
-
-			curMap.spawn.position = new vec(x, y);
-			curMap.spawn.angle = angle;
-
-			resetCar();
-		},
-		path: function({ vertices }) {
-			let { path } = curMap;
-			for (let v of vertices) {
-				path.push((new vec(v)));
+			render: {
+				visible: true,
+				background: "#42515560",
+				layer: -1,
 			}
-		},
-		policeSpawns: function({ vertices }) {
-			for (let v of vertices) {
-				let pos = new vec(v);
-				curMap.policeSpawnPoints.push(pos);
-				policeSpawnPoints.addBody(pos);
+		});
+		obj.delete();
+		SurfaceGrid.addBody(obj);
+
+		return obj;
+	},
+	innerHitbox: function({ x, y, position, vertices }) {
+		for (let i = 0; i < vertices.length; i++) {
+			vertices[i] = new vec(vertices[i]);
+		}
+		if (position) {
+			x = position.x;
+			y = position.y;
+		}
+		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+			hasCollisions: false,
+			isStatic: true,
+
+			render: {
+				visible: true,
+				background: "#FA5F3D60",
+				layer: -1,
 			}
-		},
-		tree: function({ x, y }) {
-			let obj = Bodies.circle(70, new vec(x, y), {
-				numSides: 6,
-				isStatic: true,
-				hasCollisions: true,
+		});
+		obj.delete();
+		innerHitboxGrid.addBody(obj);
 
-				render: {
-					visible: false,
-					background: "#592B21",
-					layer: 0,
-				}
-			});
-			return obj;
-		},
-		roadHitbox: function({ x, y, position, vertices }) {
-			for (let i = 0; i < vertices.length; i++) {
-				vertices[i] = new vec(vertices[i]);
+		return obj;
+	},
+	road: function(path) {
+		curMap.road.push(...path);
+	},
+	dirtHitbox: function({ x, y, position, vertices }) {
+		for (let i = 0; i < vertices.length; i++) {
+			vertices[i] = new vec(vertices[i]);
+		}
+		if (position) {
+			x = position.x;
+			y = position.y;
+		}
+		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+			material: "dirt",
+			hasCollisions: false,
+			isStatic: true,
+
+			render: {
+				visible: false,
+				background: "#42515590",
+				layer: -1,
 			}
-			if (position) {
-				x = position.x;
-				y = position.y;
+		});
+		obj.delete();
+		SurfaceGrid.addBody(obj);
+
+		return obj;
+	},
+	coin: function({ x, y }) {
+		let obj = Bodies.circle(50, new vec(x, y), {
+			numSides: 4,
+			isStatic: true,
+			hasCollisions: true,
+			isSensor: true,
+
+			render: {
+				visible: true,
+				background: "#FF7D1E",
+				border: "#8B6955",
+				borderWidth: 10,
+
+				sprite: "coin",
+				spriteWidth: 40,
+				spriteHeight: 40,
+
+				layer: -1,
 			}
-			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				material: "road",
-				hasCollisions: false,
-				isStatic: true,
+		});
 
-				render: {
-					visible: true,
-					background: "#42515560",
-					layer: -1,
-				}
-			});
-			obj.delete();
-			SurfaceGrid.addBody(obj);
-
-			return obj;
-		},
-		innerHitbox: function({ x, y, position, vertices }) {
-			for (let i = 0; i < vertices.length; i++) {
-				vertices[i] = new vec(vertices[i]);
-			}
-			if (position) {
-				x = position.x;
-				y = position.y;
-			}
-			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				hasCollisions: false,
-				isStatic: true,
-
-				render: {
-					visible: true,
-					background: "#FA5F3D60",
-					layer: -1,
-				}
-			});
-			obj.delete();
-			innerHitboxGrid.addBody(obj);
-
-			return obj;
-		},
-		road: function(path) {
-			curMap.road.push(...path);
-		},
-		dirtHitbox: function({ x, y, position, vertices }) {
-			for (let i = 0; i < vertices.length; i++) {
-				vertices[i] = new vec(vertices[i]);
-			}
-			if (position) {
-				x = position.x;
-				y = position.y;
-			}
-			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				material: "dirt",
-				hasCollisions: false,
-				isStatic: true,
-
-				render: {
-					visible: false,
-					background: "#42515590",
-					layer: -1,
-				}
-			});
-			obj.delete();
-			SurfaceGrid.addBody(obj);
-
-			return obj;
-		},
-		coin: function({ x, y }) {
-			let obj = Bodies.circle(50, new vec(x, y), {
-				numSides: 4,
-				isStatic: true,
-				hasCollisions: true,
-				isSensor: true,
-
-				render: {
-					visible: true,
-					background: "#FF7D1E",
-					border: "#8B6955",
-					borderWidth: 10,
-
-					sprite: "coin",
-					spriteWidth: 40,
-					spriteHeight: 40,
-
-					layer: -1,
-				}
-			});
-
-			obj.on("collisionActive", event => {
-				let { bodyA, bodyB, depth } = event;
-				let otherBody = bodyA === obj ? bodyB : bodyA;
-				
-				if (otherBody === car) {
-					obj.render.sprite = "coinClaimed";
-					obj.setCollisions(false);
-				}
-			});
-			return obj;
-		},
-		job: function({ vertices }) {
-			let [ start, end ] = vertices;
-
-			let startObj = Bodies.circle(300, new vec(start), {
-				numSides: 8,
-				isStatic: true,
-				isSensor: true,
-				collisionStartTime: 0,
-				jobTaken: false,
-
-				render: {
-					layer: -1,
-					background: "#29BCFB30",
-					border: "#4DAED890",
-					borderWidth: 30,
-				}
-			});
-			curMap.jobStarts.push(startObj);
-			curMap.objs.push(startObj);
-
-			let collisionDuration = 600;
-			function renderTimerBar() {
-				let obj = startObj.jobTaken ? endObj : startObj;
-				let w = 150;
-				let h = 30;
-				let pos = obj.position;
-				let p = (Performance.lastUpdate - obj.collisionStartTime) / collisionDuration
-
-				// bg
-				ctx.beginPath();
-				ctx.rect(pos.x - w/2, pos.y, w, h);
-				ctx.fillStyle = "#2B2B2B40";
-				ctx.fill();
-
-				// bar
-				ctx.beginPath();
-				ctx.rect(pos.x - w/2, pos.y, w * p, h);
-				ctx.fillStyle = startObj.jobTaken ? "#F9AE78" : "#4DAED8";
-				ctx.fill();
-			}
-			function renderEndArrow() {
-				let diff = car.position.sub(endObj.position);
-				if (diff.length > 600) {
-					let angle = diff.angle - Math.PI/2;
-					let vertices = [{"x":19,"y":0},{"x":37,"y":37},{"x":19,"y":32},{"x":0,"y":37}];
-					vertices = vertices.map(v => new vec(v).sub2({ x: 37/2, y: 27/2 }).mult2(0.7).add2({ x: 0, y: -150}).rotate2(angle).add(car.position));
-	
-					ctx.beginPath();
-					Render.roundedPolygon(vertices, 5);
-					ctx.fillStyle = "#F9A568";
-					ctx.fill();
-				}
-			}
+		obj.on("collisionActive", event => {
+			let { bodyA, bodyB, depth } = event;
+			let otherBody = bodyA === obj ? bodyB : bodyA;
 			
-			startObj.on("collisionStart", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === startObj ? bodyB : bodyA;
+			if (otherBody === car) {
+				obj.render.sprite = "coinClaimed";
+				obj.setCollisions(false);
+			}
+		});
+		return obj;
+	},
+	job: function({ vertices }) {
+		let [ start, end ] = vertices;
 
-				if (otherBody === car) {
-					startObj.collisionStartTime = Performance.lastUpdate;
-					Render.on("beforeLayer0", renderTimerBar);
-				}
-			});
-			startObj.on("collisionEnd", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === startObj ? bodyB : bodyA;
+		let startObj = Bodies.circle(300, new vec(start), {
+			numSides: 8,
+			isStatic: true,
+			isSensor: true,
+			collisionStartTime: 0,
+			jobTaken: false,
 
-				if (otherBody === car) {
-					Render.off("beforeLayer0", renderTimerBar);
-				}
-			});
-				
-			startObj.on("collisionActive", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === startObj ? bodyB : bodyA;
-				
-				if (otherBody === car && Performance.lastUpdate - startObj.collisionStartTime >= collisionDuration) {
-					startObj.delete();
-					startObj.jobTaken = true;
-					curMap.curJob = startObj;
-					Render.on("afterRender", renderEndArrow);
+			render: {
+				layer: -1,
+				background: "#29BCFB30",
+				border: "#4DAED890",
+				borderWidth: 30,
+			}
+		});
+		curMap.jobStarts.push(startObj);
+		curMap.objs.push(startObj);
 
-					for (let obj of curMap.jobStarts) {
-						if (!obj.removed) {
-							obj.delete();
-						}
-						endObj.add();
-						curMap.jobsStarted++;
+		let collisionDuration = 600;
+		function renderTimerBar() {
+			let obj = startObj.jobTaken ? endObj : startObj;
+			let w = 150;
+			let h = 30;
+			let pos = obj.position;
+			let p = (Performance.lastUpdate - obj.collisionStartTime) / collisionDuration
+
+			// bg
+			ctx.beginPath();
+			ctx.rect(pos.x - w/2, pos.y, w, h);
+			ctx.fillStyle = "#2B2B2B40";
+			ctx.fill();
+
+			// bar
+			ctx.beginPath();
+			ctx.rect(pos.x - w/2, pos.y, w * p, h);
+			ctx.fillStyle = startObj.jobTaken ? "#F9AE78" : "#4DAED8";
+			ctx.fill();
+		}
+		function renderEndArrow() {
+			let diff = car.position.sub(endObj.position);
+			if (diff.length > 600) {
+				let angle = diff.angle - Math.PI/2;
+				let vertices = [{"x":19,"y":0},{"x":37,"y":37},{"x":19,"y":32},{"x":0,"y":37}];
+				vertices = vertices.map(v => new vec(v).sub2({ x: 37/2, y: 27/2 }).mult2(0.7).add2({ x: 0, y: -150}).rotate2(angle).add(car.position));
+
+				ctx.beginPath();
+				Render.roundedPolygon(vertices, 5);
+				ctx.fillStyle = "#F9A568";
+				ctx.fill();
+			}
+		}
+		
+		startObj.on("collisionStart", event => {
+			let { bodyA, bodyB } = event;
+			let otherBody = bodyA === startObj ? bodyB : bodyA;
+
+			if (otherBody === car) {
+				startObj.collisionStartTime = Performance.lastUpdate;
+				Render.on("beforeLayer0", renderTimerBar);
+			}
+		});
+		startObj.on("collisionEnd", event => {
+			let { bodyA, bodyB } = event;
+			let otherBody = bodyA === startObj ? bodyB : bodyA;
+
+			if (otherBody === car) {
+				Render.off("beforeLayer0", renderTimerBar);
+			}
+		});
+			
+		startObj.on("collisionActive", event => {
+			let { bodyA, bodyB } = event;
+			let otherBody = bodyA === startObj ? bodyB : bodyA;
+			
+			if (otherBody === car && Performance.lastUpdate - startObj.collisionStartTime >= collisionDuration) {
+				startObj.delete();
+				startObj.jobTaken = true;
+				curMap.curJob = startObj;
+				Render.on("afterRender", renderEndArrow);
+
+				for (let obj of curMap.jobStarts) {
+					if (!obj.removed) {
+						obj.delete();
 					}
+					endObj.add();
+					curMap.jobsStarted++;
 				}
-			});
+			}
+		});
 
+		
+		let endObj = Bodies.circle(300, new vec(end), {
+			numSides: 8,
+			isStatic: true,
+			isSensor: true,
+			collisionStartTime: 0,
+			jobTaken: false,
+
+			render: {
+				layer: -1,
+				background: "#FB812930",
+				border: "#D8874D90",
+				borderWidth: 30,
+			}
+		});
+		endObj.delete();
+		curMap.objs.push(endObj);
+		endObj.on("delete", () => {
+			Render.off("afterRender", renderEndArrow);
+		});
+		endObj.on("collisionStart", event => {
+			let { bodyA, bodyB } = event;
+			let otherBody = bodyA === endObj ? bodyB : bodyA;
+
+			if (otherBody === car) {
+				endObj.collisionStartTime = Performance.lastUpdate;
+				Render.on("beforeLayer0", renderTimerBar);
+			}
+		});
+		endObj.on("collisionEnd", event => {
+			let { bodyA, bodyB } = event;
+			let otherBody = bodyA === endObj ? bodyB : bodyA;
+
+			if (otherBody === car) {
+				Render.off("beforeLayer0", renderTimerBar);
+			}
+		});
+		endObj.on("collisionActive", event => {
+			let { bodyA, bodyB } = event;
+			let otherBody = bodyA === endObj ? bodyB : bodyA;
 			
-			let endObj = Bodies.circle(300, new vec(end), {
-				numSides: 8,
-				isStatic: true,
-				isSensor: true,
-				collisionStartTime: 0,
-				jobTaken: false,
-
-				render: {
-					layer: -1,
-					background: "#FB812930",
-					border: "#D8874D90",
-					borderWidth: 30,
-				}
-			});
-			endObj.delete();
-			curMap.objs.push(endObj);
-			endObj.on("delete", () => {
+			if (otherBody === car && Performance.lastUpdate - endObj.collisionStartTime >= collisionDuration) {
+				endObj.delete();
+				endObj.jobComplete = true;
+				curMap.curJob = null;
+				curMap.jobsCompleted++;
 				Render.off("afterRender", renderEndArrow);
-			});
-			endObj.on("collisionStart", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === endObj ? bodyB : bodyA;
 
-				if (otherBody === car) {
-					endObj.collisionStartTime = Performance.lastUpdate;
-					Render.on("beforeLayer0", renderTimerBar);
-				}
-			});
-			endObj.on("collisionEnd", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === endObj ? bodyB : bodyA;
-
-				if (otherBody === car) {
-					Render.off("beforeLayer0", renderTimerBar);
-				}
-			});
-			endObj.on("collisionActive", event => {
-				let { bodyA, bodyB } = event;
-				let otherBody = bodyA === endObj ? bodyB : bodyA;
-				
-				if (otherBody === car && Performance.lastUpdate - endObj.collisionStartTime >= collisionDuration) {
-					endObj.delete();
-					endObj.jobComplete = true;
-					curMap.curJob = null;
-					curMap.jobsCompleted++;
-					Render.off("afterRender", renderEndArrow);
-
-					for (let obj of curMap.jobStarts) {
-						if (!obj.jobTaken) {
-							obj.add();
-						}
+				for (let obj of curMap.jobStarts) {
+					if (!obj.jobTaken) {
+						obj.add();
 					}
 				}
-			});
-		},
-		trafficCone: function({ x, y, angle }) {
-			let obj = Bodies.rectangle(49, 49, new vec(x, y), {
-				isStatic: false,
-				frictionAngular: 0.05,
-				frictionAir: 0.04,
-				mass: 0.6,
-				hasCollisions: true,
-				render: {
-					visible: true,
-					background: "#E35F26",
-					sprite: "roadBlock/trafficCone.png",
-					layer: 0,
-				}
-			});
-			obj.setAngle(angle);
-			return obj;
-		},
-		endLine: function({ x, y, vertices }) {
-			let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-				hasCollisions: true,
-				isStatic: true,
-				isSensor: true,
-				render: {
-					visible: false,
-					background: "#FF1F0020",
-					layer: 2,
-				}
-			});
+			}
+		});
+	},
+	trafficCone: function({ x, y, angle }) {
+		let obj = Bodies.rectangle(49, 49, new vec(x, y), {
+			isStatic: false,
+			frictionAngular: 0.05,
+			frictionAir: 0.04,
+			mass: 0.6,
+			hasCollisions: true,
+			render: {
+				visible: true,
+				background: "#E35F26",
+				sprite: "roadBlock/trafficCone.png",
+				layer: 0,
+			}
+		});
+		obj.setAngle(angle);
+		return obj;
+	},
+	endLine: function({ x, y, vertices }) {
+		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
+			hasCollisions: true,
+			isStatic: true,
+			isSensor: true,
+			render: {
+				visible: false,
+				background: "#FF1F0020",
+				layer: 2,
+			}
+		});
 
-			obj.on("collisionStart", collision => {
-				let bodyB = collision.bodyB === obj ? collision.bodyA : collision.bodyB;
+		obj.on("collisionStart", collision => {
+			let bodyB = collision.bodyB === obj ? collision.bodyA : collision.bodyB;
 
-				if (bodyB === car) {
-					console.log("Finish");
-					window.dispatchEvent(new CustomEvent("finishRally"));
-				}
-			});
-			return obj;
-		},
+			if (bodyB === car) {
+				console.log("Finish");
+				window.dispatchEvent(new CustomEvent("finishRally"));
+			}
+		});
+		return obj;
 	},
 }
 let timedTracks = {};
@@ -647,24 +645,22 @@ var curMap = {
 
 
 function loadMap(map, name) {
-	for (let categoryName of Object.keys(map)) {
-		if (!mapBodies[categoryName]) continue;
-	
-		let category = map[categoryName];
-		for (let typeName of Object.keys(category)) {
-			let objFunc = mapBodies[categoryName][typeName];
-			if (!objFunc) continue;
-			let types = category[typeName];
+	if (map.env) {
+		map = map.env;
+	}
+	for (let typeName of Object.keys(map)) {
+		let objFunc = mapBodies[typeName];
+		if (!objFunc) continue;
+		let types = map[typeName];
 
-			if (typeName === "road") {
-				objFunc(types);
-			}
-			else {
-				for (let options of types) {
-					let obj = objFunc(options);
-					if (obj) {
-						curMap.objs.push(obj);
-					}
+		if (typeName === "road") {
+			objFunc(types);
+		}
+		else {
+			for (let options of types) {
+				let obj = objFunc(options);
+				if (obj) {
+					curMap.objs.push(obj);
 				}
 			}
 		}
@@ -706,6 +702,8 @@ function loadMap(map, name) {
 	}
 }
 function unloadMap() {
+	window.dispatchEvent(new CustomEvent("unloadMap"));
+	
 	// Remove bodies from grids + world
 	for (let obj of curMap.objs) {
 		if (obj._Grids && obj._Grids[SurfaceGrid.id] !== undefined) {
@@ -780,8 +778,6 @@ function unloadMap() {
 	
 	trackName = "";
 	modeName = "";
-
-	window.dispatchEvent(new CustomEvent("unloadMap"));
 }
 
 function resetCar() {

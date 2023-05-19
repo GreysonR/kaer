@@ -21,7 +21,7 @@ class Sprite {
 			img.decoding = "async";
 			img.loading = "eager";
 			
-			document.body.appendChild(img);
+			// document.body.appendChild(img);
 			img.id = src + "-image";
 			img.style.position = "absolute";
 			img.style.top =  "0px";
@@ -64,7 +64,7 @@ class Sprite {
 		if (!cache) {
 			let buffer = document.createElement("canvas");
 			// let scale = 0.5 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1700 ** 2));
-			let scale = camera.scale * 0.9;
+			let scale = Math.min(1, camera.scale * 0.9);
 			buffer.width =  width  * scale;
 			buffer.height = height * scale;
 
@@ -78,7 +78,7 @@ class Sprite {
 			buffer.style.top = "0px";
 			buffer.style.left = "0px";
 			buffer.style.opacity = 0.0001;
-			document.body.appendChild(buffer);
+			// document.body.appendChild(buffer);
 		}
 		else {
 			this.image = cache;
@@ -97,12 +97,11 @@ class Sprite {
 		ctx.rotate(-angle);
 		ctx.translate(-position.x, -position.y);
 	}
-	delete(deleteCache = false) { // not fully impemented yet
-		if (deleteCache) {
-			delete Sprite.all[src];
-			if (this.useBuffer) {
-				document.body.removeChild(this.image);
-			}
+	deleteCache() {
+		delete Sprite.all[this.src];
+		if (this.useBuffer) {
+			delete Sprite.allBuffers[this.src];
+			// document.body.removeChild(this.image);
 		}
 	}
 

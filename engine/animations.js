@@ -12,14 +12,16 @@ const animations = {
 			}
 		}
 	},
-	create: function({ duration = 600, curve = ease.inOut.sine, start = 0, delay = 0, onstop, onend, callback }) {
+	create: function({ duration = 600, curve = ease.inOut.sine, start = 0, delay = 0, onstop, onend, callback, worldTimescale = true }) {
 		let t = start * duration;
 		let p = t !== 0 && t !== 1 ? curve(t) : t === 0 ? 0 : 1;
 		let run = true;
 
 		function loop() {
 			if (run === true) {
-				t += Performance.delta;
+				let delta = Performance.delta;
+				if (worldTimescale) delta *= World.timescale;
+				t += delta;
 
 				p = curve(t / duration);
 				callback(p);
