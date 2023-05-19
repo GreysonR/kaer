@@ -78,7 +78,7 @@ class Sprite {
 			buffer.style.top = "0px";
 			buffer.style.left = "0px";
 			buffer.style.opacity = 0.0001;
-			// document.body.appendChild(buffer);
+			document.body.appendChild(buffer);
 		}
 		else {
 			this.image = cache;
@@ -100,8 +100,8 @@ class Sprite {
 	deleteCache() {
 		delete Sprite.all[this.src];
 		if (this.useBuffer) {
+			document.body.removeChild(Sprite.allBuffers[this.src]);
 			delete Sprite.allBuffers[this.src];
-			// document.body.removeChild(this.image);
 		}
 	}
 
