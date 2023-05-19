@@ -37,8 +37,8 @@ function loadRally(name) {
 		finalTrack.splice(n, 0, track);
 	}
 
-	finalTrack.length = 0;
-	finalTrack.push(tracks[1]);
+	// finalTrack.length = 0;
+	// finalTrack.push(tracks[3]);
 
 	if (tracks.start) {
 		tracks.start.name = "Start";
