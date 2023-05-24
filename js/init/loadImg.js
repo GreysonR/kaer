@@ -4,7 +4,7 @@
 	
 	Render.loadImg("coin.png");
 	Render.loadImg("coinClaimed.png");
-})();
+});
 
 (function loadMapImg() {
 	Render.loadImg("track1/walls.png");
@@ -24,4 +24,4 @@
 	
 	Render.loadImg("chase1/envForeground.png");
 	Render.loadImg("chase1/envBackground.png");
-})();
+});

@@ -20,8 +20,18 @@
 </head>
 <body>
 	<div id="canvWrapper">
-		<canvas id="canv"></canvas>
+		<canvas id="canv" style="opacity: 1"></canvas>
+		<canvas id="motionBlur"></canvas>
 	</div>
+	
+	<svg class="svgFilter" xmlns="http://www.w3.org/2000/svg" version="1.1">
+		<defs>
+			<filter id="blurFilter">
+				<feGaussianBlur id="blurFilterItem" in="SourceGraphic" stdDeviation="0,0" />
+			</filter>
+		</defs>
+	</svg>
+
 	<input id="mapInput" type="file" accept="image/svg+xml">
 	<input id="pathInput" type="file" accept="image/svg+xml">
 
@@ -44,7 +54,7 @@
 			<div id="chaseScore"></div>
 		</div>
 	</div>
-	<div id="homeWrapper" class="active">
+	<div id="homeWrapperOld" class="active">
 		<div id="modeSelect" class="active">
 			<div class="mode" onclick="selectMode('time')">
 				<span>Timed</span>
@@ -79,6 +89,11 @@
 			<div class="track" onclick="selectTrack('rally1')">
 				<span>Rally 1</span>
 			</div>
+		</div>
+	</div>
+	<div id="homeWrapper" class="active">
+		<div id="map">
+			<!-- <div class="homePoint" style="top: 20vw; left: 50vw;"></div> -->
 		</div>
 	</div>
 	<div id="rallyFinish" class="">
@@ -203,6 +218,8 @@
 <script src="./js/init/loadImg.js"></script>
 <script src="./js/init/car.js"></script>
 <script src="./js/init/materials.js"></script>
+<script src="./js/init/keyEvents.js"></script>
+<script src="./js/init/home.js"></script>
 
 <!-- gameplay -->
 <script src="./js/gameplay/selectTrack.js"></script>
@@ -236,6 +253,7 @@
 <!-- visuals -->
 <script src="./js/vis/skid.js"></script>
 <script src="./js/vis/smoke.js"></script>
+<script src="./js/vis/motionBlur.js"></script>
 
 <!-- data -->
 <script src="./js/data/driverNames.js"></script>
@@ -244,6 +262,4 @@
 
 <!-- ai -->
 <script src="./js/ai/enemyDriver.js"></script>
-
-<script src="./js/keyEvents.js"></script>
 </html>

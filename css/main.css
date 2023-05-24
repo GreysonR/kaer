@@ -12,6 +12,22 @@ canvas {
 	left: 0;
 }
 
+.svgFilter {
+	display: none;
+}
+
+canvas.hidden {
+	pointer-events: none;
+	display: none;
+}
+
+#motionBlur {
+	z-index: 1;
+	pointer-events: none;
+	opacity: 1;
+	filter: url(#blurFilter);
+}
+
 
 #mapInput {
 	position: absolute;

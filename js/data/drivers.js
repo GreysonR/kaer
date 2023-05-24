@@ -40,15 +40,15 @@ createDrivers();
 function getTrackTime(track, car) {
 	/*
 	- Reference track times:
-	  ~ rally1S1: [23, 45],
-	  ~ rally1S2: [20, 41],
-	  ~ rally1S3: [21, 43],
-	  ~ rally1S4: [27, 58],
+	  ~ rally1S1: 23,
+	  ~ rally1S2: 20,
+	  ~ rally1S3: 21,
+	  ~ rally1S4: 27,
 	*/
-	// v_max = sqrt(mu_track * r_corner * g)
 	if (typeof car === "string") car = Car.all[car];
 	if (track.road) track = track.road;
 	track = track.map(v => new Bezier(v));
+
 	let grip = car.tireGrip * Materials.road.tireGrip;
 	let { maxSpeed } = car;
 	let angleDiff = Common.angleDiff;
@@ -76,4 +76,23 @@ function getTrackTime(track, car) {
 		time += len / maxSpeed * dt * 1;
 	}
 	return Math.round(time * 1000 / 0.001) * 0.001;
+}
+function getTrackLength(track) {
+	if (track.road) track = track.road;
+	track = track.map(v => new Bezier(v));
+
+	let length = 0;
+	for (let i = 0; i < track.length; i++) {
+		let bezier = track[i];
+		let lastPt = bezier.getAtT(0);
+		let dt = 0.01;
+
+		for (let t = dt; t <= 1; t += dt) {
+			let pt = bezier.getAtT(t);
+			length += pt.sub(lastPt).length;
+			lastPt = pt;
+		}
+		length += bezier.getAtT(1).sub(lastPt).length;
+	}
+	return length;
 }

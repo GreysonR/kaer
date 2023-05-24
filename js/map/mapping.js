@@ -42,6 +42,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		let out = {
 			roadHitbox: [],
 		}
+		let homeOut = [];
 		
 		const objColors = {
 			"white": "wall",
@@ -105,12 +106,12 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			}
 		}
 
-		function crawlNext(elem, isMarker = false) {
+		function crawlNext(elem, isHomeLayout = false) {
 			if (elem.tagName === "clipPath") return;
 			if (Array.isArray(elem.children) && elem.children.length > 0) {
-				isMarker = isMarker || elem.properties?.id === "markers";
+				isHomeLayout = isHomeLayout || elem.properties?.id === "markers";
 				for (let child of elem.children) {
-					crawlNext(child, isMarker);
+					crawlNext(child, isHomeLayout);
 				}
 			}
 
@@ -131,9 +132,16 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
 					vertices: vertices[0],
 				}
-				if (isMarker) {
+				if (isHomeLayout) {
 					console.log(obj);
 					name = "";
+
+					if (out.roadHitbox) {
+						homeOut.push({
+							x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),
+							y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
+						});
+					}
 				}
 				else {
 					if (name === "tree") {
@@ -225,7 +233,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					}
 					let center = getCenterOfMass(path);
 
-					if (isMarker) {
+					if (isHomeLayout) {
 						console.log(path);
 					}
 					else {
@@ -316,7 +324,15 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		crawlNext(parsed);
 
 		// out = JSON.stringify(out, null, "\t");
-		out = JSON.stringify(out);
+
+		if (homeOut.length > 0) {
+			homeOut.sort((a, b) => b.y - a.y);
+			out = JSON.stringify(homeOut);
+		}
+		else {
+			out.trackLength = Math.round(getTrackLength(out));
+			out = JSON.stringify(out);
+		}
 
 		copyToClipboard(out);
 		console.log(out);

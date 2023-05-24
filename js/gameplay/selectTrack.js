@@ -4,12 +4,14 @@ var trackName = "";
 var homeOpen = true;
 
 function openHome() {
+	document.getElementById("homeWrapperOld").classList.add("active");
 	document.getElementById("homeWrapper").classList.add("active");
 	document.getElementById("modeSelect").classList.add("active");
 	document.getElementById("trackSelect").classList.remove("active");
 	homeOpen = true;
 }
 function closeHome() {
+	document.getElementById("homeWrapperOld").classList.remove("active");
 	document.getElementById("homeWrapper").classList.remove("active");
 	homeOpen = false;
 }

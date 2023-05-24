@@ -1,5 +1,20 @@
 "use strict";
 
+var rallyStages = {
+	rally1: {
+		homePoints: [{"x":1007,"y":1254},{"x":1260,"y":937},{"x":910,"y":746},{"x":1060,"y":447},{"x":872,"y":221}],
+		width: 2000,
+		height: 1378,
+		stages: [ // arrays with what section numbers are in each stage 
+			[1],
+			[2],
+			[3,1],
+			[4,2],
+			[3,1,2],
+		]
+	}
+}
+
 var innerHitboxGrid = new Grid();
 function getCarOnRally() {
 	let pointA = car.position;
@@ -23,22 +38,27 @@ function getCarOnRally() {
 	return false;
 }
 
-function loadRally(name) {
+function loadRally(name, sections = []) {
 	car.locked = true; // lock car so you can't move
 
 	// - create map
 	let finalTrack = [];
 	let tracks = rallyTracks[name];
 
-	for (let i = 0; i < tracks.length; i++) {
-		let track = tracks[i];
-		track.name = name + "S" + (i + 1);
-		let n = Math.floor(Math.random() * (finalTrack.length + 1));
-		finalTrack.splice(n, 0, track);
+	if (sections.length > 0) {
+		finalTrack = sections;
 	}
-
-	// finalTrack.length = 0;
-	// finalTrack.push(tracks[3]);
+	else {
+		for (let i = 0; i < tracks.length; i++) {
+			let track = tracks[i];
+			track.name = name + "S" + (i + 1);
+			let n = Math.floor(Math.random() * (finalTrack.length + 1));
+			finalTrack.splice(n, 0, track);
+		}
+	
+		finalTrack.length = 0;
+		finalTrack.push(tracks[0]);
+	}
 
 	if (tracks.start) {
 		tracks.start.name = "Start";
@@ -291,7 +311,8 @@ function loadRally(name) {
 		rallyCountdown.classList.add("active");
 		car.locked = true;
 		
-		let t = 3;
+		// let t = 3;
+		let t = 1;
 		rallyCountdown.innerHTML = t;
 		function count() {
 			if (unloaded) return;
@@ -349,7 +370,7 @@ function loadRally(name) {
 		rallyFinish.classList.add("active");
 		rallyFinishText.classList.add("active");
 
-		let minutes = (Math.floor(lapTime / 60000) / 100).toFixed(2).replace("0.", "");
+		let minutes = (Math.floor(lapTime % 3600000 / 60000) / 100).toFixed(2).replace("0.", "");
 		let seconds = (Math.floor(lapTime % 60000 / 1000) / 100).toFixed(2).replace("0.", "");
 		let ms = ((lapTime % 60000 % 1000) / 1000).toFixed(3).replace("0.", "");
 		
@@ -389,7 +410,7 @@ function loadRally(name) {
 			for (let i = 0; i < data.length; i++) {
 				let val = data[i];
 				let lapTime = val.time;
-				let minutes = (Math.floor(lapTime / 60000) / 100).toFixed(2).replace("0.", "");
+				let minutes = (Math.floor(lapTime % 3600000 / 60000) / 100).toFixed(2).replace("0.", "");
 				let seconds = (Math.floor(lapTime % 60000 / 1000) / 100).toFixed(2).replace("0.", "");
 				let ms = ((lapTime % 60000 % 1000) / 1000).toFixed(3).replace("0.", "");
 

@@ -75,10 +75,9 @@ var ter = {
 				Performance.history.avgDelta = delta;
 			}
 		},
-		render: function() {
+		render: function(ctx = ter.ctx) {
 			let Performance = ter.Performance;
 			let pixelRatio = ter.Render.pixelRatio;
-			let ctx = ter.ctx;
 
 			Performance.history.fps.push(Performance.fps);
 			Performance.history.delta.push(Performance.delta);
