@@ -27,6 +27,9 @@ canvas.hidden {
 	opacity: 1;
 	filter: url(#blurFilter);
 }
+#motionBlurWrapper {
+	transform-origin: center;
+}
 
 
 #mapInput {

@@ -21,13 +21,15 @@
 <body>
 	<div id="canvWrapper">
 		<canvas id="canv" style="opacity: 1"></canvas>
-		<canvas id="motionBlur"></canvas>
+		<div id="motionBlurWrapper">
+			<canvas id="motionBlur"></canvas>
+		</div>
 	</div>
 	
 	<svg class="svgFilter" xmlns="http://www.w3.org/2000/svg" version="1.1">
 		<defs>
 			<filter id="blurFilter">
-				<feGaussianBlur id="blurFilterItem" in="SourceGraphic" stdDeviation="0,0" />
+				<feGaussianBlur id="blurFilterItem" in="SourceGraphic" result="blur" stdDeviation="0,0" />
 			</filter>
 		</defs>
 	</svg>
@@ -92,8 +94,24 @@
 		</div>
 	</div>
 	<div id="homeWrapper" class="active">
-		<div id="map">
-			<!-- <div class="homePoint" style="top: 20vw; left: 50vw;"></div> -->
+		<script>
+			function buttonMouseDown(button) {
+				button.classList.add("mousedown");
+				window.addEventListener("mouseup", function mouseup() {
+				button.classList.remove("mousedown");
+					window.removeEventListener("mouseup", mouseup);
+				});
+			}
+		</script>
+		<div id="map" class="grass">
+			<div>
+				<h1>GRASS</h1>
+				<div class="bestWrapper">
+					<span class="best">BEST</span>
+					<span class="time">0.0km</span>
+				</div>
+				<div class="startButton" onmousedown="buttonMouseDown(this)" onclick="selectRally('rally1')">START</div>
+			</div>
 		</div>
 	</div>
 	<div id="rallyFinish" class="">

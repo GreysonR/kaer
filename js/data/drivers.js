@@ -65,8 +65,8 @@ function getTrackTime(track, car) {
 			let pt = bezier.getAtT(t);
 			let dir = bezier.getDxAtT(t);
 
-			len += pt.sub(lastPt).length ** 0.8 * 1.8;
-			len += Math.abs(angleDiff(dir.angle, lastDir.angle) / grip) ** 1.13 * 4900;
+			len += pt.sub(lastPt).length ** 0.8 * 1.8; // straight length
+			len += Math.abs(angleDiff(dir.angle, lastDir.angle) / grip) ** 1.13 * 4600; // turn
 			// console.log(pt.sub(lastPt).length, angleDiff(dir.angle, lastDir.angle) / grip * 2000)
 
 			lastPt = pt;

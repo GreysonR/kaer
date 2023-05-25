@@ -152,49 +152,115 @@
 	left: 0;
 	z-index: 7;
 
+	background-color: #7BC334;
+
 	width: 100vw;
 	height: 100vh;
 }
 #homeWrapper.active {
-	/* display: block; */
+	display: block;
 }
-#map {
-	position: relative;
+
+#homeWrapper #map {
+	background-image: url("../img/map/map1.png");
+	background-size: 3200px;
+	background-position: center;
+	background-repeat: no-repeat;
+
 	width: 100vw;
 	height: 100vh;
 
-	overflow-y: scroll;
-	overflow-x: hidden;
-}
-#map::-webkit-scrollbar {
-	/* display: none; */
-}
-#map .rally {
-	width: 100vw;
-	height: 100vw;
-
-	background-image: url("../img/map/map1.png");
-	background-size: contain;
-	background-repeat: no-repeat;
-	background-position: center;
-}
-
-/* #map .rally#rally1 {
-	background-image: url("../img/map/map1.png");
-	height: 68.9vw;
-} */
-
-.homePoint {
+	margin: 0;
 	position: absolute;
-	z-index: 3;
+	top: 0;
+	left: 0;
 
-	width:  1.6vw;
-	height: 1.6vw;
-	margin: -2.934vw;
-	background-color: #858585;
-	border: 0.7vw solid #5B5B5B;
-	border-radius: 0.9vw;
-	transform: translate(50%, 50%) rotate(45deg);
+	user-select: none;
+}
+#homeWrapper #map.grass {
+	background-image: url("../img/map/map1.png");
+}
+#homeWrapper #map>div {
+	position: absolute;
+	top:  50vh;
+	left: 50vw;
+	transform: translate(-50%, -50%);
+}
+#homeWrapper #map h1 {
+	font-family: "Rubik", Arial, sans-serif;
+	font-size: 120px;
+	font-weight: 700;
+	text-align: center;
+	color: white;
 
+	margin: 0;
+	
+	padding: 20px;
+	padding-left:  60px;
+	padding-right: 60px;
+	background-color: #2F3343B2;
+	border-radius: 25px;
+	backdrop-filter: blur(6px);
+	text-shadow: 4px 5px 12px rgba(0, 0, 0, 0.2);
+	box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.15);
+}
+#homeWrapper #map .bestWrapper {
+	width: max-content;
+	background-color: #FFFFFF1A;
+	box-shadow: 4px 4px 20px rgba(0, 0, 0, 0.15);
+	backdrop-filter: blur(6px);
+	border-radius: 9px;
+
+	padding: 4px;
+	padding-left:  25px;
+	padding-right: 25px;
+	margin-left:  auto;
+	margin-right: auto;
+	
+	position: relative;
+	top: -23px;
+}
+#homeWrapper #map .bestWrapper span {
+	display: inline-block;
+
+	font-family: "Poppins", Arial, sans-serif;
+	font-weight: 700;
+	font-style: italic;
+	color: white;
+	font-size: 23px;
+}
+#homeWrapper #map .bestWrapper span:first-child {
+	margin-right: 10px;
+}
+#homeWrapper #map .bestWrapper span:nth-child(2) {
+	color: #FF4A3E;
+	text-shadow: 1px 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+#homeWrapper #map .startButton {
+	display: block;
+	width: max-content;
+
+	font-family: "Rubik", Arial, sans-serif;
+	text-align: center;
+	font-weight: 700;
+	color: white;
+	font-size: 25px;
+
+	padding: 6px;
+	padding-left:  15px;
+	padding-right: 15px;
+	background-color: #FF4A3E;
+	border: 8px solid #CD3B32;
+	border-radius: 16px;
+	margin-left:  auto;
+	margin-right: auto;
+
+	transition: transform 70ms cubic-bezier(0.165, 0.84, 0.44, 1);
 	cursor: pointer;
+}
+#homeWrapper #map .startButton.mousedown {
+	transform: scale(0.92);
+	background-color: #e44035;
+	color: #eaeaea;
 }

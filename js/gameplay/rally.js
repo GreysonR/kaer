@@ -56,8 +56,8 @@ function loadRally(name, sections = []) {
 			finalTrack.splice(n, 0, track);
 		}
 	
-		finalTrack.length = 0;
-		finalTrack.push(tracks[0]);
+		// finalTrack.length = 0;
+		// finalTrack.push(tracks[0]);
 	}
 
 	if (tracks.start) {
@@ -311,8 +311,7 @@ function loadRally(name, sections = []) {
 		rallyCountdown.classList.add("active");
 		car.locked = true;
 		
-		// let t = 3;
-		let t = 1;
+		let t = 3;
 		rallyCountdown.innerHTML = t;
 		function count() {
 			if (unloaded) return;

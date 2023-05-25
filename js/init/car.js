@@ -511,9 +511,9 @@ Render.on("beforeLayer0", () => {
 	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
 	camera.fov = avgFov;
 
-	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 14));
+	let curPos = car.position.add(carUp.mult(carUp.dot(car.velocity) * 10)); // velocity) * 14));
 	lastPos.unshift(curPos);
-	let maxPosLen = Math.max(1, Math.round(Performance.history.avgFps * 0.1) * 2);
+	let maxPosLen = Math.max(1, Math.round(Performance.history.avgFps * 0.1)); // avgFps * 0.1) * 2
 	if (lastPos.length > maxPosLen) {
 		lastPos.pop();
 		if (Math.abs(lastPos.length - maxPosLen) > 6)

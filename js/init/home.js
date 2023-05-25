@@ -41,15 +41,9 @@ function loadMap() {
 
 	mapElem.scrollTo(0, mapElem.scrollHeight);
 }
-window.addEventListener("load", loadMap);
+// window.addEventListener("load", loadMap);
 
-function openStageInfo(rallyName, stageName) {
-	let stage = rallyStages[rallyName].stages[stageName];
-	let sections = rallyTracks[rallyName];
-
-	console.log(stage);
-	// loadRally(rallyName, stage.map(v => sections[v]));
-
+function selectRally(rallyName) {
 	let newMode = modeName;
 
 	laps = 0;
@@ -64,7 +58,7 @@ function openStageInfo(rallyName, stageName) {
 	document.getElementById("overhead").className = newMode;
 
 	document.body.classList.add("rally");
-	loadRally(rallyName, stage.map(v => sections[v - 1]));
+	loadRally(rallyName);
 	modeName = "rally";
 	trackName = "rally";
 }
