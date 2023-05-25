@@ -33,16 +33,6 @@ class Sprite {
 			// cache image
 			Sprite.all[src] = img;
 
-			// img.src = Sprite.imgDir + src;
-			// img.decode().then(() => {
-			// 	sprite.image = img;
-			// 	sprite.loaded = true;
-			// 	sprite.trigger("load");
-			// 	sprite.events.load.length = 0;
-			// }).catch(err => {
-			// 	console.log(Sprite.imgDir + src, err, img);
-			// });
-
 			img.onload = function() {
 				sprite.image = img;
 				sprite.loaded = true;

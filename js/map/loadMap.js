@@ -125,7 +125,7 @@ let mapBodies = {
 		return obj;
 	},
 	road: function(path) {
-		curMap.road.push(...path);
+		// curMap.road.push(...path);
 	},
 	dirtHitbox: function({ x, y, position, vertices }) {
 		for (let i = 0; i < vertices.length; i++) {
@@ -493,7 +493,7 @@ let allMaps = {
 		]
 	},
 	chase2: { objs: [] },
-	rally1S1: { objs: [
+	rally1S1: [
 		{
 			sprite: "rally1/section1/rally1S1FG.png",
 			width:  13918,
@@ -508,8 +508,8 @@ let allMaps = {
 			position: new vec(13918/2, 15768/2),
 			layer: -4,
 		},
-	] },
-	rally1S2: { objs: [
+	],
+	rally1S2: [
 		{
 			sprite: "rally1/section2/rally1S2FG.png",
 			width:  13918,
@@ -524,8 +524,8 @@ let allMaps = {
 			position: new vec(13918/2, 15768/2),
 			layer: -4,
 		},
-	] },
-	rally1S3: { objs: [
+	],
+	rally1S3: [
 		{
 			sprite: "rally1/section3/rally1S3FG.png",
 			width:  13918,
@@ -540,8 +540,8 @@ let allMaps = {
 			position: new vec(13918/2, 15768/2),
 			layer: -4,
 		},
-	] },
-	rally1S4: { objs: [
+	],
+	rally1S4: [
 		{
 			sprite: "rally1/section4/rally1S4FG.png",
 			width:  13918,
@@ -556,8 +556,8 @@ let allMaps = {
 			position: new vec(13918/2, 15768/2),
 			layer: -4,
 		},
-	] },
-	rally1Start: { objs: [
+	],
+	rally1Start: [
 		{
 			sprite: "rally1/start/rally1StartFG.png",
 			width:  11781,
@@ -572,8 +572,8 @@ let allMaps = {
 			position: new vec(11781/2, 2232/2),
 			layer: -4,
 		},
-	] },
-	rally1End: { objs: [
+	],
+	rally1End: [
 		{
 			sprite: "rally1/end/rally1EndFG.png",
 			width:  11781,
@@ -588,7 +588,7 @@ let allMaps = {
 			position: new vec(11781/2, 2232/2),
 			layer: -4,
 		},
-	] },
+	],
 }
 
 // load chase 2 objs

@@ -75,9 +75,10 @@ var ter = {
 				Performance.history.avgDelta = delta;
 			}
 		},
-		render: function(ctx = ter.ctx) {
+		render: function() {
 			let Performance = ter.Performance;
 			let pixelRatio = ter.Render.pixelRatio;
+			let ctx = ter.ctx;
 
 			Performance.history.fps.push(Performance.fps);
 			Performance.history.delta.push(Performance.delta);
@@ -160,7 +161,7 @@ var ter = {
 						}
 						continue;
 					}
-					if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
+					if (!bodyB.hasCollisions || bodyA.parent && bodyA.parent === bodyB.parent)
 						continue;
 
 

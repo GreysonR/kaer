@@ -38,57 +38,107 @@ function getCarOnRally() {
 	return false;
 }
 
-function loadRally(name, sections = []) {
+function loadRally(name) {
 	car.locked = true; // lock car so you can't move
 
 	// - create map
-	let finalTrack = [];
 	let tracks = rallyTracks[name];
-
-	if (sections.length > 0) {
-		finalTrack = sections;
-	}
-	else {
+	let sectionBodies = [];
+	function getNextSectionOrder() {
+		let finalTrack = [];
 		for (let i = 0; i < tracks.length; i++) {
 			let track = tracks[i];
 			track.name = name + "S" + (i + 1);
 			let n = Math.floor(Math.random() * (finalTrack.length + 1));
 			finalTrack.splice(n, 0, track);
 		}
-	
-		// finalTrack.length = 0;
-		// finalTrack.push(tracks[0]);
+		return finalTrack;
 	}
+	let finalTrack = getNextSectionOrder();
+
+	// finalTrack.length = 0;
+	// finalTrack.push(tracks[0]);
 
 	if (tracks.start) {
 		tracks.start.name = "Start";
 		finalTrack.unshift(tracks.start);
 	}
-	if (tracks.end) {
+	if (tracks.end && false) {
 		tracks.end.name = "End";
 		finalTrack.push(tracks.end);
 	}
 	
 
 	// - load map
+	// ~ load section sprites
 	let trackPosition = new vec(0, 0);
 	let madeSpawn = false;
-	let objsLoaded = 0;
-	let objsTotal = finalTrack.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
-		let objs = cur.name === "Start" || cur.name === "End" ? allMaps[name + cur.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)].objs : [];
+	let lastCheckpoint = null;
+	let sectionsLoaded = 0;
+	let curSection = 0;
+	let loadedSection = 0;
+	let sectionsTotal = tracks.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
+		let objs = cur.name === "Start" || cur.name === "End" ? allMaps[name + cur.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] : [];
 		return total + objs.length;
 	}, 0);
 
-	for (let i = 0; i < finalTrack.length; i++) {
-		let map = finalTrack[i];
+	for (let i = 0; i < tracks.length; i++) {
+		let map = tracks[i];
+		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
+		for (let obj of objs) {
+			let { width, height, position, sprite, layer } = obj;
+			let body = Bodies.rectangle(width, height, new vec(0, 0), {
+				isStatic: true,
+				hasCollisions: false,
+		
+				render: {
+					visible: true,
+					alwaysRender: false,
+					background: "transparent",
+					border: "transparent",
+					sprite: sprite,
+					useBuffer: true,
+					layer: layer,
+					opacity: 1,
+				}
+			});
+
+			body.render.sprite.on("load", () => {
+				console.log(body.render.sprite.src + " loaded");
+				sectionsLoaded++;
+				body.delete();
+			});
+		}
+	}
+
+	function unloadSection(sectionIndex) {
+		let bodies = sectionBodies[sectionIndex];
+		for (let body of bodies) {
+			if (body._Grids && body._Grids[SurfaceGrid.id] !== undefined) {
+				SurfaceGrid.removeBody(body);
+			}
+			if (body._Grids && body._Grids[innerHitboxGrid.id] !== undefined) {
+				innerHitboxGrid.removeBody(body);
+			}
+			if (!body.removed) {
+				body.delete();
+			}
+		}
+		delete sectionBodies[sectionIndex];
+		delete finalTrack[sectionIndex];
+	}
+	function loadNextSection(section) {
+		let map = section;
+		let curSectionIndex = loadedSection;
+		let curSectionBodies = [];
 		let start = new vec(map.road[0].a);
 		let end = new vec(map.road[map.road.length - 1].d);
 		let offset = start.mult(-1);
 		trackPosition.add2(offset);
 		// console.log(rallyTracks[name].indexOf(map) + 1);
 
-		// add extra visual stuff
-		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name].objs : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)].objs : [];
+		// load bg + fg sprites
+		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
 		for (let obj of objs) {
 			let { width, height, position, sprite, layer } = obj;
 			let body = Bodies.rectangle(width, height, trackPosition.add(position), {
@@ -106,40 +156,10 @@ function loadRally(name, sections = []) {
 					opacity: 1,
 				}
 			});
-
-
-			// keep object in view so it doesn't load out
-			// let realPosition = new vec(body.position);
-			body.render.sprite.on("load", () => {
-				console.log(body.render.sprite.src + " loaded");
-				objsLoaded++;
-
-				// let image = body.render.sprite.image;
-				// document.body.appendChild(image);
-				// image.id = image.src + "-image";
-				// image.style.position = "absolute";
-				// image.style.top =  "0px";
-				// image.style.left = "0px";
-				// image.style.opacity = 0.001;
-
-				// body.on("beforeUpdate", () => {
-				// 	let { bounds: cameraBounds } = camera;
-				// 	let bounds = {
-				// 		min: realPosition.sub({ x: width/2, y: height/2 }),
-				// 		max: realPosition.add({ x: width/2, y: height/2 }),
-				// 	}
-				// 	if (cameraBounds.min.y > bounds.max.y || cameraBounds.max.y < bounds.min.y || cameraBounds.min.x > bounds.max.x || cameraBounds.max.x < bounds.min.x) {
-				// 		body.setPosition(cameraBounds.max.add(bounds.max.sub(bounds.min).mult(0.5)).sub(100));
-				// 	}
-				// 	else if (!body.position.equals(realPosition)) {
-				// 		body.setPosition(new vec(realPosition));
-				// 	}
-				// });
-			});
-			
-			curMap.objs.push(body);
+			curSectionBodies.push(body);
 		}
 
+		// load section bodies
 		for (let typeName of Object.keys(map)) {
 			if (typeName === "spawn") {
 				if (madeSpawn) continue;
@@ -151,11 +171,62 @@ function loadRally(name, sections = []) {
 			let types = map[typeName];
 	
 			if (typeName === "road") {
-				let newTypes = [];
+				let beziers = [];
 				for (let options of types) {
-					newTypes.push(new Bezier(trackPosition.add(options.a), trackPosition.add(options.b), trackPosition.add(options.c), trackPosition.add(options.d)));
+					beziers.push(new Bezier(trackPosition.add(options.a), trackPosition.add(options.b), trackPosition.add(options.c), trackPosition.add(options.d)));
 				}
-				objFunc(newTypes);
+
+				// add checkpoints
+				for (let i = 0; i < beziers.length; i++) {
+					let bezier = beziers[i];
+					let pt = bezier.a;
+					let dx = bezier.getDxAtT(0).normalize();
+					let angle = dx.angle;
+			
+					let obj = Bodies.rectangle(70, 850, new vec(pt), {
+						isStatic: true,
+						isSensor: true,
+						isCheckpoint: true,
+						taken: false,
+						isTransition: i === 0,
+						render: {
+							background: "red",
+							visible: false,
+						}
+					});
+					obj.setAngle(angle);
+					curSectionBodies.push(obj);
+			
+					if (!lastCheckpoint) {
+						lastCheckpoint = 1;
+					}
+					else if (lastCheckpoint === 1) {
+						lastCheckpoint = obj;
+					}
+					
+					obj.on("collisionStart", event => {
+						let otherBody = event.bodyA === obj ? event.bodyB : event.bodyA;
+			
+						if (otherBody === car) {
+							if (!obj.taken && obj.isTransition) { // trigger area load
+								curSection = curSectionIndex;
+								
+								if (!finalTrack[curSectionIndex + 1]) {
+									finalTrack.push(...getNextSectionOrder());
+								}
+								loadNextSection(finalTrack[curSectionIndex + 1]);
+								console.log("loaded " + finalTrack[curSectionIndex + 1].name);
+
+								if (curSectionIndex >= 2) {
+									unloadSection(curSectionIndex - 2);
+								}
+							}
+
+							lastCheckpoint = obj;
+							obj.taken = true;
+						}
+					});
+				}
 			}
 			else {
 				for (let options of types) {
@@ -169,7 +240,7 @@ function loadRally(name, sections = []) {
 					}
 					let obj = objFunc(newOptions);
 					if (obj) {
-						curMap.objs.push(obj);
+						curSectionBodies.push(obj);
 					}
 				}
 			}
@@ -177,41 +248,8 @@ function loadRally(name, sections = []) {
 
 		trackPosition.sub2(offset);
 		trackPosition.add2(new vec(0, 20).add2(end.sub(start)));
-	}
-
-	// add checkpoints
-	let lastCheckpoint = null;
-	for (let bezier of curMap.road) {
-		let pt = bezier.a;
-		let dx = bezier.getDxAtT(0).normalize();
-		let angle = dx.angle;
-
-		let obj = Bodies.rectangle(70, 850, new vec(pt), {
-			isStatic: true,
-			isSensor: true,
-			isCheckpoint: true,
-			render: {
-				background: "red",
-				visible: false,
-			}
-		});
-		obj.setAngle(angle);
-		curMap.objs.push(obj);
-
-		if (!lastCheckpoint) {
-			lastCheckpoint = 1;
-		}
-		else if (lastCheckpoint === 1) {
-			lastCheckpoint = obj;
-		}
-
-		obj.on("collisionStart", event => {
-			let otherBody = event.bodyA === obj ? event.bodyB : event.bodyA;
-
-			if (otherBody === car) {
-				lastCheckpoint = obj;
-			}
-		});
+		loadedSection++;
+		sectionBodies.push(curSectionBodies);
 	}
 
 
@@ -227,7 +265,7 @@ function loadRally(name, sections = []) {
 
 	// - Get track times for cars in rally
 	let trackTimes = {}
-	for (let track of finalTrack) {
+	for (let track of tracks) {
 		let trackName = track.name;
 		if (trackName !== "Start" && trackName !== "End") {
 			if (!trackTimes[trackName]) trackTimes[trackName] = {};
@@ -252,7 +290,7 @@ function loadRally(name, sections = []) {
 		if (performance === 0) performance += Math.random() * 0.05;
 		let time = 0;
 
-		for (let track of finalTrack) {
+		for (let track of tracks) { // let track of finalTrack, temp
 			let trackName = track.name;
 			if (trackName !== "Start" && trackName !== "End") {
 				let times = trackTimes[trackName][car];
@@ -265,11 +303,14 @@ function loadRally(name, sections = []) {
 	function renderLoadingBar() {
 		let width = 100;
 		let height = 15;
-		let p = objsLoaded / objsTotal;
+		let p = sectionsLoaded / sectionsTotal;
 		let position = new vec(canv.width/2, canv.height/2);
 
 		if (p >= 1) {
 			Render.off("afterRestore", renderLoadingBar);
+
+			loadNextSection(finalTrack[0]);
+			loadNextSection(finalTrack[1]);
 			startCountdown();
 		}
 
@@ -291,7 +332,7 @@ function loadRally(name, sections = []) {
 	function checkToResetCar() {
 		let onRally = getCarOnRally();
 
-		if (!onRally) {
+		if (!onRally && lastCheckpoint && !car.isSensor) {
 			// reset car
 			car.setPosition(new vec(lastCheckpoint.position));
 			car.velocity.set(new vec(0, 0));
@@ -344,7 +385,7 @@ function loadRally(name, sections = []) {
 		car.locked = false;
 
 		// unload image cache
-		for (let obj of curMap.objs) {
+		for (let obj of curMap.objs) { // replace with sectionBodies
 			if (obj.render.sprite && obj.render.sprite.useBuffer) {
 				let sprite = obj.render.sprite;
 				sprite.deleteCache();
@@ -454,4 +495,4 @@ function loadRally(name, sections = []) {
 
 // car.acceleration *= 3;
 // car.maxSpeed *= 3;
-// car.setCollisions(false);
+// car.isSensor = true;
