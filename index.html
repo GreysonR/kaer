@@ -16,6 +16,7 @@
 	<link rel="stylesheet" href="./css/main.css">
 	<link rel="stylesheet" href="./css/home.css">
 	<link rel="stylesheet" href="./css/leaderboard.css">
+	<link rel="stylesheet" href="./css/rally.css">
 
 </head>
 <body>
@@ -38,7 +39,20 @@
 	<input id="pathInput" type="file" accept="image/svg+xml">
 
 	<div id="rallyOverhead">
+		<div id="keypressOverhead">Press any key to start</div>
 		<div id="rallyCountdown">3</div>
+	</div>
+	<div id="rallyUI">
+		<div id="progressWrapper">
+			<div class="marker" id="playerMarker" style="top: 55%"></div>
+			<div class="marker" id="opponentMarker" style="top: 75%"></div>
+			<div id="splits">
+				<div class="split" style="height: 30%;"></div>
+				<div class="split" style="height: 25%;"></div>
+				<div class="split complete" style="height: 25%;"></div>
+				<div class="split good" style="height: 20%;"></div>
+			</div>
+		</div>
 	</div>
 	<div id="overhead">
 		<div id="timingOverhead">

@@ -23,7 +23,7 @@ window.addEventListener("resize", () => {
 Render.on("afterRender", () => {
 	if (!useMotionBlur) return;
 	let filter = document.getElementById("blurFilterItem");
-	filter.setAttribute("stdDeviation", `${car.velocity.length ** 0.4 * 0.6 + 1.4}`);
+	filter.setAttribute("stdDeviation", `${(car.velocity.length ** 0.4 * 0.9 + 1.8) * camera.scale}`);
 
 	motionBlurCtx.save();
 	motionBlurCtx.clearRect(0, 0, motionBlur.width, motionBlur.height);

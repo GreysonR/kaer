@@ -76,6 +76,7 @@ function loadRally(name) {
 	let lastCheckpoint = null;
 	let sectionsLoaded = 0;
 	let curSection = 0;
+	let bufferedSprites = [];
 	let loadedSection = 0;
 	let sectionsTotal = tracks.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
 		let objs = cur.name === "Start" || cur.name === "End" ? allMaps[name + cur.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] : [];
@@ -104,9 +105,10 @@ function loadRally(name) {
 			});
 
 			body.render.sprite.on("load", () => {
-				console.log(body.render.sprite.src + " loaded");
+				// console.log(body.render.sprite.src + " loaded");
 				sectionsLoaded++;
 				body.delete();
+				bufferedSprites.push(body.render.sprite);
 			});
 		}
 	}
@@ -347,33 +349,40 @@ function loadRally(name) {
 	function startCountdown() {
 		let rallyOverhead = document.getElementById("rallyOverhead");
 		let rallyCountdown = document.getElementById("rallyCountdown");
+		let keypressOverhead = document.getElementById("keypressOverhead");
 
+		keypressOverhead.classList.add("active");
 		rallyOverhead.classList.add("active");
-		rallyCountdown.classList.add("active");
-		car.locked = true;
-		
-		let t = 3;
-		rallyCountdown.innerHTML = t;
-		function count() {
-			if (unloaded) return;
-			t--;
-			if (t) {
-				rallyCountdown.innerHTML = t;
-				setTimeout(count, 1000);
-			}
-			else {
-				rallyCountdown.innerHTML = "GO";
-				car.locked = false;
-				startTime = World.time;
 
-				setTimeout(() => {
-					if (!unloaded) {
-						rallyCountdown.classList.remove("active");
-					}
-				}, 1500);
+		window.addEventListener("keydown", function startCounting() {
+			window.removeEventListener("keydown", startCounting);
+			rallyCountdown.classList.add("active");
+			keypressOverhead.classList.remove("active");
+			car.locked = true;
+			
+			let t = 1;
+			rallyCountdown.innerHTML = t;
+			function count() {
+				if (unloaded) return;
+				t--;
+				if (t) {
+					rallyCountdown.innerHTML = t;
+					setTimeout(count, 1000);
+				}
+				else {
+					rallyCountdown.innerHTML = "GO";
+					car.locked = false;
+					startTime = World.time;
+	
+					setTimeout(() => {
+						if (!unloaded) {
+							rallyCountdown.classList.remove("active");
+						}
+					}, 1500);
+				}
 			}
-		}
-		setTimeout(count, 1000);
+			setTimeout(count, 1000);
+		});
 	}
 
 	window.addEventListener("unloadMap", function unloadRally() {
@@ -385,11 +394,12 @@ function loadRally(name) {
 		car.locked = false;
 
 		// unload image cache
-		for (let obj of curMap.objs) { // replace with sectionBodies
-			if (obj.render.sprite && obj.render.sprite.useBuffer) {
-				let sprite = obj.render.sprite;
-				sprite.deleteCache();
-			}
+		for (let sprite of bufferedSprites) {
+			sprite.deleteCache();
+		}
+		// unload map sections
+		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
+			unloadSection(i);
 		}
 
 		unloaded = true;

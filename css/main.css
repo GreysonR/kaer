@@ -174,15 +174,18 @@ canvas.hidden {
 	top: 0;
 	left: 0;
 	z-index: 5;
+
+	width: 100vw;
+	height: 100vh;
 }
 #rallyOverhead.active {
 	display: block;
 }
 
-#rallyCountdown {
+#rallyCountdown, #keypressOverhead {
 	display: none;
 	position: absolute;
-	top: 10vh;
+	top: 150px;
 	left: 50vw;
 	transform: translateX(-50%);
 
@@ -196,7 +199,14 @@ canvas.hidden {
 	font-feature-settings: 'ss04' on, 'ss01' on;
 	text-shadow: 5px 4px 4px rgba(38, 38, 38, 0.25);
 }
-#rallyCountdown.active {
+#keypressOverhead {
+    font-size: 24px;
+    line-height: initial;
+    width: 300px;
+	top: unset;
+	bottom: 100px;
+}
+#rallyCountdown.active, #keypressOverhead.active {
 	display: block;
 }
 
