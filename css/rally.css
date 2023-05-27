@@ -33,13 +33,13 @@
 	height: 100%;
 }
 #splits .split {
-	position: relative;
+	position: absolute;
 	width: 10px;
 	background: #D8D8D84D;
-	border-radius: 0px;
+	border-radius: 2px;
 	box-shadow: 1px 2px 6px rgba(0, 0, 0, 0.05);
 }
-#splits .split:first-child {
+/* #splits .split:first-child {
 	border-radius: 2px 2px 0 0;
 }
 #splits .split:last-child {
@@ -47,8 +47,8 @@
 }
 #splits .split:only-child {
 	border-radius: 2px;
-}
-#splits .split:not(:first-child):not(.complete)::before {
+} */
+#splits .split:not(.top):not(.complete)::before {
 	content: "";
 	display: block;
 	position: absolute;

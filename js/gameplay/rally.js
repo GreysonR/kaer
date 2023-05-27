@@ -15,6 +15,10 @@ var rallyStages = {
 	}
 }
 
+function pxToKm(px) {
+	return px / 20000;
+}
+
 var innerHitboxGrid = new Grid();
 function getCarOnRally() {
 	let pointA = car.position;
@@ -44,9 +48,11 @@ function loadRally(name) {
 	// - create map
 	let tracks = rallyTracks[name];
 	let sectionBodies = [];
+	let sectionSegments =  {};
+	let sectionDistances = {};
 	function getNextSectionOrder() {
 		let finalTrack = [];
-		for (let i = 0; i < tracks.length; i++) {
+		for (let i = 0; i < 1; i++) { // for (let i = 0; i < tracks.length; i++) { change
 			let track = tracks[i];
 			track.name = name + "S" + (i + 1);
 			let n = Math.floor(Math.random() * (finalTrack.length + 1));
@@ -77,12 +83,14 @@ function loadRally(name) {
 	let sectionsLoaded = 0;
 	let curSection = 0;
 	let bufferedSprites = [];
+	let sectionTrackPositions = [];
+	let splitDistances = [-1146]; // the starting position of the car is at 1146
+	let driverSectionTimes = {};
 	let loadedSection = 0;
 	let sectionsTotal = tracks.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
 		let objs = cur.name === "Start" || cur.name === "End" ? allMaps[name + cur.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] : [];
 		return total + objs.length;
 	}, 0);
-
 	for (let i = 0; i < tracks.length; i++) {
 		let map = tracks[i];
 		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
@@ -113,6 +121,35 @@ function loadRally(name) {
 		}
 	}
 
+	// ~ create segments for finding where you are on the track
+	for (let track of Object.values(tracks)) {
+		let segments = [];
+		let distances = [0];
+		let lastPt = new vec(track.road[0].a);
+
+		segments.push(lastPt);
+		for (let bezier of track.road) {
+			bezier = new Bezier(bezier);
+			let n = 1;
+			for (let i = 1; i <= n + 1; i++) {
+				let curPt = bezier.getAtT(i / (n + 1));
+				segments.push(curPt);
+				distances.push(curPt.sub(lastPt).length + distances[distances.length - 1]);
+				lastPt = curPt;
+			}
+		}
+
+		if (!track.name) {
+			// throw a fit, change
+			continue;
+		}
+		let n = track.name;
+		if (!isNaN(Number(n.replace(name + "S", "")))) n = Number(n.replace(name + "S", "")) - 1;
+		else n = n.toLowerCase();
+		sectionDistances[n] = distances;
+		sectionSegments[n] = segments;
+	}
+
 	function unloadSection(sectionIndex) {
 		let bodies = sectionBodies[sectionIndex];
 		for (let body of bodies) {
@@ -128,6 +165,8 @@ function loadRally(name) {
 		}
 		delete sectionBodies[sectionIndex];
 		delete finalTrack[sectionIndex];
+		delete splitDistances[sectionIndex - 1]; // delete last one so that split view can still use the distance
+		delete sectionTrackPositions[sectionIndex];
 	}
 	function loadNextSection(section) {
 		let map = section;
@@ -137,10 +176,18 @@ function loadRally(name) {
 		let end = new vec(map.road[map.road.length - 1].d);
 		let offset = start.mult(-1);
 		trackPosition.add2(offset);
-		// console.log(rallyTracks[name].indexOf(map) + 1);
+		sectionTrackPositions[curSectionIndex] = new vec(trackPosition);
+
+		getDriverTimes(section, curSectionIndex);
+
+		let n = map.name;
+		if (!isNaN(Number(n.replace(name + "S", "")))) n = Number(n.replace(name + "S", "")) - 1;
+		else n = n.toLowerCase();
+		let distances = sectionDistances[n];
+		splitDistances.push(splitDistances[splitDistances.length - 1] + distances[distances.length - 1]);
 
 		// load bg + fg sprites
-		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
+		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)];
 		for (let obj of objs) {
 			let { width, height, position, sprite, layer } = obj;
 			let body = Bodies.rectangle(width, height, trackPosition.add(position), {
@@ -217,7 +264,7 @@ function loadRally(name) {
 									finalTrack.push(...getNextSectionOrder());
 								}
 								loadNextSection(finalTrack[curSectionIndex + 1]);
-								console.log("loaded " + finalTrack[curSectionIndex + 1].name);
+								// console.log("loaded " + finalTrack[curSectionIndex + 1].name);
 
 								if (curSectionIndex >= 2) {
 									unloadSection(curSectionIndex - 2);
@@ -254,6 +301,107 @@ function loadRally(name) {
 		sectionBodies.push(curSectionBodies);
 	}
 
+	let lastCarDistance = 0;
+	function getCarDistance() {
+		let splitNames = [];
+		let finalTrackIndexes = [];
+		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
+			let n = finalTrack[i].name.replace(name + "S", "");
+			if (!isNaN(Number(n))) n = Number(n) - 1;
+			else n = n.toLowerCase();
+			splitNames.push(n);
+			finalTrackIndexes.push(i);
+		}
+
+		// get what split car is in
+		for (let i = 0; i < splitNames.length; i++) {
+			let splitName = splitNames[i];
+			let finalTrackIndex = finalTrackIndexes[i];
+			let road = tracks[splitName].road;
+			let start = new vec(road[0].a);
+			let diff = new vec(road[road.length - 1].d).sub(start);
+			let nDiff = diff.normalize();
+			let relPos = car.position.sub(sectionTrackPositions[finalTrackIndex].add(start));
+			let relPosStart = relPos.add(start);
+			let dist = nDiff.dot(relPos);
+			
+			if (dist >= -20 && dist <= diff.length) { // you're inside this split, get how far along this split you are
+				let baseDist = splitDistances[finalTrackIndex]; // distance up to this point
+				
+				// check if between points
+				let segments = sectionSegments[splitName];
+				let distances = sectionDistances[splitName];
+				let maxNormal = 500;
+				for (let i = 0; i < segments.length - 1; i++) {
+					let start = segments[i];
+					let end = segments[i + 1];
+					let diffA = end.sub(start);
+					let nDiffA = diffA.normalize();
+					let diffB = relPosStart.sub(start);
+					let dist = nDiffA.dot(diffB);
+					if (dist > 0 && dist < diffA.length) {
+						let normDist = nDiffA.cross(diffB);
+						if (Math.abs(normDist) < maxNormal) { // between the points, not including normal distance
+							lastCarDistance = [distances[i] + dist + baseDist, distances[distances.length - 1] + baseDist];
+							return lastCarDistance;
+						}
+					}
+				}
+				// not between points, check if inside "dead" region of intersection outside points
+				for (let i = 0; i < segments.length - 2; i++) {
+					let a = segments[i];
+					let b = segments[i + 1];
+					let c = segments[i + 2];
+					let diffA = b.sub(a);
+					let diffB = c.sub(b);
+					let nDiffA = diffA.normalize();
+					let nDiffB = diffB.normalize();
+					
+					let sign = Math.sign(diffA.cross(diffB));
+					let vertices = [
+						b,
+						b.add(nDiffA.normal().mult(maxNormal * sign)),
+						b.add(nDiffB.normal().mult(maxNormal * sign)),
+					];
+
+					// render shape
+					// ctx.beginPath();
+					// let offset = sectionTrackPositions[finalTrackIndex];
+					// ctx.moveTo(vertices[0].x + offset.x, vertices[0].y + offset.y);
+					// for (let i = 1; i < vertices.length; i++) {
+					// 	ctx.lineTo(vertices[i].x + offset.x, vertices[i].y + offset.y);
+					// }
+					// ctx.closePath();
+					// ctx.strokeStyle = "#ff0000a0";
+					// ctx.lineWidth = 3;
+					// ctx.stroke();
+
+					// check if you are inside the shape
+					let insideBody = (() => {
+						for (let j = 0; j < vertices.length; j++) {
+							let curVertice = vertices[j];
+							let nextVertice = vertices[(j + 1) % vertices.length];
+							
+							if (((relPosStart.x - curVertice.x) * (nextVertice.y - curVertice.y) + (relPosStart.y - curVertice.y) * (curVertice.x - nextVertice.x)) * sign >= 0) {
+								return false;
+							}
+						}
+						return true;
+					})();
+					if (insideBody) {
+						// use point b for distance
+						lastCarDistance = [distances[i + 1] + baseDist, distances[distances.length - 1] + baseDist];
+						return lastCarDistance;
+					}
+					
+				}
+				break;
+			}
+		}
+		
+		return lastCarDistance;
+	}
+
 
 	// reset skid marks
 	for (let skid of Skid.all) {
@@ -267,39 +415,46 @@ function loadRally(name) {
 
 	// - Get track times for cars in rally
 	let trackTimes = {}
-	for (let track of tracks) {
-		let trackName = track.name;
-		if (trackName !== "Start" && trackName !== "End") {
-			if (!trackTimes[trackName]) trackTimes[trackName] = {};
-			
-			for (let driver of Driver.all) {
-				let carName = driver.car;
-				if (!trackTimes[trackName][carName]) {
-					let lowTime = getTrackTime(track, carName);
-					let highTime = lowTime * 2;
-					trackTimes[trackName][carName] = [lowTime, highTime];
-				}
+	for (let trackName of Object.keys(tracks)) {
+		let track = tracks[trackName];
+		if (!trackTimes[trackName]) trackTimes[trackName] = {};
+		
+		for (let driver of Driver.all) {
+			let carName = driver.car;
+			if (!trackTimes[trackName][carName]) {
+				let lowTime = getTrackTime(track, carName);
+				let highTime = lowTime * 2;
+				trackTimes[trackName][carName] = [lowTime, highTime];
 			}
 		}
 	}
 
-	// - Get track times for drivers
-	for (let driver of Driver.all) {
-		let car = driver.car;
-		let variation = driver.variation * gaussianRandom(0, 1);
-		let performance = 1 - Math.min(1, Math.max(0, driver.skill + variation));
-		if (performance === 1) performance -= Math.random() * 0.05;
-		if (performance === 0) performance += Math.random() * 0.05;
-		let time = 0;
+	function getDriverTimes(section, sectionIndex) {
+		let trackName = section.name;
+		if (trackName === "Start" || trackName === "End") trackName = trackName.toLowerCase();
+		else trackName = Number(trackName.replace(name + "S", "")) - 1;
+		// - Get track times for drivers
+		let curTimes = {};
+		for (let driver of Driver.all) {
+			let car = driver.car;
+			let variation = driver.variation * gaussianRandom(0, 1);
+			let performance = 1 - Math.min(1, Math.max(0, driver.skill + variation));
+			if (performance === 1) performance -= Math.random() * 0.05;
+			if (performance === 0) performance += Math.random() * 0.05;
+			let time = 0;
 
-		for (let track of tracks) { // let track of finalTrack, temp
-			let trackName = track.name;
-			if (trackName !== "Start" && trackName !== "End") {
-				let times = trackTimes[trackName][car];
-				time += times[0] + (times[1] - times[0]) * performance;
-			}
+			let times = trackTimes[trackName][car];
+			time += times[0] + (times[1] - times[0]) * performance;
+	
+			driver.time += time;
+			curTimes[driver.name] = time;
 		}
-		driver.time = time + 1512 + 1000 * performance;
+		driverSectionTimes[sectionIndex] = curTimes;
+	}
+
+	function animateDriver(driver) {
+		let time = driverSectionTimes[driver.name];
+		
 	}
 
 	function renderLoadingBar() {
@@ -360,7 +515,7 @@ function loadRally(name) {
 			keypressOverhead.classList.remove("active");
 			car.locked = true;
 			
-			let t = 1;
+			let t = 1; // change
 			rallyCountdown.innerHTML = t;
 			function count() {
 				if (unloaded) return;
@@ -373,6 +528,81 @@ function loadRally(name) {
 					rallyCountdown.innerHTML = "GO";
 					car.locked = false;
 					startTime = World.time;
+
+					Render.on("afterRender", () => {
+						let dist = getCarDistance();
+						let distKm = pxToKm(dist[0]);
+						if (dist !== undefined) {
+							// console.log(Math.round(pxToKm(dist[0]) / 0.001) * 0.001);
+						}
+
+						// update split view
+						let view = 2; // view size, in km
+						let min = Math.max(0, distKm - view/2);
+						let max = min + view;
+						function toBounds(dist) { // converts distance to percent, where it is in the view
+							return (dist - min) / view;
+						}
+						let carPos = Math.max(0, toBounds(distKm));
+						document.getElementById("playerMarker").style.top = (100 - carPos * 100) + "%";
+
+						let splitsElem = document.getElementById("splits");
+						let splitBounds = [];
+
+						for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
+							let splitEnd = toBounds(pxToKm(splitDistances[i + 1]));
+							let elem = document.getElementById("split" + i);
+							if (splitEnd >= 0 && splitEnd <= 1) {
+								splitBounds.push({ position: splitEnd, id: i });
+							}
+							else if (elem) {
+								elem.parentNode.removeChild(elem);
+							}
+						}
+						splitBounds.push({ position: carPos, id: "Complete" });
+						splitBounds.push({ position: 1, id: curSection + 2 });
+						splitBounds.sort((a, b) => a.position - b.position);
+
+						for (let i = 0; i < splitBounds.length; i++) {
+							let bounds = splitBounds[i];
+							let splitEnd = bounds.position;
+							let lastEnd = splitBounds[i - 1] ? splitBounds[i - 1].position : 0;
+							let height = splitEnd - lastEnd;
+							let id = bounds.id;
+
+							let elem = document.getElementById("split" + id);
+							if (!elem) {
+								elem = createElement("div", {
+									class: "split" + (id === "Complete" ? " complete" : ""),
+									parent: splitsElem,
+									id: "split" + id,
+								});
+							}
+							if (splitEnd === 1) {
+								elem.classList.add("top");
+							}
+							else {
+								elem.classList.remove("top");
+							}
+							if (curSection > id) {
+								elem.classList.add("good");
+							}
+							elem.style.top = ((1 - splitEnd) * 100) + "%";
+							elem.style.height = height * 100 + "%";
+						}
+
+						// clean up old elements
+						// for (let i = Math.max(0, curSection - 1); i >= 0; i--) {
+						// 	let splitEnd = toBounds(pxToKm(splitDistances[i + 1]));
+						// 	let elem = document.getElementById("split" + i);
+						// 	if ((splitEnd < 0 || splitEnd > 1) && elem) {
+						// 		elem.parentNode.removeChild(elem);
+						// 	}
+						// 	else if (!elem) {
+						// 		break;
+						// 	}
+						// }
+					});
 	
 					setTimeout(() => {
 						if (!unloaded) {
@@ -506,3 +736,5 @@ function loadRally(name) {
 // car.acceleration *= 3;
 // car.maxSpeed *= 3;
 // car.isSensor = true;
+
+Render.showVertices = true;

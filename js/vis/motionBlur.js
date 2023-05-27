@@ -2,7 +2,7 @@
 let motionBlur = document.getElementById("motionBlur");
 let motionBlurCtx = motionBlur.getContext("2d");
 let motionBlurMask = motionBlurCtx.createRadialGradient(0, 0, 20, 0, 0, 100);
-var useMotionBlur = true;
+var useMotionBlur = false;
 motionBlurMask.addColorStop(0, "#ffffff");
 motionBlurMask.addColorStop(0.5, "#ffffff");
 // motionBlurMask.addColorStop(0.75, "#ffffffb0");
