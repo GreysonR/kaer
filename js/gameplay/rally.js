@@ -47,14 +47,19 @@ function loadRally(name) {
 
 	// - create map
 	let tracks = rallyTracks[name];
+
+	Object.keys(tracks).forEach(trackName => {
+		if (!isNaN(Number(trackName))) trackName = Number(trackName);
+		tracks[trackName].name = trackName;
+	});
+
 	let sectionBodies = [];
 	let sectionSegments =  {};
 	let sectionDistances = {};
 	function getNextSectionOrder() {
 		let finalTrack = [];
-		for (let i = 0; i < 1; i++) { // for (let i = 0; i < tracks.length; i++) { change
+		for (let i = 0; i < tracks.length; i++) { // for (let i = 0; i < 1; i++) { change
 			let track = tracks[i];
-			track.name = name + "S" + (i + 1);
 			let n = Math.floor(Math.random() * (finalTrack.length + 1));
 			finalTrack.splice(n, 0, track);
 		}
@@ -66,11 +71,9 @@ function loadRally(name) {
 	// finalTrack.push(tracks[0]);
 
 	if (tracks.start) {
-		tracks.start.name = "Start";
 		finalTrack.unshift(tracks.start);
 	}
 	if (tracks.end && false) {
-		tracks.end.name = "End";
 		finalTrack.push(tracks.end);
 	}
 	
@@ -87,13 +90,14 @@ function loadRally(name) {
 	let splitDistances = [-1146]; // the starting position of the car is at 1146
 	let driverSectionTimes = {};
 	let loadedSection = 0;
-	let sectionsTotal = tracks.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
-		let objs = cur.name === "Start" || cur.name === "End" ? allMaps[name + cur.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)] : [];
+	let sectionsTotal = finalTrack.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
+		let objs = cur.name === "start" || cur.name === "end" ? allMaps[name + cur.name.toCapital()] : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)];
 		return total + objs.length;
 	}, 0);
-	for (let i = 0; i < tracks.length; i++) {
-		let map = tracks[i];
-		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
+	for (let i = 0; i < finalTrack.length; i++) {
+		let map = finalTrack[i];
+		if (map.name === undefined) continue;
+		let objs = map.name === "start" || map.name === "end" ? allMaps[name + map.name.toCapital()] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
 		for (let obj of objs) {
 			let { width, height, position, sprite, layer } = obj;
 			let body = Bodies.rectangle(width, height, new vec(0, 0), {
@@ -122,7 +126,7 @@ function loadRally(name) {
 	}
 
 	// ~ create segments for finding where you are on the track
-	for (let track of Object.values(tracks)) {
+	for (let track of finalTrack) {
 		let segments = [];
 		let distances = [0];
 		let lastPt = new vec(track.road[0].a);
@@ -139,13 +143,7 @@ function loadRally(name) {
 			}
 		}
 
-		if (!track.name) {
-			// throw a fit, change
-			continue;
-		}
 		let n = track.name;
-		if (!isNaN(Number(n.replace(name + "S", "")))) n = Number(n.replace(name + "S", "")) - 1;
-		else n = n.toLowerCase();
 		sectionDistances[n] = distances;
 		sectionSegments[n] = segments;
 	}
@@ -164,9 +162,25 @@ function loadRally(name) {
 			}
 		}
 		delete sectionBodies[sectionIndex];
-		delete finalTrack[sectionIndex];
-		delete splitDistances[sectionIndex - 1]; // delete last one so that split view can still use the distance
 		delete sectionTrackPositions[sectionIndex];
+		// delete finalTrack[sectionIndex - 2];
+		// delete splitDistances[sectionIndex - 2];
+
+		let minSection = (() => {
+			let min = curSection;
+			for (let driver of Driver.all) {
+				min = Math.min(min, driver.section);
+			}
+			return min;
+		})();
+		console.log(minSection, finalTrack);
+		Object.keys(finalTrack).forEach(section => {
+			if (section < minSection) {
+				delete finalTrack[section];
+				delete splitDistances[section];
+				console.log("deleted " + section);
+			}
+		});
 	}
 	function loadNextSection(section) {
 		let map = section;
@@ -178,16 +192,13 @@ function loadRally(name) {
 		trackPosition.add2(offset);
 		sectionTrackPositions[curSectionIndex] = new vec(trackPosition);
 
-		getDriverTimes(section, curSectionIndex);
+		getDriverTimes(curSectionIndex);
 
-		let n = map.name;
-		if (!isNaN(Number(n.replace(name + "S", "")))) n = Number(n.replace(name + "S", "")) - 1;
-		else n = n.toLowerCase();
-		let distances = sectionDistances[n];
+		let distances = sectionDistances[map.name];
 		splitDistances.push(splitDistances[splitDistances.length - 1] + distances[distances.length - 1]);
 
 		// load bg + fg sprites
-		let objs = map.name === "Start" || map.name === "End" ? allMaps[name + map.name] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)];
+		let objs = map.name === "start" || map.name === "end" ? allMaps[name + map.name.toCapital()] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)];
 		for (let obj of objs) {
 			let { width, height, position, sprite, layer } = obj;
 			let body = Bodies.rectangle(width, height, trackPosition.add(position), {
@@ -264,7 +275,6 @@ function loadRally(name) {
 									finalTrack.push(...getNextSectionOrder());
 								}
 								loadNextSection(finalTrack[curSectionIndex + 1]);
-								// console.log("loaded " + finalTrack[curSectionIndex + 1].name);
 
 								if (curSectionIndex >= 2) {
 									unloadSection(curSectionIndex - 2);
@@ -306,10 +316,7 @@ function loadRally(name) {
 		let splitNames = [];
 		let finalTrackIndexes = [];
 		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
-			let n = finalTrack[i].name.replace(name + "S", "");
-			if (!isNaN(Number(n))) n = Number(n) - 1;
-			else n = n.toLowerCase();
-			splitNames.push(n);
+			splitNames.push(finalTrack[i].name);
 			finalTrackIndexes.push(i);
 		}
 
@@ -429,32 +436,63 @@ function loadRally(name) {
 		}
 	}
 
-	function getDriverTimes(section, sectionIndex) {
-		let trackName = section.name;
-		if (trackName === "Start" || trackName === "End") trackName = trackName.toLowerCase();
-		else trackName = Number(trackName.replace(name + "S", "")) - 1;
-		// - Get track times for drivers
+	function getDriverTimes(sectionIndex) {
 		let curTimes = {};
 		for (let driver of Driver.all) {
-			let car = driver.car;
-			let variation = driver.variation * gaussianRandom(0, 1);
-			let performance = 1 - Math.min(1, Math.max(0, driver.skill + variation));
-			if (performance === 1) performance -= Math.random() * 0.05;
-			if (performance === 0) performance += Math.random() * 0.05;
-			let time = 0;
-
-			let times = trackTimes[trackName][car];
-			time += times[0] + (times[1] - times[0]) * performance;
-	
-			driver.time += time;
-			curTimes[driver.name] = time;
+			curTimes[driver.name] = getDriverTime(driver, sectionIndex);
 		}
 		driverSectionTimes[sectionIndex] = curTimes;
+
+		return driverSectionTimes;
+	}
+	function getDriverTime(driver, sectionIndex) {
+		let section = finalTrack[sectionIndex];
+		if (!section) console.log(finalTrack, sectionIndex);
+		
+		let car = driver.car;
+		let variation = driver.variation * gaussianRandom(0, 1);
+		let skill = 0.85; // driver.skill
+		let performance = 1 - Math.min(1, Math.max(0, skill + variation));
+		if (performance === 1) performance -= Math.random() * 0.05;
+		if (performance === 0) performance += Math.random() * 0.05;
+
+		let times = trackTimes[section.name][car];
+		let time = times[0] + (times[1] - times[0]) * performance;
+		if (driver.time === undefined) driver.time = 0;
+		driver.time += time;
+
+		return time;
 	}
 
-	function animateDriver(driver) {
-		let time = driverSectionTimes[driver.name];
-		
+	let driverAnimations = [];
+	function animateDriver(driver, section = 0) {
+		let time = driverSectionTimes[section][driver.name];
+		let prevSectionDist = splitDistances[section] || 0;
+		let distances = sectionDistances[finalTrack[section].name];
+		let sectionLength = distances[distances.length - 1];
+
+		let maxDist = sectionLength + prevSectionDist;
+
+		if (driver.distance === undefined) driver.distance = 1146;
+		driver.section = section;
+
+		let animation = animations.create({
+			duration: time,
+			curve: ease.linear,
+			callback: p => {
+				driver.distance = (maxDist - prevSectionDist) * p + prevSectionDist;
+			},
+			onend: () => {
+				console.log(driver.name + " finished " + section);
+				section++;
+				driverAnimations.delete(animation);
+				if (!driverSectionTimes[section]) driverSectionTimes[section] = {};
+				driverSectionTimes[section][driver.name] = getDriverTime(driver, section);
+				animateDriver(driver, section);
+
+			},
+		});
+		driverAnimations.push(animation);
 	}
 
 	function renderLoadingBar() {
@@ -499,6 +537,76 @@ function loadRally(name) {
 	}
 	Render.on("afterRestore", checkToResetCar);
 
+	function updateSplitView() {
+		let dist = getCarDistance();
+		let distKm = pxToKm(dist[0]);
+
+		let view = 2; // view size, in km
+		let min = Math.max(0, distKm - view/2);
+		function toBounds(dist) { // converts distance to percent, where it is in the view
+			return (dist - min) / view;
+		}
+		let carPos = Math.max(0, toBounds(distKm));
+		document.getElementById("playerMarker").style.top = (100 - carPos * 100) + "%";
+
+		let splitsElem = document.getElementById("splits");
+		let splitBounds = [];
+
+		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
+			let splitEnd = toBounds(pxToKm(splitDistances[i + 1]));
+			let elem = document.getElementById("split" + i);
+			if (splitEnd >= 0 && splitEnd <= 1) {
+				splitBounds.push({ position: splitEnd, id: i });
+			}
+			else if (elem) {
+				elem.parentNode.removeChild(elem);
+			}
+		}
+		splitBounds.push({ position: carPos, id: "Complete" });
+		splitBounds.push({ position: 1, id: curSection + 2 });
+		splitBounds.sort((a, b) => a.position - b.position);
+
+		for (let i = 0; i < splitBounds.length; i++) {
+			let bounds = splitBounds[i];
+			let splitEnd = bounds.position;
+			let lastEnd = splitBounds[i - 1] ? splitBounds[i - 1].position : 0;
+			let height = splitEnd - lastEnd;
+			let id = bounds.id;
+
+			let elem = document.getElementById("split" + id);
+			if (!elem) {
+				elem = createElement("div", {
+					class: "split" + (id === "Complete" ? " complete" : ""),
+					parent: splitsElem,
+					id: "split" + id,
+				});
+			}
+			if (splitEnd === 1) {
+				elem.classList.add("top");
+			}
+			else {
+				elem.classList.remove("top");
+			}
+			if (curSection > id) {
+				elem.classList.add("good");
+			}
+			elem.style.top = ((1 - splitEnd) * 100) + "%";
+			elem.style.height = height * 100 + "%";
+		}
+
+		// get fastest opponent
+		let fastestOpponent = Driver.all[0];
+		for (let driver of Driver.all) {
+			if (driver.distance > fastestOpponent.distance) {
+				fastestOpponent = driver;
+			}
+		}
+		// console.log(fastestOpponent.distance);
+
+		// update icon for fastest opponent
+		document.getElementById("opponentMarker").style.top = (100 - toBounds(pxToKm(fastestOpponent.distance)) * 100) + "%";
+	}
+
 	let startTime = 0;
 	let unloaded = false;
 	function startCountdown() {
@@ -529,80 +637,11 @@ function loadRally(name) {
 					car.locked = false;
 					startTime = World.time;
 
-					Render.on("afterRender", () => {
-						let dist = getCarDistance();
-						let distKm = pxToKm(dist[0]);
-						if (dist !== undefined) {
-							// console.log(Math.round(pxToKm(dist[0]) / 0.001) * 0.001);
-						}
+					Render.on("afterRender", updateSplitView);
 
-						// update split view
-						let view = 2; // view size, in km
-						let min = Math.max(0, distKm - view/2);
-						let max = min + view;
-						function toBounds(dist) { // converts distance to percent, where it is in the view
-							return (dist - min) / view;
-						}
-						let carPos = Math.max(0, toBounds(distKm));
-						document.getElementById("playerMarker").style.top = (100 - carPos * 100) + "%";
-
-						let splitsElem = document.getElementById("splits");
-						let splitBounds = [];
-
-						for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
-							let splitEnd = toBounds(pxToKm(splitDistances[i + 1]));
-							let elem = document.getElementById("split" + i);
-							if (splitEnd >= 0 && splitEnd <= 1) {
-								splitBounds.push({ position: splitEnd, id: i });
-							}
-							else if (elem) {
-								elem.parentNode.removeChild(elem);
-							}
-						}
-						splitBounds.push({ position: carPos, id: "Complete" });
-						splitBounds.push({ position: 1, id: curSection + 2 });
-						splitBounds.sort((a, b) => a.position - b.position);
-
-						for (let i = 0; i < splitBounds.length; i++) {
-							let bounds = splitBounds[i];
-							let splitEnd = bounds.position;
-							let lastEnd = splitBounds[i - 1] ? splitBounds[i - 1].position : 0;
-							let height = splitEnd - lastEnd;
-							let id = bounds.id;
-
-							let elem = document.getElementById("split" + id);
-							if (!elem) {
-								elem = createElement("div", {
-									class: "split" + (id === "Complete" ? " complete" : ""),
-									parent: splitsElem,
-									id: "split" + id,
-								});
-							}
-							if (splitEnd === 1) {
-								elem.classList.add("top");
-							}
-							else {
-								elem.classList.remove("top");
-							}
-							if (curSection > id) {
-								elem.classList.add("good");
-							}
-							elem.style.top = ((1 - splitEnd) * 100) + "%";
-							elem.style.height = height * 100 + "%";
-						}
-
-						// clean up old elements
-						// for (let i = Math.max(0, curSection - 1); i >= 0; i--) {
-						// 	let splitEnd = toBounds(pxToKm(splitDistances[i + 1]));
-						// 	let elem = document.getElementById("split" + i);
-						// 	if ((splitEnd < 0 || splitEnd > 1) && elem) {
-						// 		elem.parentNode.removeChild(elem);
-						// 	}
-						// 	else if (!elem) {
-						// 		break;
-						// 	}
-						// }
-					});
+					for (let driver of Driver.all) {
+						animateDriver(driver);
+					}
 	
 					setTimeout(() => {
 						if (!unloaded) {
@@ -630,6 +669,11 @@ function loadRally(name) {
 		// unload map sections
 		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
 			unloadSection(i);
+		}
+
+		// unload driver animations
+		for (let anim of driverAnimations) {
+			anim.stop();
 		}
 
 		unloaded = true;

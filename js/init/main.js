@@ -106,3 +106,7 @@ function createSeededRandom(seed) { // Returns function that generates numbers b
 		return result;
 	}
 }
+
+String.prototype.toCapital = function() {
+	return this.slice(0, 1).toUpperCase() + this.slice(1);
+}

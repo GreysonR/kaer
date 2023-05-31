@@ -859,27 +859,10 @@ function getPercentComplete() {
 }
 
 Render.on("afterRender", () => {
-	let completeElem = document.getElementById("complete");
-	let completePercent = curMap.maxLapPercent;
-
-	completeElem.style.width = completePercent * 100 + "%";
-
-	/*
-	// visualize progress path
-	ctx.beginPath();
-	let i = 0;
-	for (let pt of curMap.path) {
-		if (i === 0) {
-			ctx.moveTo(pt.x, pt.y);
-		}
-		else {
-			ctx.lineTo(pt.x, pt.y);
-		}
-		
-		i++;
+	if (modeName === "drift" || modeName === "time") {
+		let completeElem = document.getElementById("complete");
+		let completePercent = curMap.maxLapPercent;
+	
+		completeElem.style.width = completePercent * 100 + "%";
 	}
-
-	ctx.strokeStyle = "cyan";
-	ctx.lineWidth = 10;
-	ctx.stroke();/**/
 });

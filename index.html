@@ -36,7 +36,6 @@
 	</svg>
 
 	<input id="mapInput" type="file" accept="image/svg+xml">
-	<input id="pathInput" type="file" accept="image/svg+xml">
 
 	<div id="rallyOverhead">
 		<div id="keypressOverhead">Press any key to start</div>
@@ -44,14 +43,17 @@
 	</div>
 	<div id="rallyUI">
 		<div id="progressWrapper">
-			<div class="marker" id="playerMarker" style="top: 55%"></div>
 			<div class="marker" id="opponentMarker" style="top: 75%"></div>
+			<div class="marker" id="playerMarker" style="top: 55%"></div>
 			<div id="splits">
 				<!-- <div class="split" style="height: 30%;"></div>
 				<div class="split" style="height: 25%; top: 30%"></div>
 				<div class="split complete" style="height: 25%; top: 55%"></div>
 				<div class="split good" style="height: 20%; top: 80%"></div> -->
 			</div>
+		</div>
+		<div id="liveLeaderboard">
+			
 		</div>
 	</div>
 	<div id="overhead">
@@ -262,9 +264,7 @@
 <!-- map -->
 <script src="./js/map/svg-parser.js"></script>
 <script src="./js/map/loadMap.js"></script>
-<script src="./js/map/generateMap.js"></script>
 <script src="./js/map/mapping.js"></script>
-<script src="./js/map/getPath.js"></script>
 
 <!-- map data -->
 <script src="./js/map/data/track1.js"></script>

@@ -43,18 +43,6 @@ canvas.hidden {
 #mapInput.active {
 	display: block;
 }
-#pathInput {
-	position: absolute;
-	top: 25px;
-	left: 0;
-	z-index: 100;
-	
-	display: none;
-}
-/* #pathInput.active {
-	display: block;
-} */
-
 
 #overhead {
 	position: absolute;

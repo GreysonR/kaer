@@ -49,7 +49,6 @@ window.addEventListener("keydown", event => {
 	
 		if (event.altKey && key === "q") { // toggle map file input
 			document.getElementById("mapInput").classList.toggle("active");
-			document.getElementById("pathInput").classList.toggle("active");
 		}
 		if (event.altKey && key === "p") { // toggle performance render
 			Performance.enabled = !Performance.enabled;

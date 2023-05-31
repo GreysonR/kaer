@@ -194,29 +194,30 @@ var ter = {
 			for (let id of bucketIds) {
 				let curDynamicBucket = dynamicBuckets[id];
 				let curStaticBucket = staticBuckets[id];
-				if (!curStaticBucket) continue;
 				let curPairs = getPairs(curDynamicBucket); // pair dynamic bodies
 
 				// add static bodies
-				for (let j = 0; j < curDynamicBucket.length; j++) {
-					let bodyA = curDynamicBucket[j];
-					if (!bodyA.hasCollisions || bodyA.children.length > 0)
-						continue;
-					for (let k = 0; k < curStaticBucket.length; k++) {
-						let bodyB = curStaticBucket[k];
-
-						if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
+				if (curStaticBucket) {
+					for (let j = 0; j < curDynamicBucket.length; j++) {
+						let bodyA = curDynamicBucket[j];
+						if (!bodyA.hasCollisions || bodyA.children.length > 0)
 							continue;
+						for (let k = 0; k < curStaticBucket.length; k++) {
+							let bodyB = curStaticBucket[k];
 	
-	
-						const boundsA = bodyA.bounds;
-						const boundsB = bodyB.bounds;
-						
-						if (boundsA.min.x <= boundsB.max.x &&
-							boundsA.max.x >= boundsB.min.x &&
-							boundsA.min.y <= boundsB.max.y &&
-							boundsA.max.y >= boundsB.min.y) {
-							curPairs.push([ bodyA, bodyB ]);
+							if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
+								continue;
+		
+		
+							const boundsA = bodyA.bounds;
+							const boundsB = bodyB.bounds;
+							
+							if (boundsA.min.x <= boundsB.max.x &&
+								boundsA.max.x >= boundsB.min.x &&
+								boundsA.min.y <= boundsB.max.y &&
+								boundsA.max.y >= boundsB.min.y) {
+								curPairs.push([ bodyA, bodyB ]);
+							}
 						}
 					}
 				}
