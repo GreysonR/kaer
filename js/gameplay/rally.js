@@ -780,5 +780,3 @@ function loadRally(name) {
 // car.acceleration *= 3;
 // car.maxSpeed *= 3;
 // car.isSensor = true;
-
-Render.showVertices = true;

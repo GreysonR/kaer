@@ -24,7 +24,7 @@ Performance.enabled = false;
 Performance.getAvg = true;
 Render.showBoundingBox = false;
 // Render.showBroadphase = false;
-Render.showVertices = false
+Render.showVertices = false;
 // Render.showCenters = true;
 
 // ctx.imageSmoothingEnabled = false;
