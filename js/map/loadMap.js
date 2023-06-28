@@ -141,7 +141,7 @@ let mapBodies = {
 			isStatic: true,
 
 			render: {
-				visible: false,
+				visible: true,
 				background: "#42515590",
 				layer: -1,
 			}
@@ -551,6 +551,38 @@ let allMaps = {
 		},
 		{
 			sprite: "rally1/section4/rally1S4BG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: -4,
+		},
+	],
+	rally1S5: [
+		{
+			sprite: "rally1/section5/rally1S5FG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/section5/rally1S5BG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: -4,
+		},
+	],
+	rally1S6: [
+		{
+			sprite: "rally1/section6/rally1S6FG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/section6/rally1S6BG.png",
 			width:  13918,
 			height: 15768,
 			position: new vec(13918/2, 15768/2),

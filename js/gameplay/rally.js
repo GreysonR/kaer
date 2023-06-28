@@ -63,6 +63,7 @@ function loadRally(name) {
 			let n = Math.floor(Math.random() * (finalTrack.length + 1));
 			finalTrack.splice(n, 0, track);
 		}
+		// return [tracks[5]];
 		return finalTrack;
 	}
 	let finalTrack = getNextSectionOrder();
@@ -173,12 +174,11 @@ function loadRally(name) {
 			}
 			return min;
 		})();
-		console.log(minSection, finalTrack);
 		Object.keys(finalTrack).forEach(section => {
 			if (section < minSection) {
 				delete finalTrack[section];
 				delete splitDistances[section];
-				console.log("deleted " + section);
+				// console.log("deleted " + section);
 			}
 		});
 	}
@@ -316,6 +316,7 @@ function loadRally(name) {
 		let splitNames = [];
 		let finalTrackIndexes = [];
 		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
+			if (!finalTrack[i]) continue;
 			splitNames.push(finalTrack[i].name);
 			finalTrackIndexes.push(i);
 		}
@@ -446,8 +447,10 @@ function loadRally(name) {
 		return driverSectionTimes;
 	}
 	function getDriverTime(driver, sectionIndex) {
+		if (!finalTrack[sectionIndex]) {
+			finalTrack.push(...getNextSectionOrder());
+		}
 		let section = finalTrack[sectionIndex];
-		if (!section) console.log(finalTrack, sectionIndex);
 		
 		let car = driver.car;
 		let variation = driver.variation * gaussianRandom(0, 1);
@@ -594,17 +597,20 @@ function loadRally(name) {
 			elem.style.height = height * 100 + "%";
 		}
 
-		// get fastest opponent
-		let fastestOpponent = Driver.all[0];
-		for (let driver of Driver.all) {
-			if (driver.distance > fastestOpponent.distance) {
-				fastestOpponent = driver;
+		for (let j = 0; j < Driver.all.length; j++) {
+			// update icon for opponent
+			let driver = Driver.all[j];
+			let marker = document.getElementById("opponentMarker" + j);
+			let percent = toBounds(pxToKm(driver.distance));
+			if (percent < 0 || percent > 1) {
+				marker.classList.add("hidden");
+			}
+			else {
+				marker.classList.remove("hidden");
+				marker.style.top = (100 - percent * 100) + "%";
 			}
 		}
-		// console.log(fastestOpponent.distance);
 
-		// update icon for fastest opponent
-		document.getElementById("opponentMarker").style.top = (100 - toBounds(pxToKm(fastestOpponent.distance)) * 100) + "%";
 	}
 
 	let startTime = 0;

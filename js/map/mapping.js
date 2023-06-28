@@ -41,6 +41,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		
 		let out = {
 			roadHitbox: [],
+			dirtHitbox: [],
 		}
 		let homeOut = [];
 		
@@ -52,6 +53,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#2027CD": "policeSpawns",
 
 			"#53656A": "road",
+			"#8C432B": "dirt",
 			"#FA5F3D": "innerHitbox",
 			"#592B21": "rail",
 			"#9A9A9A": "rail",
@@ -60,7 +62,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			"#DDB45F": "zoneHitbox",
 
 			"#425155": "roadHitbox",
-			"#97592D": "dirtHitbox",
 
 			"#955EBF": "job",
 			"#FF7D1E": "coin",
@@ -268,6 +269,24 @@ document.getElementById("mapInput").addEventListener("input", event => {
 								out[name].push(bezier.toObject());
 							}
 						}
+						else if (name === "dirt") {
+							if (path[0].x) {
+								path.shift();
+							}
+							let dirtHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
+							let dirtPath = generateRoadPath(path, 0);
+							for (let hitbox of dirtHitbox) {
+								roundVert(hitbox.position);
+								roundVert(hitbox.vertices);
+								out[name + "Hitbox"].push(hitbox);
+							}
+
+							let beziers = [];
+							for (let bezier of dirtPath) {
+								beziers.push(bezier.toObject());
+							}
+							out[name].push(beziers);
+						}
 						else if (name === "innerHitbox") {
 							if (!out[name]) out[name] = [];
 							let roadHitbox = generateRoadHitbox(path, 650);
@@ -281,7 +300,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 							if (path[0].x) {
 								path.shift();
 							}
-							console.log(path);
 							let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
 							for (let obj of hitbox) {
 								if (!out.wall) out.wall = [];
@@ -366,7 +384,7 @@ function copyToClipboard(text) {
 }
 
 
-function generateRoadHitbox(path, roadWidth = 700, dt = 300, removeIntersections = true) {
+function generateRoadHitbox(path, roadWidth = 700, dt = 300, canRemoveIntersections = true) {
 	let beziers = [];
 	let hitboxes = [];
 	let vertices = [];
@@ -442,7 +460,7 @@ function generateRoadHitbox(path, roadWidth = 700, dt = 300, removeIntersections
 			}
 		}
 	}
-	if (removeIntersections) {
+	if (canRemoveIntersections) {
 		removeIntersections(rightSide);
 		removeIntersections(leftSide);
 	}

@@ -478,8 +478,8 @@ function getCarMaterial() {
 		}
 	}
 
-	if (materials.has("road")) return "road";
 	if (materials.has("dirt")) return "dirt";
+	if (materials.has("road")) return "road";
 	return "grass";
 }
 

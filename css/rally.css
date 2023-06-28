@@ -85,6 +85,9 @@
 	transform: translate(-50%, -50%) rotate(45deg);
 	z-index: 1;
 }
+#progressWrapper .marker.hidden {
+	display: none;
+}
 #progressWrapper #playerMarker.marker {
 	background: #FF483C;
 	border: 4px solid #A83333;
