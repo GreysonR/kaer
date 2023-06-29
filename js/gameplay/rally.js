@@ -63,7 +63,7 @@ function loadRally(name) {
 			let n = Math.floor(Math.random() * (finalTrack.length + 1));
 			finalTrack.splice(n, 0, track);
 		}
-		// return [tracks[5]];
+		// return [tracks[6]];
 		return finalTrack;
 	}
 	let finalTrack = getNextSectionOrder();
@@ -91,11 +91,11 @@ function loadRally(name) {
 	let splitDistances = [-1146]; // the starting position of the car is at 1146
 	let driverSectionTimes = {};
 	let loadedSection = 0;
-	let sectionsTotal = finalTrack.reduce((total, cur, i, arr, ) => { // get number of objects (images) to load
+	let sectionsTotal = finalTrack.reduce((total, cur, i, arr, ) => { // get number of section images to load
 		let objs = cur.name === "start" || cur.name === "end" ? allMaps[name + cur.name.toCapital()] : allMaps[name + "S" + (rallyTracks[name].indexOf(cur) + 1)];
 		return total + objs.length;
 	}, 0);
-	for (let i = 0; i < finalTrack.length; i++) {
+	for (let i = 0; i < finalTrack.length; i++) { // load section images
 		let map = finalTrack[i];
 		if (map.name === undefined) continue;
 		let objs = map.name === "start" || map.name === "end" ? allMaps[name + map.name.toCapital()] : allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] ? allMaps[name + "S" + (rallyTracks[name].indexOf(map) + 1)] : [];
@@ -247,8 +247,6 @@ function loadRally(name) {
 						isStatic: true,
 						isSensor: true,
 						isCheckpoint: true,
-						taken: false,
-						isTransition: i === 0,
 						render: {
 							background: "red",
 							visible: false,
@@ -266,23 +264,8 @@ function loadRally(name) {
 					
 					obj.on("collisionStart", event => {
 						let otherBody = event.bodyA === obj ? event.bodyB : event.bodyA;
-			
 						if (otherBody === car) {
-							if (!obj.taken && obj.isTransition) { // trigger area load
-								curSection = curSectionIndex;
-								
-								if (!finalTrack[curSectionIndex + 1]) {
-									finalTrack.push(...getNextSectionOrder());
-								}
-								loadNextSection(finalTrack[curSectionIndex + 1]);
-
-								if (curSectionIndex >= 2) {
-									unloadSection(curSectionIndex - 2);
-								}
-							}
-
 							lastCheckpoint = obj;
-							obj.taken = true;
 						}
 					});
 				}
@@ -312,7 +295,7 @@ function loadRally(name) {
 	}
 
 	let lastCarDistance = 0;
-	function getCarDistance() {
+	function getCarDistance(canLoadSection = false) {
 		let splitNames = [];
 		let finalTrackIndexes = [];
 		for (let i = Math.max(0, curSection - 1); i <= curSection + 1; i++) {
@@ -334,6 +317,22 @@ function loadRally(name) {
 			let dist = nDiff.dot(relPos);
 			
 			if (dist >= -20 && dist <= diff.length) { // you're inside this split, get how far along this split you are
+				// load next split if necessary
+				if (canLoadSection) {
+					if (finalTrackIndex > curSection) { // load next section
+						curSection = finalTrackIndex;
+						
+						if (!finalTrack[curSection + 1]) {
+							finalTrack.push(...getNextSectionOrder());
+						}
+						loadNextSection(finalTrack[curSection + 1]);
+
+						if (curSection >= 2) { // unload 2 sections ago
+							unloadSection(curSection - 2);
+						}
+					}
+				}
+
 				let baseDist = splitDistances[finalTrackIndex]; // distance up to this point
 				
 				// check if between points
@@ -541,7 +540,7 @@ function loadRally(name) {
 	Render.on("afterRestore", checkToResetCar);
 
 	function updateSplitView() {
-		let dist = getCarDistance();
+		let dist = getCarDistance(true);
 		let distKm = pxToKm(dist[0]);
 
 		let view = 2; // view size, in km
@@ -629,7 +628,7 @@ function loadRally(name) {
 			keypressOverhead.classList.remove("active");
 			car.locked = true;
 			
-			let t = 1; // change
+			let t = 3; // change
 			rallyCountdown.innerHTML = t;
 			function count() {
 				if (unloaded) return;
@@ -642,6 +641,7 @@ function loadRally(name) {
 					rallyCountdown.innerHTML = "GO";
 					car.locked = false;
 					startTime = World.time;
+					document.getElementById("progressWrapper").classList.add("active"); // enable side progress bar
 
 					Render.on("afterRender", updateSplitView);
 
@@ -667,6 +667,7 @@ function loadRally(name) {
 		rallyCountdown.classList.remove("active");
 
 		car.locked = false;
+		document.getElementById("progressWrapper").classList.remove("active"); // disable side progress bar
 
 		// unload image cache
 		for (let sprite of bufferedSprites) {

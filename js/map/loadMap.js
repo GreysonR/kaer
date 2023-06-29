@@ -589,6 +589,22 @@ let allMaps = {
 			layer: -4,
 		},
 	],
+	rally1S7: [
+		{
+			sprite: "rally1/section7/rally1S7FG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: 2,
+		},
+		{
+			sprite: "rally1/section7/rally1S7BG.png",
+			width:  13918,
+			height: 15768,
+			position: new vec(13918/2, 15768/2),
+			layer: -4,
+		},
+	],
 	rally1Start: [
 		{
 			sprite: "rally1/start/rally1StartFG.png",
@@ -624,31 +640,33 @@ let allMaps = {
 }
 
 // load chase 2 objs
-for (let x = 0; x < 7; x++) {
-	let w = 2000;
-	let h = 2000;
-	for (let y = 0; y < 7; y++) {
-		// background
-		allMaps.chase2.objs.push(
-			{
-				sprite: `chase2/background-${x}-${y}.png`,
-				width:  w,
-				height: h,
-				position: new vec((w - 0.4) * x + w/2, (h - 0.4) * y + h/2),
-				layer: -4,
-			}
-		)
-		
-		// foreground
-		allMaps.chase2.objs.push(
-			{
-				sprite: `chase2/foreground-${x}-${y}.png`,
-				width:  w,
-				height: h,
-				position: new vec((w - 0.4) * x + w/2, (h - 0.4) * y + h/2),
-				layer: 2,
-			}
-		)
+if (false) {
+	for (let x = 0; x < 7; x++) {
+		let w = 2000;
+		let h = 2000;
+		for (let y = 0; y < 7; y++) {
+			// background
+			allMaps.chase2.objs.push(
+				{
+					sprite: `chase2/background-${x}-${y}.png`,
+					width:  w,
+					height: h,
+					position: new vec((w - 0.4) * x + w/2, (h - 0.4) * y + h/2),
+					layer: -4,
+				}
+			)
+			
+			// foreground
+			allMaps.chase2.objs.push(
+				{
+					sprite: `chase2/foreground-${x}-${y}.png`,
+					width:  w,
+					height: h,
+					position: new vec((w - 0.4) * x + w/2, (h - 0.4) * y + h/2),
+					layer: 2,
+				}
+			)
+		}
 	}
 }
 
