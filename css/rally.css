@@ -7,9 +7,56 @@
 	z-index: 8;
 
 	pointer-events: none;
+	display: none;
+}
+#rallyUI.active {
+	display: block;
+}
+#placement {
+	position: absolute;
+	top:  min(6vh, 60px);
+	left: 50%;
+	transform: translateX(-50%);
+
+	font-family: "Poppins", sans-serif;
+	font-weight: 700;
+	font-style: italic;
+	font-size: 50px;
+	color: #ffffffe0;
+	text-align: center;
+	line-height: 51px;
+	text-shadow: 5px 4px 4px rgba(38, 38, 38, 0.15);
+	
+	pointer-events: none;
+	user-select: none;
+}
+#distance {
+	position: absolute;
+	top:  min(6vh, 60px);
+	left: 45px;
+
+	font-family: "Rubik", sans-serif;
+	font-weight: 700;
+	font-style: normal;
+	font-size: 30px;
+	color: #ffffffd0;
+	text-align: center;
+	line-height: 51px;
+	text-shadow: 3px 3px 5px rgba(38, 38, 38, 0.1);
+	font-variant-numeric: proportional-nums;
+	
+	width: 110px;
+	padding: 5px;
+	padding-left:  12px;
+	padding-right: 12px;
+	box-shadow: 5px 4px 4px rgba(38, 38, 38, 0.15);
+	border-radius: 10px;
+	background-color: #ffffff1c;
+
+	pointer-events: none;
+	user-select: none;
 }
 #progressWrapper {
-	display: none;
 	position: absolute;
 	top: 50%;
 	left: 50px;
@@ -20,9 +67,6 @@
 	height: 500px;
 
 	box-shadow: 1px 1px 6px rgba(0, 0, 0, 0.1);
-}
-#progressWrapper.active {
-	display: block;
 }
 
 @media screen and (max-height: 700px) {

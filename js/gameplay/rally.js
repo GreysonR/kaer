@@ -192,8 +192,6 @@ function loadRally(name) {
 		trackPosition.add2(offset);
 		sectionTrackPositions[curSectionIndex] = new vec(trackPosition);
 
-		getDriverTimes(curSectionIndex);
-
 		let distances = sectionDistances[map.name];
 		splitDistances.push(splitDistances[splitDistances.length - 1] + distances[distances.length - 1]);
 
@@ -294,7 +292,7 @@ function loadRally(name) {
 		sectionBodies.push(curSectionBodies);
 	}
 
-	let lastCarDistance = 0;
+	let lastCarDistance = [0, 0];
 	function getCarDistance(canLoadSection = false) {
 		let splitNames = [];
 		let finalTrackIndexes = [];
@@ -445,6 +443,7 @@ function loadRally(name) {
 
 		return driverSectionTimes;
 	}
+
 	function getDriverTime(driver, sectionIndex) {
 		if (!finalTrack[sectionIndex]) {
 			finalTrack.push(...getNextSectionOrder());
@@ -453,13 +452,15 @@ function loadRally(name) {
 		
 		let car = driver.car;
 		let variation = driver.variation * gaussianRandom(0, 1);
-		let skill = 0.85; // driver.skill
-		let performance = 1 - Math.min(1, Math.max(0, skill + variation));
-		if (performance === 1) performance -= Math.random() * 0.05;
-		if (performance === 0) performance += Math.random() * 0.05;
+		let skill = (Math.log(curSection + 1) * 0.5) ** 0.5; // (ln(x + 1) * 0.5) ^ 0.5
+		let performance = skill + variation;
+		// - clamping is for nerds, bask in the unclamped glory of being able to do negative times!
+		// let performance = Math.min(1, Math.max(0, skill + variation));
+		// if (performance === 1) performance -= Math.random() * 0.05;
+		// if (performance === 0) performance += Math.random() * 0.05;
 
 		let times = trackTimes[section.name][car];
-		let time = times[0] + (times[1] - times[0]) * performance;
+		let time = times[1] - (times[1] - times[0]) * performance;
 		if (driver.time === undefined) driver.time = 0;
 		driver.time += time;
 
@@ -508,6 +509,7 @@ function loadRally(name) {
 
 			loadNextSection(finalTrack[0]);
 			loadNextSection(finalTrack[1]);
+			getDriverTimes(0);
 			startCountdown();
 		}
 
@@ -612,6 +614,31 @@ function loadRally(name) {
 
 	}
 
+	function updateOverheadUI() {
+		// - distance
+		let playerDist = lastCarDistance[0];
+		let distanceElem = document.getElementById("distance");
+		distanceElem.innerHTML = pxToKm(playerDist).toFixed(1) + "km";
+
+		// - placement
+		let placement = 4;
+		let drivers = [ ...Driver.all ].sort((a, b) => b.distance - a.distance);
+		for (let i = 0; i < drivers.length; i++) {
+			let driver = drivers[i];
+			let { distance } = driver;
+			// if (i === 0) console.log(playerDist - distance);
+			if (playerDist > distance) {
+				placement = i;
+				break;
+			}
+		}
+
+		let placementElem = document.getElementById("placement");
+		let titles = ["st", "nd", "rd", "th"];
+		let title = titles[Math.min(placement % 10, titles.length - 1)];
+		placementElem.innerHTML = (placement + 1) + title;
+	}
+
 	let startTime = 0;
 	let unloaded = false;
 	function startCountdown() {
@@ -626,14 +653,16 @@ function loadRally(name) {
 			window.removeEventListener("keydown", startCounting);
 			rallyCountdown.classList.add("active");
 			keypressOverhead.classList.remove("active");
+			document.getElementById("rallyUI").classList.add("active"); // enable side progress bar
 			car.locked = true;
+
 			
-			let t = 3; // change
+			let t = 1; // change
 			rallyCountdown.innerHTML = t;
 			function count() {
 				if (unloaded) return;
 				t--;
-				if (t) {
+				if (t > 0) {
 					rallyCountdown.innerHTML = t;
 					setTimeout(count, 1000);
 				}
@@ -641,9 +670,9 @@ function loadRally(name) {
 					rallyCountdown.innerHTML = "GO";
 					car.locked = false;
 					startTime = World.time;
-					document.getElementById("progressWrapper").classList.add("active"); // enable side progress bar
 
 					Render.on("afterRender", updateSplitView);
+					Render.on("afterRender", updateOverheadUI);
 
 					for (let driver of Driver.all) {
 						animateDriver(driver);
@@ -662,12 +691,18 @@ function loadRally(name) {
 
 	window.addEventListener("unloadMap", function unloadRally() {
 		Render.off("afterRestore", checkToResetCar);
+		Render.off("afterRender", updateSplitView);
+		Render.off("afterRender", updateOverheadUI);
 		window.removeEventListener("unloadMap", unloadRally);
 		window.removeEventListener("finishRally", finishRally);
 		rallyCountdown.classList.remove("active");
 
+		// reset overhead ui
+		document.getElementById("distance").innerHTML = "0.0km";
+		document.getElementById("placement").innerHTML = "1st";
+
 		car.locked = false;
-		document.getElementById("progressWrapper").classList.remove("active"); // disable side progress bar
+		document.getElementById("rallyUI").classList.remove("active"); // disable side progress bar
 
 		// unload image cache
 		for (let sprite of bufferedSprites) {

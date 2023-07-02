@@ -16,7 +16,7 @@ function createDrivers() {
 	for (let i = 0; i < 4; i++) {
 		let name = driverNames[Math.floor(random() * driverNames.length)];
 		let skill = Math.floor(random() / 0.001) * 0.001;
-		let variation = random() * 0.15 + 0.1;
+		let variation = random() * 0.1 + 0.06;
 		let car = Car.types[Math.floor(Car.types.length * random())];
 
 		new Driver({
