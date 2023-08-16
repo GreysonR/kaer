@@ -39,27 +39,6 @@ class Grid {
 			}
 		}
 	}
-
-	addBody = function(body) {
-		let bounds = this.getBounds(body);
-
-		if (!body._Grids) body._Grids = {};
-		if (!body._Grids[this.id]) body._Grids[this.id] = [];
-		else return;
-
-		for (let x = bounds.min.x; x <= bounds.max.x; x++) {
-			for (let y = bounds.min.y; y <= bounds.max.y; y++) {
-				let n = this.pair(new vec(x, y));
-
-				body._Grids[this.id].push(n);
-				if (!this.grid[n]) {
-					this.grid[n] = [];
-					this.gridIds.add(n);
-				}
-				this.grid[n].push(body);
-			}
-		}
-	}
 	getBucketIds = function(bounds) {
 		let ids = [];
 		for (let x = bounds.min.x; x <= bounds.max.x; x++) {
@@ -74,6 +53,26 @@ class Grid {
 
 		return ids;
 	}
+
+	addBody = function(body) {
+		let bounds = this.getBounds(body);
+
+		if (!body._Grids) body._Grids = {};
+		if (!body._Grids[this.id]) body._Grids[this.id] = [];
+
+		for (let x = bounds.min.x; x <= bounds.max.x; x++) {
+			for (let y = bounds.min.y; y <= bounds.max.y; y++) {
+				let n = this.pair(new vec(x, y));
+
+				body._Grids[this.id].push(n);
+				if (!this.grid[n]) {
+					this.grid[n] = [];
+					this.gridIds.add(n);
+				}
+				this.grid[n].push(body);
+			}
+		}
+	}
 	removeBody = function(body) {
 		for (let n of body._Grids[this.id]) {
 			let node = this.grid[n];
@@ -85,8 +84,34 @@ class Grid {
 				}
 			}
 		}
-		body._Grids[this.id].length = 0;
-	};
+	}
+	addPoint = function(point) {
+		if (!point._Grids) point._Grids = {};
+		if (!point._Grids[this.id]) point._Grids[this.id] = [];
+
+		let position = point.x ? point : point.position;
+		let bucketPos = position.div(this.gridSize).floor2();
+		let n = this.pair(bucketPos);
+		point._Grids[this.id].push(n);
+		if (!this.grid[n]) {
+			this.grid[n] = [];
+			this.gridIds.add(n);
+		}
+		this.grid[n].push(point);
+	}
+	removePoint = function(point) {
+		if (!point._Grids) console.log(point._Grids);
+		for (let n of point._Grids[this.id]) {
+			let node = this.grid[n];
+			if (node) {
+				node.delete(point);
+				if (node.length === 0) {
+					delete this.grid[n];
+					this.gridIds.delete(n);
+				}
+			}
+		}
+	}
 	updateBody = function(body) {
 		let curNodes = body._Grids[this.id];
 		let oldNodes = new Set(curNodes);

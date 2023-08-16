@@ -33,11 +33,12 @@ document.getElementById("mapInput").addEventListener("input", event => {
 	let input = event.target;
 	let fr = new FileReader();
 	fr.readAsText(input.files[0]);
+	// let name = input.value.replace(/\\/g, "/").split("/"); // gets the filename
+	// name = name[name.length - 1].replace(".svg", "");
 
 	fr.onload = function() {
 		// Compile file
 		let res = fr.result;
-		let index = 0;
 		
 		let out = {
 			roadHitbox: [],
@@ -46,28 +47,18 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		let homeOut = [];
 		
 		const objColors = {
-			"white": "wall",
-			"#D58850": "checkpoint",
 			"#BF3232": "spawn",
-			"#82E1BF": "path",
 			"#2027CD": "policeSpawns",
 
 			"#53656A": "road",
 			"#8C432B": "dirt",
-			"#FA5F3D": "innerHitbox",
-			"#592B21": "rail",
-			"#9A9A9A": "rail",
-
-			"#46A325": "tree",
-			"#DDB45F": "zoneHitbox",
 
 			"#425155": "roadHitbox",
-
-			"#955EBF": "job",
-			"#FF7D1E": "coin",
-
-			"#14FF00": "startLine",
-			"#FF1F00": "endLine",
+			
+			"white": "wall",
+			"#592B21": "rail",
+			"#9A9A9A": "rail",
+			"#46A325": "tree",
 			"#E35F26": "trafficCone",
 		}
 		
@@ -177,6 +168,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				let x = 0;
 				let y = 0;
 				let path = [];
+				let paths = [path];
 				for (let i = 0; i < pathArr.length; i++) {
 					let func = pathArr[i][0];
 					let part = pathArr[i].slice(1).split(" ");
@@ -184,6 +176,13 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					if (func === "M") {
 						x = Math.round(Number(part[0]));
 						y = Math.round(Number(part[1]));
+
+						if (i !== 0) { // remove when necessary
+							console.warn("More than 1 path");
+							path = [];
+							paths.push(path);
+							// pathNum++;
+						}
 					}
 					else if (func === "H") {
 						x = Math.round(Number(part[0]));
@@ -210,7 +209,8 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					else if (func === "Z") {
 						if (i !== pathArr.length - 1) {
 							console.warn("More than 1 path");
-							// paths.push([]);
+							path = [];
+							paths.push(path);
 							// pathNum++;
 						}
 					}
@@ -222,118 +222,105 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					path.push({ x: Math.round(x), y: Math.round(y) });
 				}
 
+				for (let path of paths) {
+					if (path.length > 1) {
+						let pathObj = elem.properties;
+						let name = "wall";
+						if (objColors[pathObj.fill] || objColors[pathObj.stroke]) {
+							name = objColors[pathObj.fill] || objColors[pathObj.stroke];
+						}
+						if (!out[name]) {
+							out[name] = [];
+						}
+						let center = getCenterOfMass(path);
+	
+						if (isHomeLayout) {
+							console.log(path);
+						}
+						else {
+							if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
+								path.reverse();
+							}
+		
+							if (name === "path") {
+								let decompPoints = path.map(v => [v.x, v.y]);
+								decomp.makeCCW(decompPoints);
+								decomp.removeDuplicatePoints(decompPoints, 0.01);
+								path = decompPoints.map(v => ({ x: v[0], y: v[1] }));
+							}
+		
+							if (name === "road") {
+								if (path[0].x) { // first point might be vec instead of bezier, so we have to remove it
+									path.shift();
+								}
+	
+								let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
+								for (let hitbox of roadHitbox) {
+									roundVert(hitbox.position);
+									roundVert(hitbox.vertices);
+									out[name + "Hitbox"].push(hitbox);
+								}
+		
+								let roadPath = generateRoadPath(path, 200);
+								out[name].push(roadPath);
+							}
+							else if (name === "dirt") {
+								if (path[0].x) {
+									path.shift();
+								}
+								let dirtHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
+								let dirtPath = generateRoadPath(path, 0);
+								for (let hitbox of dirtHitbox) {
+									roundVert(hitbox.position);
+									roundVert(hitbox.vertices);
+									out[name + "Hitbox"].push(hitbox);
+								}
+	
+								let beziers = [];
+								for (let bezier of dirtPath) {
+									beziers.push(bezier.toObject());
+								}
+								out[name].push(beziers);
+							}
+							else if (name === "rail") {
+								if (path[0].x) {
+									path.shift();
+								}
+								let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
+								for (let obj of hitbox) {
+									if (!out.wall) out.wall = [];
+									roundVert(obj.position);
+									roundVert(obj.vertices);
+									out["wall"].push(obj);
+								}
+							}
+							else if (name === "wall" || name.includes("Hitbox")) {
+								let decompPoints = path.map(v => [v.x, v.y]);
+								decomp.removeDuplicatePoints(decompPoints, 0.01);
+								decomp.makeCCW(decompPoints);
+								let convex = decomp.quickDecomp(decompPoints);
+		
+								for (let shape of convex) {
+									let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
+									let center = getCenterOfMass(verts);
+									out[name].push({
+										x: Math.round(center.x),
+										y: Math.round(center.y),
+										vertices: verts,
+									});
+								}
+							}
+							else {
+								if (new vec(path[0]).equals(path[path.length - 1])) {
+									path.pop();
+								}
 				
-				if (path.length > 1) {
-					let pathObj = elem.properties;
-					let name = "wall";
-					if (objColors[pathObj.fill] || objColors[pathObj.stroke]) {
-						name = objColors[pathObj.fill] || objColors[pathObj.stroke];
-					}
-					if (!out[name]) {
-						out[name] = [];
-					}
-					let center = getCenterOfMass(path);
-
-					if (isHomeLayout) {
-						console.log(path);
-					}
-					else {
-						if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
-							path.reverse();
-						}
-	
-						if (name === "path") {
-							let decompPoints = path.map(v => [v.x, v.y]);
-							decomp.makeCCW(decompPoints);
-							decomp.removeDuplicatePoints(decompPoints, 0.01);
-							path = decompPoints.map(v => ({ x: v[0], y: v[1] }));
-						}
-	
-						if (name === "road") {
-							if (path[0].x) {
-								path.shift();
-							}
-							let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
-							let roadPath = generateRoadPath(path, 0);
-							
-							for (let hitbox of roadHitbox) {
-								roundVert(hitbox.position);
-								roundVert(hitbox.vertices);
-								out[name + "Hitbox"].push(hitbox);
-							}
-	
-							// if (roadPath[0].a.y < roadPath[roadPath.length - 1].a.y) {
-							// 	roadPath.reverse();
-							// }
-							for (let bezier of roadPath) {
-								out[name].push(bezier.toObject());
-							}
-						}
-						else if (name === "dirt") {
-							if (path[0].x) {
-								path.shift();
-							}
-							let dirtHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
-							let dirtPath = generateRoadPath(path, 0);
-							for (let hitbox of dirtHitbox) {
-								roundVert(hitbox.position);
-								roundVert(hitbox.vertices);
-								out[name + "Hitbox"].push(hitbox);
-							}
-
-							let beziers = [];
-							for (let bezier of dirtPath) {
-								beziers.push(bezier.toObject());
-							}
-							out[name].push(beziers);
-						}
-						else if (name === "innerHitbox") {
-							if (!out[name]) out[name] = [];
-							let roadHitbox = generateRoadHitbox(path, 650);
-							for (let hitbox of roadHitbox) {
-								roundVert(hitbox.position);
-								roundVert(hitbox.vertices);
-								out[name].push(hitbox);
-							}
-						}
-						else if (name === "rail") {
-							if (path[0].x) {
-								path.shift();
-							}
-							let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
-							for (let obj of hitbox) {
-								if (!out.wall) out.wall = [];
-								roundVert(obj.position);
-								roundVert(obj.vertices);
-								out["wall"].push(obj);
-							}
-						}
-						else if (name === "wall" || name.includes("Hitbox")) {
-							let decompPoints = path.map(v => [v.x, v.y]);
-							decomp.removeDuplicatePoints(decompPoints, 0.01);
-							decomp.makeCCW(decompPoints);
-							let convex = decomp.quickDecomp(decompPoints);
-	
-							for (let shape of convex) {
-								let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
-								let center = getCenterOfMass(verts);
 								out[name].push({
 									x: Math.round(center.x),
 									y: Math.round(center.y),
-									vertices: verts,
+									vertices: path,
 								});
 							}
-						}
-						else {
-							if (new vec(path[0]).equals(path[path.length - 1])) {
-								path.pop();
-							}
-			
-							out[name].push({
-								x: Math.round(center.x),
-								y: Math.round(center.y),
-								vertices: path,
-							});
 						}
 					}
 				}
@@ -348,7 +335,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			out = JSON.stringify(homeOut);
 		}
 		else {
-			out.trackLength = Math.round(getTrackLength(out));
 			out = JSON.stringify(out);
 		}
 

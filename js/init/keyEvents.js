@@ -5,24 +5,21 @@ window.addEventListener("keydown", event => {
 
 	if (!event.repeat) {
 		if (key === "w" || key === "arrowup") {
-			car.up = true;
+			player.controls.up = true;
 		}
 		else if (key === "s" || key === "arrowdown") {
-			car.down = true;
+			player.controls.down = true;
 		}
 		else if (key === "a" || key === "arrowleft") {
-			car.left = true;
+			player.controls.left = true;
 		}
 		else if (key === "d" || key === "arrowright") {
-			car.right = true;
+			player.controls.right = true;
 		}
 		else if (key === " ") {
-			car.handbrake = true;
+			player.controls.handbrake = true;
 		}
-		else if (key === "r") {
-			resetCar();
-		}
-		else if (key === "e") {
+		else if (key === "e") { // REMOVE ON RELEASE toggle big fov
 			if (!window.originalFov) {
 				window.originalFov = baseFov;
 			}
@@ -30,23 +27,10 @@ window.addEventListener("keydown", event => {
 			else baseFov = window.originalFov;
 		}
 		else if (key === "escape") {
-			if (trackName !== "" && modeName !== "") {
-				if (homeOpen) {
-					closeHome();
-				}
-				else {
-					openHome();
-				}
-			}
-		}
-		else if (key === "f") {
-			World.timescale = World.timescale === 1 ? 0.5 : 1;
+			// open pause menu
 		}
 	
-		if (key === " ") {
-			// path.getNext();
-		}
-	
+		// REMOVE ON RELEASE dev keybinds
 		if (event.altKey && key === "q") { // toggle map file input
 			document.getElementById("mapInput").classList.toggle("active");
 		}
@@ -61,7 +45,13 @@ window.addEventListener("keydown", event => {
 			Render.showBroadphase = !Render.showBroadphase;
 		}
 		if (event.altKey && key === "g") { // toggle graph
-			Render.graph = !Render.graph
+			Render.graph = !Render.graph;
+		}
+		if (event.altKey && key === "c") { // toggle graph
+			Render.rotationPoint = !Render.rotationPoint;
+		}
+		if (event.altKey && key === "x") { // toggle navmesh arrows (REMOVE)
+			Render.navmeshArrows = !Render.navmeshArrows;
 		}
 		if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing)
 			ctx.imageSmoothingEnabled = !ctx.imageSmoothingEnabled;
@@ -73,19 +63,19 @@ window.addEventListener("keyup", event => {
 
 	if (!event.repeat) {
 		if (key === "w" || key === "arrowup") {
-			car.up = false;
+			player.controls.up = false;
 		}
 		else if (key === "s" || key === "arrowdown") {
-			car.down = false;
+			player.controls.down = false;
 		}
 		else if (key === "a" || key === "arrowleft") {
-			car.left = false;
+			player.controls.left = false;
 		}
 		else if (key === "d" || key === "arrowright") {
-			car.right = false;
+			player.controls.right = false;
 		}
-		else if (key === " " && !car.locked) {
-			car.handbrake = false;
+		else if (key === " " && !player.controls.locked) {
+			player.controls.handbrake = false;
 		}
 	}
 });

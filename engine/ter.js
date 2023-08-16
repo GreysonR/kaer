@@ -130,9 +130,33 @@ var ter = {
 		staticGrid: new Grid(2000), // bucket size MUST be the same as dynamicGrid
 		constraints: [],
 		pairs: {},
+
+		events: {
+			addBody: [],
+			deleteBody: [],
+		},
+		on: function(event, callback) {
+			if (!this.events[event]) {
+				this.events[event] = [];
+			}
+			this.events[event].push(callback);
+		},
+		off: function(event, callback) {
+			event = this.events[event];
+			if (event.includes(callback)) {
+				event.splice(event.indexOf(callback), 1);
+			}
+		},
+		trigger: function(event, ...args) {
+			let events = this.events[event];
+			for (let i = 0; i < events.length; i++) {
+				events[i](...args);
+			}
+		},
 		
 		getPairs: function(bodies) {
 			let pairs = [];
+			let canCollide = ter.Bodies.canCollide;
 
 			for (let i = 0; i < bodies.length - 1; i++) {
 				let bodyA = bodies[i];
@@ -163,11 +187,13 @@ var ter = {
 					}
 					if (!bodyB.hasCollisions || bodyA.parent && bodyA.parent === bodyB.parent)
 						continue;
-
+					if (!canCollide(bodyA.collisionFilter, bodyB.collisionFilter))
+						continue;
+					
 
 					const boundsA = bodyA.bounds;
 					const boundsB = bodyB.bounds;
-					
+
 					if (boundsA.min.x <= boundsB.max.x &&
 						boundsA.max.x >= boundsB.min.x &&
 						boundsA.min.y <= boundsB.max.y &&
@@ -180,6 +206,7 @@ var ter = {
 			return pairs;
 		},
 		get collisionPairs() {
+			let canCollide = ter.Bodies.canCollide;
 			let dynamicGrid = ter.World.dynamicGrid;
 			let staticGrid = ter.World.staticGrid;
 			let pair = ter.Common.pairCommon;
@@ -206,6 +233,8 @@ var ter = {
 							let bodyB = curStaticBucket[k];
 	
 							if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
+								continue;
+							if (!canCollide(bodyA.collisionFilter, bodyB.collisionFilter))
 								continue;
 		
 		
@@ -239,6 +268,15 @@ var ter = {
 		bodies: 0,
 		get uniqueId() {
 			return this.bodies++;
+		},
+		canCollide: function(filterA, filterB) {
+			let { category: categoryA, mask: maskA } = filterA;
+			let { category: categoryB, mask: maskB } = filterB;
+
+			let canA = maskA === 0 || (maskA & categoryB) !== 0;
+			let canB = maskB === 0 || (maskB & categoryA) !== 0;
+
+			return canA && canB;
 		},
 
 		rectangle: function(width, height, position, options = {}) {
@@ -291,15 +329,17 @@ var ter = {
 				return;
 			}
 			
+			let lastVelocity = new vec(body.velocity);
 			body.velocity.mult2(frictionAir);
 			if (body.velocity.x !== 0 || body.velocity.y !== 0){
-				body.translate(body.velocity.mult(timescale));
+				body.translate(body.velocity.add(lastVelocity).mult(timescale / 2)); // trapezoidal rule to take into account acceleration
 			}
 
+			let lastAngularVelocity = body.angularVelocity;
 			body.angularVelocity *= frictionAngular;
 			if (Math.abs(body.angularVelocity) < 0.0001) body.angularVelocity = 0;
 			if (body.angularVelocity){
-				body.translateAngle(body.angularVelocity * timescale);
+				body.translateAngle((body.angularVelocity + lastAngularVelocity) / 2 * timescale); // trapezoidal rule to take into account acceleration
 			}
 			
 			body.updateBounds();
@@ -800,16 +840,16 @@ var ter = {
 		},
 	},
 	Common: {
-		clamp: function(x, min, max) {
+		clamp: function(x, min, max) { // clamps x so that min <= x <= max
 			return Math.max(min, Math.min(x, max));
 		},
-		angleDiff: function(angle1, angle2) {
+		angleDiff: function(angle1, angle2) { // returns the signed difference between 2 angles
 			function mod(a, b) {
 				return a - Math.floor(a / b) * b;
 			}
 			return mod(angle1 - angle2 + Math.PI, Math.PI * 2) - Math.PI;
 		},
-		modDiff: function(x, y, m = 1) {
+		modDiff: function(x, y, m = 1) { // returns the signed difference between 2 values with any modulo, ie 11 oclock is 2 hours from 1 oclock with m = 12
 			function mod(a, b) {
 				return a - Math.floor(a / b) * b;
 			}
@@ -825,7 +865,7 @@ var ter = {
 				return x*x + x + y;
 			return y*y + y + x;
 		},
-		merge: function(obj, options) {
+		merge: function(obj, options) { // deep copies options object onto obj, no return since it's in-place
 			Object.keys(options).forEach(option => {
 				let value = options[option];
 				
@@ -843,20 +883,20 @@ var ter = {
 				}
 			});
 		},
-		lineIntersects: function(a1, a2, b1, b2) {
-			if (a1.x === a1.x || a1.y === a1.y) {
+		lineIntersects: function(a1, a2, b1, b2) { // tells you if lines a1->a2 and b1->b2 are intersecting, and at what point
+			if (a1.x === a2.x || a1.y === a2.y) {
 				a1 = new vec(a1);
 			}
-			if (b1.x === b1.x || b1.y === b1.y) {
+			if (b1.x === b2.x || b1.y === b2.y) {
 				b1 = new vec(b1);
 			}
-			if (a1.x === a1.x)
+			if (a1.x === a2.x)
 				a1.x += 0.00001;
-			if (b1.x === b1.x)
+			if (b1.x === b2.x)
 				b1.x += 0.00001;
-			if (a1.y === a1.y)
+			if (a1.y === a2.y)
 				a1.y += 0.00001;
-			if (b1.y === b1.y)
+			if (b1.y === b2.y)
 				b1.y += 0.00001;
 
 			let d = (a1.x - a2.x) * (b1.y - b2.y) - (a1.y - a2.y) * (b1.x - b2.x);
@@ -876,7 +916,40 @@ var ter = {
 				return false;
 			}
 		},
-		raycast: function(start, end, bodies) { // raycast that gets you all info
+		lineIntersectsBody: function(a1, a2, body) { // tells you if line a1->a2 is intersecting with body, returns true/false
+			let ray = a2.sub(a1);
+			let rayNormalized = ray.normalize();
+			let rayAxes = [ rayNormalized, rayNormalized.normal() ];
+			let rayVertices = [ a1, a2 ]; 
+
+			function SAT(verticesA, verticesB, axes) {
+				for (let axis of axes) {
+					let boundsA = { min: Infinity, max: -Infinity };
+					let boundsB = { min: Infinity, max: -Infinity };
+					for (let vertice of verticesA) {
+						let projected = vertice.dot(axis);
+						if (projected < boundsA.min) {
+							boundsA.minVertice
+						}
+						boundsA.min = Math.min(boundsA.min, projected);
+						boundsA.max = Math.max(boundsA.max, projected);
+					}
+					for (let vertice of verticesB) {
+						let projected = vertice.dot(axis);
+						boundsB.min = Math.min(boundsB.min, projected);
+						boundsB.max = Math.max(boundsB.max, projected);
+					}
+
+					if (boundsA.min > boundsB.max || boundsA.max < boundsB.min) { // they are NOT colliding on this axis
+						return false;
+					}
+				}
+				return true;
+			}
+			// SAT using ray axes and body axes
+			return SAT(rayVertices, body.vertices, rayAxes) && SAT(rayVertices, body.vertices, body.axes);
+		},
+		raycast: function(start, end, bodies) { // raycast that gets you all info: { boolean collision, int distance, vec point, Body body, int verticeIndex }
 			let lineIntersects = ter.Common.lineIntersects;
 			let minDist = Infinity;
 			let minPt = null;
@@ -935,9 +1008,8 @@ var ter = {
 				verticeIndex: minVert,
 			};
 		},
-		raycastSimple: function(start, end, bodies) { // raycast that only tells you if there is a collision (usually faster)
-			let lineIntersects = ter.Common.lineIntersects;
-			let collision = false;
+		raycastSimple: function(start, end, bodies) { // raycast that only tells you if there is a collision (usually faster), returns true/false
+			let lineIntersectsBody = ter.Common.lineIntersectsBody;
 
 			if (bodies === undefined) {
 				let grid = World.dynamicGrid;
@@ -963,23 +1035,16 @@ var ter = {
 
 			for (let i = 0; i < bodies.length; i++) {
 				let body = bodies[i];
-				let { vertices } = body;
-				let len = vertices.length;
-
-				for (let i = 0; i < len; i++) {
-					let cur = vertices[i];
-					let next = vertices[(i + 1) % len];
-
-					let intersection = lineIntersects(start, end, cur, next);
-					if (intersection) {
-						collision = true;
-						break;
-					}
+				let intersection = lineIntersectsBody(start, end, body);
+				if (intersection) {
+					return true;
 				}
-				if (collision) break;
 			}
-
-			return collision;
+			return false;
+		},
+		boundCollision: function(boundsA, boundsB) { // checks if 2 bounds { min: vec, max: vec } are intersecting, returns true/false
+			return (boundsA.max.x >= boundsB.min.x && boundsA.min.x <= boundsB.max.x && 
+					boundsA.max.y >= boundsB.min.y && boundsA.min.y <= boundsB.max.y);
 		},
 	},
 	Render: (() => {
@@ -1053,7 +1118,9 @@ var ter = {
 						const { background, border, borderWidth, borderType, lineDash, lineCap, bloom, opacity, sprite, round, } = render;
 						
 						if (sprite && sprite.loaded) { // sprite render
+							ctx.globalAlpha = opacity ?? 1;
 							sprite.render(position, body.angle, ctx, render.spriteScale);
+							ctx.globalAlpha = 1;
 							continue;
 						}
 
@@ -1210,9 +1277,9 @@ var ter = {
 
 		// - Camera
 		Render.camera = {
-			position: { x: 0, y: 0 },
+			position: new vec(0, 0),
 			fov: 2000,
-			translation: { x: 0, y: 0 },
+			translation: new vec(0, 0),
 			scale: 1,
 			boundSize: 1,
 			bounds: {
@@ -1222,11 +1289,11 @@ var ter = {
 			// ~ Camera
 			screenPtToGame: function(point) {
 				let camera = ter.Render.camera;
-				return new vec((point.x - camera.translation.x) / camera.scale, (point.y - camera.translation.y) / camera.scale);
+				return new vec((point.x * Render.pixelRatio - camera.translation.x) / camera.scale, (point.y * Render.pixelRatio - camera.translation.y) / camera.scale);
 			},
 			gamePtToScreen: function(point) {
 				let camera = ter.Render.camera;
-				return new vec(point.x * camera.scale + camera.translation.x, point.y * camera.scale + camera.translation.y);
+				return new vec((point.x * camera.scale + camera.translation.x) / Render.pixelRatio, (point.y * camera.scale + camera.translation.y) / Render.pixelRatio);
 			},
 		}
 

@@ -22,11 +22,16 @@ class Body {
 		}
 
 		ter.Common.merge(this, options);
+		
+		if (typeof this.collisionFilter.mask === "string") {
+			this.collisionFilter.mask = parseInt(this.collisionFilter.mask, 2);
+		}
+		if (typeof this.collisionFilter.category === "string") {
+			this.collisionFilter.category = parseInt(this.collisionFilter.category, 2);
+		}
 
 		this.vertices = vertices.map(v => new vec(v));
 		this.removeDuplicatesVertices();
-
-		
 		this.resetVertices();
 
 		if (!this.isConvex() && (!Array.isArray(options.children) || options.children.length === 0)) {
@@ -201,7 +206,7 @@ class Body {
 		
 		this.isStatic = isStatic;
 
-		if (this.hasCollisions) {
+		if (this.hasCollisions && !this.removed) {
 			if (lastStatic) {
 				staticGrid.removeBody(this);
 			}
@@ -214,6 +219,16 @@ class Body {
 			else {
 				dynamicGrid.addBody(this);
 			}
+		}
+	}
+	setRenderLayer(layer) {
+		if (!this.parent) {
+			Render.bodies[this.render.layer].delete(this);
+			this.render.layer = layer;
+			if (!Render.bodies[this.render.layer]) {
+				Render.bodies[this.render.layer] = new Set();
+			}
+			Render.bodies[this.render.layer].add(this);
 		}
 	}
 	setCollisions(hasCollisions) {
@@ -330,6 +345,10 @@ class Body {
 		for (let i = 0; i < this.children.length; i++) {
 			this.children[i].delete();
 		}
+
+		if (!this.parent) {
+			World.trigger("deleteBody", this);
+		}
 	}
 	add() {
 		let { World, Render} = ter;
@@ -357,6 +376,10 @@ class Body {
 			for (let i = 0; i < this.children.length; i++) {
 				this.children[i].add();
 			}
+
+			if (!this.parent) {
+				World.trigger("addBody", this);
+			}
 		}
 	}
 	centerSprite(sprite = this.render.sprite) {
@@ -369,6 +392,10 @@ class Body {
 					sprite.width = options.radius * 2;
 					sprite.height = options.radius * 2;
 				}
+				sprite.on("load", () => {
+					sprite.image.width = sprite.width;
+					sprite.image.height = sprite.height;
+				});
 			}
 			if (sprite.position === undefined) {
 				sprite.position = new vec(0, 0);
@@ -671,7 +698,9 @@ class rectangle extends Body {
 		this.centerSprite();
 
 		this.setPosition(position, true);
-		this.add();
+		if (!options.removed) {
+			this.add();
+		}
 	}
 }
 class polygon extends Body {
@@ -691,7 +720,9 @@ class polygon extends Body {
 		this.centerSprite();
 
 		this.setPosition(position, true);
-		this.add();
+		if (!options.removed) {
+			this.add();
+		}
 	}
 }
 class circle extends Body {
@@ -711,7 +742,9 @@ class circle extends Body {
 		this.centerSprite();
 
 		this.setPosition(position, true);
-		this.add();
+		if (!options.removed) {
+			this.add();
+		}
 	}
 }
 class fromVertices extends Body {
@@ -720,6 +753,8 @@ class fromVertices extends Body {
 
 		this.setPosition(position, true);
 		this.centerSprite();
-		this.add();
+		if (!options.removed) {
+			this.add();
+		}
 	}
 }

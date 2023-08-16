@@ -14,19 +14,16 @@
 
 	<!-- css -->
 	<link rel="stylesheet" href="./css/main.css">
-	<link rel="stylesheet" href="./css/home.css">
-	<link rel="stylesheet" href="./css/leaderboard.css">
-	<link rel="stylesheet" href="./css/rally.css">
-
 </head>
 <body>
+	<!-- canvas -->
+	<input id="mapInput" type="file" accept="image/svg+xml">
 	<div id="canvWrapper">
 		<canvas id="canv" style="opacity: 1"></canvas>
 		<div id="motionBlurWrapper">
 			<canvas id="motionBlur"></canvas>
 		</div>
 	</div>
-	
 	<svg class="svgFilter" xmlns="http://www.w3.org/2000/svg" version="1.1">
 		<defs>
 			<filter id="blurFilter">
@@ -34,211 +31,6 @@
 			</filter>
 		</defs>
 	</svg>
-
-	<input id="mapInput" type="file" accept="image/svg+xml">
-
-	<div id="rallyOverhead">
-		<div id="keypressOverhead">Press any key to start</div>
-		<div id="rallyCountdown">3</div>
-	</div>
-	<div id="rallyUI">
-		<div id="placement">1st</div>
-		<div id="distance">0.0km</div>
-		<div id="progressWrapper">
-			<div class="marker" id="opponentMarker0" style="top: 75%"></div>
-			<div class="marker" id="opponentMarker1" style="top: 75%"></div>
-			<div class="marker" id="opponentMarker2" style="top: 75%"></div>
-			<div class="marker" id="opponentMarker3" style="top: 75%"></div>
-			<div class="marker" id="playerMarker" style="top: 55%"></div>
-			<div id="splits">
-				<!-- <div class="split" style="height: 30%;"></div>
-				<div class="split" style="height: 25%; top: 30%"></div>
-				<div class="split complete" style="height: 25%; top: 55%"></div>
-				<div class="split good" style="height: 20%; top: 80%"></div> -->
-			</div>
-		</div>
-		<div id="liveLeaderboard">
-			
-		</div>
-	</div>
-	<div id="overhead">
-		<div id="timingOverhead">
-			<div id="timer">0:00</div>
-			<div id="bestTime">Best: 0:00</div>
-			<div id="completeWrapper">
-				<div id="complete"></div>
-			</div>
-		</div>
-		<div id="chaseOverhead">
-			<div id="healthWrapper">
-				<div id="health"></div>
-				<div id="healthText">10 / 10</div>
-			</div>
-			<div id="chaseScore"></div>
-		</div>
-	</div>
-	<div id="homeWrapperOld" class="active">
-		<div id="modeSelect" class="active">
-			<div class="mode" onclick="selectMode('time')">
-				<span>Timed</span>
-			</div>
-			<div class="mode" onclick="selectMode('drift')">
-				<span>Drift</span>
-			</div>
-			<!-- <div class="mode" onclick="selectMode('chase')">
-				<span>Chase</span>
-			</div> -->
-			<div class="mode" onclick="selectMode('rally')">
-				<span>Rally</span>
-			</div>
-		</div>
-		<div id="trackSelect" class="trackSelect">
-			<div class="track" onclick="selectTrack('track1')">
-				<span>Track 1</span>
-			</div>
-			<div class="track" onclick="selectTrack('track2')">
-				<span>Track 2</span>
-			</div>
-			<div class="track" onclick="selectTrack('track3')">
-				<span>Track 3</span>
-			</div>
-		</div>
-		<div id="chaseSelect" class="trackSelect">
-			<div class="track" onclick="selectTrack('chase2')">
-				<span>Chase 1</span>
-			</div>
-		</div>
-		<div id="rallySelect" class="trackSelect">
-			<div class="track" onclick="selectTrack('rally1')">
-				<span>Rally 1</span>
-			</div>
-		</div>
-	</div>
-	<div id="homeWrapper" class="active">
-		<script>
-			function buttonMouseDown(button) {
-				button.classList.add("mousedown");
-				window.addEventListener("mouseup", function mouseup() {
-				button.classList.remove("mousedown");
-					window.removeEventListener("mouseup", mouseup);
-				});
-			}
-		</script>
-		<div id="map" class="grass">
-			<div>
-				<h1>GRASS</h1>
-				<div class="bestWrapper">
-					<span class="best">BEST</span>
-					<span class="time">0.0km</span>
-				</div>
-				<div class="startButton" onmousedown="buttonMouseDown(this)" onclick="selectRally('rally1')">START</div>
-			</div>
-		</div>
-	</div>
-	<div id="rallyFinish" class="">
-		<div id="rallyFinishText" class="">
-			<div class="rallyFinishTitle">FINISH</div>
-			<div id="rallyFinishTime">0:00.00</div>
-		</div>
-		<div id="leaderboardWrap" class="">
-			<div>
-				<div id="trackName">Rally 1</div>
-				<div class="leaderboardTitle">LEADERBOARD</div>
-	
-				<div id="leaderboard">
-					<div class="leaderboardLabel">
-						<div>#</div>
-						<div>DRIVER</div>
-						<div>CAR</div>
-						<div>TIME</div>
-					</div>
-					<div id="leaderboardData">
-						<div class="leaderboardItem player">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">01</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">02</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">03</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">04</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">05</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">06</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">07</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">Volvo 66</div>
-								<div class="leaderboardTime">5:14.502</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">08</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">09</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-						<div class="leaderboardItem">
-							<div class="leaderboardItemValues">
-								<div class="leaderboardNumber">10</div>
-								<div class="leaderboardName">Player</div>
-								<div class="leaderboardCar">RS2000</div>
-								<div class="leaderboardTime">3:23.456</div>
-							</div>
-						</div>
-					</div>
-				</div>
-				<div class="continueButton" onclick="window.dispatchEvent(new CustomEvent('leaderboardContinue'))">CONTINUE</div>
-			</div>
-		</div>
-	</div>
 </body>
 <!-- engine -->
 <script src="./engine/poly-decomp.js"></script>
@@ -251,55 +43,35 @@
 <script src="./engine/bodies.js"></script>
 <script src="./engine/constraints.js"></script>
 <script src="./engine/ter.js"></script>
+<script src="./engine/navmesh.js"></script>
+
+<!-- general data -->
+<script src="./js/data/models.js"></script>
+<script src="./js/data/materials.js"></script>
 
 <!-- init -->
 <script src="./js/init/main.js"></script>
 <script src="./js/init/loadImg.js"></script>
-<script src="./js/init/car.js"></script>
-<script src="./js/init/materials.js"></script>
+<script src="./js/init/Car.js"></script>
+<script src="./js/init/player.js"></script>
 <script src="./js/init/keyEvents.js"></script>
-<script src="./js/init/home.js"></script>
 
-<!-- gameplay -->
-<script src="./js/gameplay/selectTrack.js"></script>
-<script src="./js/gameplay/timedTrack.js"></script>
-<script src="./js/gameplay/chaseMode.js"></script>
-<script src="./js/gameplay/rally.js"></script>
+<!-- police -->
+<script src="./js/police/Enemy.js"></script>
+
+<!-- scenes -->
+<script src="./js/scenes/Scene.js"></script>
+
+<!-- map data -->
+<script src="./js/map/data/testMap.js"></script>
 
 <!-- map -->
 <script src="./js/map/svg-parser.js"></script>
-<script src="./js/map/loadMap.js"></script>
 <script src="./js/map/mapping.js"></script>
-
-<!-- map data -->
-<script src="./js/map/data/track1.js"></script>
-<script src="./js/map/data/track2.js"></script>
-<script src="./js/map/data/track3.js"></script>
-<script src="./js/map/data/track4.js"></script>
-
-<script src="./js/map/data/chase1.js"></script>
-<script src="./js/map/data/chase2.js"></script>
-
-<script src="./js/map/data/rally1/rally1Start.js"></script>
-<script src="./js/map/data/rally1/rally1End.js"></script>
-<script src="./js/map/data/rally1/rally1S1.js"></script>
-<script src="./js/map/data/rally1/rally1S2.js"></script>
-<script src="./js/map/data/rally1/rally1S3.js"></script>
-<script src="./js/map/data/rally1/rally1S4.js"></script>
-<script src="./js/map/data/rally1/rally1S5.js"></script>
-<script src="./js/map/data/rally1/rally1S6.js"></script>
-<script src="./js/map/data/rally1/rally1S7.js"></script>
+<script src="./js/map/mapLoader.js"></script>
 
 <!-- visuals -->
-<script src="./js/vis/skid.js"></script>
-<script src="./js/vis/smoke.js"></script>
-<script src="./js/vis/motionBlur.js"></script>
-
-<!-- data -->
-<script src="./js/data/driverNames.js"></script>
-<script src="./js/data/cars.js"></script>
-<script src="./js/data/drivers.js"></script>
-
-<!-- ai -->
-<script src="./js/ai/enemyDriver.js"></script>
+<script src="./js/visual/skid.js"></script>
+<script src="./js/visual/smoke.js"></script>
+<script src="./js/visual/motionBlur.js"></script>
 </html>
