@@ -32,7 +32,7 @@ class Body {
 
 		this.vertices = vertices.map(v => new vec(v));
 		this.removeDuplicatesVertices();
-		this.resetVertices();
+		this.resetVertices(false);
 
 		if (!this.isConvex() && (!Array.isArray(options.children) || options.children.length === 0)) {
 			options.children = [];
@@ -82,6 +82,7 @@ class Body {
 		}
 
 		if (options.angle) {
+			this.angle = 0;
 			this.setAngle(-options.angle);
 		}
 	}
@@ -320,7 +321,7 @@ class Body {
 
 	delete() {
 		let { World, Render } = ter;
-		if (!this.parent) {
+		if (!this.parent && Render.bodies[this.render.layer]) {
 			Render.bodies[this.render.layer].delete(this);
 		}
 		if (World.bodies.includes(this)) {
@@ -345,14 +346,11 @@ class Body {
 		for (let i = 0; i < this.children.length; i++) {
 			this.children[i].delete();
 		}
-
-		if (!this.parent) {
-			World.trigger("deleteBody", this);
-		}
 	}
 	add() {
 		let { World, Render} = ter;
 		if (!World.bodies.includes(this)) {
+			this.trigger("add");
 			this.removed = false;
 			
 			World.bodies.push(this);
@@ -375,10 +373,6 @@ class Body {
 
 			for (let i = 0; i < this.children.length; i++) {
 				this.children[i].add();
-			}
-
-			if (!this.parent) {
-				World.trigger("addBody", this);
 			}
 		}
 	}
@@ -430,7 +424,7 @@ class Body {
 			let vertices = this.vertices;
 			let center = this.position;
 			let mapped = vertices.map(v => [v, v.sub(center).angle]);
-			mapped.sort((a, b) => a[1] < b[1] ? -1 : a[1] > b[1] ? 1 : 0);
+			mapped.sort((a, b) => ter.Common.angleDiff(a[1], b[1]));
 			this.vertices = mapped.map(v => v[0]);
 		}
 		else { // reverses vertices if the 1st and 2nd are going wrong direction - never changes order of vertices
@@ -515,8 +509,8 @@ class Body {
 
 			if (i >= verts.length / 2) { // Prevents duplicate axes
 				let axis = curVert.sub(nextVert);
+				/*
 				let dupe = false;
-				
 				for (let j = 0; j < axes.length; j++) {
 					if (axes[j].x === axis.y && axes[j].y === axis.x || axes[j].x === -axis.y && axes[j].y === -axis.x) {
 						dupe = true;
@@ -525,7 +519,8 @@ class Body {
 				}
 				if (!dupe) {
 					axes.push(axis);
-				}
+				}*/
+				axes.push(axis);
 			}
 			else {
 				axes.push(nextVert.sub(curVert));
@@ -658,8 +653,8 @@ class Body {
 		collisionEnd: [],
 		beforeUpdate: [], // apply forces to current body
 		duringUpdate: [], // clear forces from current body
-		// afterUpdate: [], // deprecated: use your main game loop instead | apply forces to current + other bodies
 		delete: [],
+		add: [],
 	}
 	on(event, callback) {
 		if (!this.events[event]) {

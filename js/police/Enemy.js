@@ -15,7 +15,7 @@ class Enemy extends Car {
 }
 
 let police = new Enemy("Police Basic");
-police.body.setPosition(new vec(8100, 7100));
+police.body.setPosition(new vec(3330, 1400));
 
 // Update police AI
 Render.on("afterRender", () => {

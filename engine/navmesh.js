@@ -42,11 +42,11 @@ class NavmeshNode {
 }
 
 class Navmesh {
-	constructor() {
+	constructor(size = 500) {
 		this.nodeIds = new Set();
 		this.polygons = [];
 		this.nodes = {};
-		this.grid = new Grid(900);
+		this.grid = new Grid(size);
 		this.polygonGrid = new Grid(this.grid.gridSize);
 
 		// add existing static bodies to grid
@@ -54,14 +54,17 @@ class Navmesh {
 
 		
 		Render.on("afterRender", () => {
+			return;
 			// console.time();
 			for (let i = 0; i < 50; i++) {
-				this.getPath(new vec(player.body.position), new vec({x: 8711.703904053966, y: 6328.486417686252}));
+				this.getPath(new vec(player.body.position), new vec({x: 3330, y: 1410}));
 			}
-			let path = this.getPath(new vec(player.body.position), new vec({x: 8711.703904053966, y: 6328.486417686252}), true);
+			let path = this.getPath(new vec(player.body.position), new vec({x: 3330, y: 1410}), Render.navmeshArrows);
 			// console.timeEnd();
-			this.renderPolygons();
-			this.render(path ?? []);
+			if (Render.navmeshArrows) {
+				this.renderPolygons();
+				this.render(path ?? []);
+			}
 		});/**/
 	}
 	addNode(node, permanent = true) {

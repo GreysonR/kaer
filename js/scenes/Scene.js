@@ -7,6 +7,11 @@ class Scene {
 	addBody(body) {
 		this.bodies.push(body);
 	}
+	addBodies(...bodies) {
+		for (let body of bodies) {
+			this.addBody(body);
+		}
+	}
 	add() {
 		this.trigger("beforeAdd");
 		for (let body of this.bodies) {

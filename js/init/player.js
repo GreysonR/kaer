@@ -2,7 +2,7 @@
 
 // const car = Bodies.rectangle(246*0.53, 118*0.53, new vec(0, 0), { // default
 // const car = Bodies.rectangle(195*0.58, 118*0.58, new vec(0, 0), { // fiat 124
-const player = new Car("Ford Escort Mk2");
+const player = new Car("car1");
 player.body.on("collisionStart", carCollision);
 player.body.on("collisionActive", carCollision);
 function carCollision(event) {

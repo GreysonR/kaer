@@ -18,18 +18,16 @@ class Sprite {
 		
 		if (!cache) {
 			let img = new Image();
-			img.decoding = "async";
-			img.loading = "eager";
 			
 			// document.body.appendChild(img);
-			img.id = src + "-image";
-			img.style.position = "absolute";
-			img.style.top =  "0px";
-			img.style.left = "0px";
-			img.style.opacity = 0.001;
-			img.width =  width ;
+			// img.id = src + "-image";
+			// img.style.position = "absolute";
+			// img.style.top =  "0px";
+			// img.style.left = "0px";
+			// img.style.opacity = 0.001;
+			img.width =  width;
 			img.height = height;
-
+			
 			// cache image
 			Sprite.all[src] = img;
 
@@ -56,7 +54,7 @@ class Sprite {
 			// let scale = 0.5 * Math.min(1.5, Math.sqrt(canv.width * canv.height / 1700 ** 2));
 			// let scale = Math.min(1, camera.scale * 0.9);
 			let scale = Math.min(1, camera.scale * 0.5);
-			buffer.width =  width  * scale;
+			buffer.width  = width  * scale;
 			buffer.height = height * scale;
 
 			// console.log(buffer, this);
@@ -69,6 +67,7 @@ class Sprite {
 			buffer.style.top = "0px";
 			buffer.style.left = "0px";
 			buffer.style.opacity = 0.0001;
+			buffer.style.pointerEvents = "none";
 			document.body.appendChild(buffer);
 		}
 		else {

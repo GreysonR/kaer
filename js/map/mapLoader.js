@@ -1,7 +1,5 @@
 "use strict";
 
-var navmesh;
-
 var MapBodies = {
 	wall: function({ x, y, position, vertices }) {
 		for (let i = 0; i < vertices.length; i++) {
@@ -15,7 +13,6 @@ var MapBodies = {
 			isStatic: true,
 			hasCollisions: true,
 			restitution: 0,
-
 			render: {
 				visible: false,
 				background: "#ffffff",
@@ -24,155 +21,14 @@ var MapBodies = {
 		});
 		return obj;
 	},
-	spawn: function({ x, y, angle }) {
-		// curMap.spawn.position = new vec(x, y);
-		// curMap.spawn.angle = angle;
-
-		player.body.setPosition(new vec(x, y));
-		player.body.setAngle(angle);
-		
-		lastFov.length = 0;
-		lastPos.length = 0;
+	spawn: function({ x, y, angle }, scene) {
+		scene.spawn = {
+			position: new vec(x, y),
+			angle: angle,
+		}
 		// resetCar();
 	},
-	tree: function({ x, y }) {
-		let obj = Bodies.circle(70, new vec(x, y), {
-			numSides: 6,
-			isStatic: true,
-			hasCollisions: true,
-
-			render: {
-				visible: false,
-				background: "#592B21",
-				layer: 0,
-			}
-		});
-		return obj;
-	},
-	road: function(vertices, scene) {
-		for (let i = 0; i < vertices.length; i++) {
-			vertices[i] = new vec(vertices[i]);
-		}
-
-		let offset = 150;
-		let points = [];
-		let edgeGrid = new Grid(2000);
-		let normals = [];
-		for (let i = 0; i < vertices.length; i++) {
-			let prev = vertices[i - 1];
-			let cur = vertices[i];
-			let next = vertices[i + 1];
-			let normal;
-			
-			if (prev && next) normal = next.sub(cur).normalize().add(cur.sub(prev).normalize());
-			else if (next) normal = next.sub(cur);
-			else normal = cur.sub(prev);
-			normal.normalize2().normal2();
-
-			normals.push(normal);
-			
-			let center = cur;
-			let sideA = cur.add(normal.mult(offset));
-			let sideB = cur.add(normal.mult(-offset));
-			points.push(new NavmeshNode(center), new NavmeshNode(sideA), new NavmeshNode(sideB));
-			// navmesh.addNode(center);
-			// navmesh.addNode(sideA);
-			// navmesh.addNode(sideB);
-		}
-
-		let edges = [];
-		for (let i = 0; i < vertices.length - 1; i++) {
-			let cur = vertices[i];
-			let next = vertices[i + 1];
-			let curNormal = normals[i];
-			let nextNormal = normals[i + 1];
-
-			let offset = 300;
-			function addEdge(offset) {
-				let start = cur.add(curNormal.mult(offset));
-				let end = next.add(nextNormal.mult(offset));
-				let edge = {
-					vertices: [start, end],
-					bounds: {
-						min: start.min(end),
-						max: start.max(end),
-					}
-				}
-				edges.push(edge);
-				edgeGrid.addBody(edge);
-			}
-			addEdge(offset);
-			addEdge(-offset);
-		}
-
-		/*
-		Render.on("afterRender", () => {
-			ctx.beginPath();
-
-			for (let edge of edges) {
-				ctx.moveTo(edge.vertices[0].x, edge.vertices[0].y);
-				ctx.lineTo(edge.vertices[1].x, edge.vertices[1].y);
-			}
-
-			ctx.strokeStyle = "red";
-			ctx.lineWidth = 2 / camera.scale;
-			ctx.stroke();
-		});/* */
-		
-
-		scene.on("afterAdd", () => {
-			navmesh.addExistingStaticBodies();
-			
-			for (let point of points) {
-				point.isRoad = true;
-				navmesh.addNode(point);
-				// console.log(point);
-			}
-
-			const lineIntersects = Common.lineIntersects;
-			const scaledPairs = new Set();
-			const pairCommon = Common.pairCommon;
-			for (let point of points) {
-				for (let i = 0; i < point.neighborDistances.length; i++) {
-					let neighbor = point.neighbors[i];
-					if (neighbor.isRoad) {
-						let pairId = pairCommon(point.id, neighbor.id);
-						if (scaledPairs.has(pairId)) continue;
-						scaledPairs.add(pairId);
-						
-						// check for edge collision
-						let edgeCollision = false;
-						let bounds = {
-							min: neighbor.position.min(point.position).div2(edgeGrid.gridSize).floor2(),
-							max: neighbor.position.max(point.position).div2(edgeGrid.gridSize).floor2(),
-						}
-						let bucketIds = edgeGrid.getBucketIds(bounds);
-						for (let bucketId of bucketIds) {
-							let bucket = edgeGrid.grid[bucketId];
-							for (let edge of bucket) {
-								let intersection = lineIntersects(edge.vertices[0], edge.vertices[1], point.position, neighbor.position);
-								if (intersection) {
-									edgeCollision = true;
-									break;
-								}
-							}
-							if (edgeCollision) break;
-						}
-
-						if (!edgeCollision) {
-							point.neighborDistances[i] *= 0.4;
-							neighbor.neighborDistances[neighbor.neighbors.indexOf(point)] *= 0.4;
-						}
-						else {
-							point.removeNeighbor(neighbor);
-							neighbor.removeNeighbor(point);
-						}
-					}
-				}
-			}
-		});
-	},
-	roadHitbox: function({ x, y, position, vertices }) {
+	road: function({ x, y, position, vertices }) {
 		for (let i = 0; i < vertices.length; i++) {
 			vertices[i] = new vec(vertices[i]);
 		}
@@ -186,7 +42,7 @@ var MapBodies = {
 			isStatic: true,
 
 			render: {
-				visible: true,
+				visible: false,
 				// background: "#42515560",
 				background: "transparent",
 				layer: -1,
@@ -197,51 +53,145 @@ var MapBodies = {
 
 		return obj;
 	},
-	dirtHitbox: function({ x, y, position, vertices }) {
-		for (let i = 0; i < vertices.length; i++) {
-			vertices[i] = new vec(vertices[i]);
-		}
-		if (position) {
-			x = position.x;
-			y = position.y;
-		}
-		let obj = Bodies.fromVertices(vertices, new vec(x, y), {
-			material: "dirt",
-			hasCollisions: false,
+	circle: function(x, y, width, height, name, treePositions, radius = 26, layer = 7) {
+		var scene = new Scene();
+		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
 			isStatic: true,
-
+			hasCollisions: false,
+			removed: true,
 			render: {
 				visible: true,
-				background: "#42515590",
-				layer: -1,
+				layer: layer,
+				sprite: `nature/${name}.png`,
 			}
 		});
-		obj.delete();
-		SurfaceGrid.addBody(obj);
+		scene.addBody(img);
 
-		return obj;
-	},
-	trafficCone: function({ x, y, angle }) {
-		let obj = Bodies.rectangle(49, 49, new vec(x, y), {
-			isStatic: false,
-			frictionAngular: 0.05,
-			frictionAir: 0.04,
-			mass: 0.6,
+		let hitboxOptions = {
+			numSides: 6,
+			isStatic: true,
 			hasCollisions: true,
+			removed: true,
+			render: {
+				visible: false,
+			}
+		};
+		for (let position of treePositions) {
+			scene.addBody(Bodies.circle(radius, new vec(x + position.x, y + position.y), hitboxOptions));
+		}
+		return scene;
+	},
+	tree1: function({ x, y }) {
+		let width  = 311;
+		let height = 326;
+		return MapBodies.circle(x, y, width, height, "tree1", [
+			new vec(169, 58),
+			new vec(52, 178),
+			new vec(187, 205),
+		]);
+	},
+	tree2: function({ x, y }) {
+		let width  = 328;
+		let height = 319;
+		return MapBodies.circle(x, y, width, height, "tree2", [
+			new vec(69, 69),
+			new vec(215, 120),
+			new vec(92, 206),
+		]);
+	},
+	tree3: function({ x, y }) {
+		let width  = 297;
+		let height = 206;
+		return MapBodies.circle(x, y, width, height, "tree3", [
+			new vec(70, 70),
+			new vec(204, 110),
+		]);
+	},
+	tree4: function({ x, y }) {
+		let width  = 202;
+		let height = 308;
+		return MapBodies.circle(x, y, width, height, "tree4", [
+			new vec(70, 70),
+			new vec(60, 205),
+		]);
+	},
+	tree5: function({ x, y }) {
+		let width  = 177;
+		let height = 180;
+		return MapBodies.circle(x, y, width, height, "tree5", [
+			new vec(65, 65),
+		]);
+	},
+	tree6: function({ x, y }) {
+		let width  = 168;
+		let height = 176;
+		return MapBodies.circle(x, y, width, height, "tree6", [
+			new vec(60, 60),
+		]);
+	},
+	bush1: function({ x, y }) {
+		let width  = 144;
+		let height = 120;
+		return MapBodies.circle(x, y, width, height, "bush1", [
+		], 5);
+	},
+	genericBody: function(x, y, width, height, name, verticesList, layer = 7) {
+		var scene = new Scene();
+		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
+			isStatic: true,
+			hasCollisions: false,
+			removed: true,
 			render: {
 				visible: true,
-				background: "#E35F26",
-				sprite: "roadBlock/trafficCone.png",
-				layer: 0,
+				layer: layer,
+				sprite: `nature/${name}.png`,
 			}
 		});
-		obj.setAngle(angle);
-		return obj;
+		scene.addBody(img);
+
+		let hitboxOptions = {
+			isStatic: true,
+			hasCollisions: true,
+			removed: true,
+			render: {
+				visible: false,
+			}
+		};
+		for (let vertices of verticesList) {
+			let position = getCenterOfMass(vertices);
+			scene.addBody(Bodies.fromVertices(vertices, new vec(x + position.x, y + position.y), hitboxOptions));
+		}
+		return scene;
 	},
+	stone1: function({ x, y }) {
+		let width  = 149;
+		let height = 134;
+		return MapBodies.genericBody(x, y, width, height, "stone1", [[
+			new vec(48, 0),
+			new vec(68, 0),
+
+			new vec(112, 48),
+			new vec(112, 68),
+
+			new vec(68, 110),
+			new vec(48, 110),
+
+			new vec(0, 68),
+			new vec(0, 48),
+		]], -1);
+	},
+	barrel: function({ x, y }) {
+		let width  = 86;
+		let height = 86;
+		return MapBodies.circle(x, y, width, height, "barrel", [
+			new vec(35, 35),
+		], 37, -1);
+	}
 }
 
 function createMap(mapData) {
 	let scene = new Scene();
+	scene.navmesh = new Navmesh(1000);
 	
 	for (let typeName of Object.keys(mapData)) {
 		let objFunc = MapBodies[typeName]; // creator function of for this object type
@@ -256,45 +206,25 @@ function createMap(mapData) {
 			if (obj) {
 				obj.delete();
 				scene.addBody(obj);
+
+				
+				function addToNavmesh(body) {
+					if (body.hasCollisions && !body.isSensor && body.isStatic) {
+						scene.navmesh.addBody(body);
+					}
+				}
+				if (obj.bodies) { // this is a scene
+					for (let body of obj.bodies) {
+						addToNavmesh(body);
+					}
+				}
+				else {
+					addToNavmesh(obj);
+				}
+				/**/
 			}
 		}
 	}
 
-	// scene.addBody(body);
-
-	scene.on("beforeAdd", () => {
-		navmesh = new Navmesh();
-	});
-
 	return scene;
 }
-
-
-// - testMap
-let testMap = createMap(testMapData);
-(() => { // add fg + bg to testMap
-	let bg = Bodies.rectangle(16000, 16000, new vec(8000, 8000), {
-		isStatic: true,
-		hasCollisions: false,
-		removed: true,
-		render: {
-			sprite: "testMap/bg.png",
-			useBuffer: true,
-			layer: -4,
-		}
-	});
-	testMap.addBody(bg);
-	
-	let fg = Bodies.rectangle(16000, 16000, new vec(8000, 8000), {
-		isStatic: true,
-		hasCollisions: false,
-		removed: true,
-		render: {
-			sprite: "testMap/fg.png",
-			useBuffer: true,
-			layer: 4,
-		}
-	});
-	testMap.addBody(fg);
-})();
-testMap.add();

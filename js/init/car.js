@@ -19,7 +19,7 @@ class Car {
 
 	// ~ names
 	name = "Unknown";
-	model = "Ford Escort Mk2";
+	model = "car1";
 
 	// ~ drifting / sliding
 	hasTireSkid = false;
@@ -52,7 +52,7 @@ class Car {
 	update = function() {
 		let delta = Engine.delta;
 
-		let { body, controls, maxSpeed, acceleration, reverseAcceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, isDrifting, driftAmount, power, slide, driftHistory } = this;
+		let { body, controls, maxSpeed, acceleration, reverseAcceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, isDrifting, driftAmount, power, steeringWeight, driftHistory } = this;
 		let { up, down, left, right, handbrake, locked } = controls;
 		let { rotationBounds, rotationSensitivity } = this;
 		let { angle, velocity } = body;
@@ -80,7 +80,7 @@ class Car {
 		if (!material) material = "grass";
 		let materialProps = Materials[material];
 		tireGrip *= (isDrifting ? (materialProps.slidingGrip ?? materialProps.tireGrip) : materialProps.tireGrip) ?? 1;
-		slide *= materialProps.slide ?? 1;
+		steeringWeight *= materialProps.steeringWeight ?? 1;
 		turnSpeed *= materialProps.turnSpeed ?? 1;
 		acceleration *= materialProps.acceleration ?? 1;
 		maxSpeed *= materialProps.maxSpeed ?? 1;
@@ -96,7 +96,7 @@ class Car {
 			maxSpeed *= 0.95;
 			// acceleration *= 0.8;
 			turnSpeed *= 1;
-			slide = slide + (1 - slide) * 0.3;
+			steeringWeight = steeringWeight + (1 - steeringWeight) * 0.3;
 			power *= 0.8;
 		}
 	
@@ -180,7 +180,7 @@ class Car {
 			body.frictionAir = 0.002;
 		}
 	
-		let gripRatio = ((1 - slide) + Math.max(1, Math.abs(grip / maxGrip) ** 0.5) * slide);
+		let gripRatio = ((1 - steeringWeight) + Math.max(1, Math.abs(grip / maxGrip) ** 0.5) * steeringWeight);
 		body.frictionAngular = 0.10 / gripRatio;
 		addAngle /= gripRatio;
 	
@@ -299,4 +299,4 @@ class Car {
 }
 
 
-// new Player("Ford Escort Mk2");
+// new Player("car1");

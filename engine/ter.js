@@ -1,5 +1,4 @@
 "use strict";
-
 var globalPoints = [];
 var globalVectors = [];
 

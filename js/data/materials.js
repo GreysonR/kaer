@@ -6,7 +6,7 @@ let Materials = {
 	road: {
 		tireGrip: 1,
 		slidingGrip: 1,
-		slide: 1,
+		steeringWeight: 1,
 		turnSpeed: 1,
 		acceleration: 1,
 		maxSpeed: 1,
@@ -17,7 +17,7 @@ let Materials = {
 	dirt: {
 		tireGrip: 0.6,
 		slidingGrip: 0.6,
-		slide: 1.3,
+		steeringWeight: 1.3,
 		turnSpeed: 1,
 		acceleration: 1,
 		maxSpeed: 1,
@@ -28,7 +28,7 @@ let Materials = {
 	grass: {
 		tireGrip: 0.75,
 		slidingGrip: 0.6,
-		slide: 3,
+		steeringWeight: 3,
 		turnSpeed: 0.9,
 		acceleration: 0.6,
 		maxSpeed: 1,

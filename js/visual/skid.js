@@ -49,8 +49,8 @@ Render.on("beforeLayer0", () => {
 				}
 			}
 
-			ctx.strokeStyle = "#00000020";
-			ctx.lineWidth = 12;
+			ctx.strokeStyle = "#1C1C1C20";
+			ctx.lineWidth = 15;
 			ctx.lineCap = "round";
 			ctx.stroke();
 		}

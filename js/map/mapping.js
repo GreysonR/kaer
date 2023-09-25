@@ -41,26 +41,9 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		let res = fr.result;
 		
 		let out = {
-			roadHitbox: [],
-			dirtHitbox: [],
 		}
-		let homeOut = [];
 		
-		const objColors = {
-			"#BF3232": "spawn",
-			"#2027CD": "policeSpawns",
-
-			"#53656A": "road",
-			"#8C432B": "dirt",
-
-			"#425155": "roadHitbox",
-			
-			"white": "wall",
-			"#592B21": "rail",
-			"#9A9A9A": "rail",
-			"#46A325": "tree",
-			"#E35F26": "trafficCone",
-		}
+		const ignoreMapBody = ["road", "wall"];
 		
 		function getVertices(rect) {
 			let a = 0;
@@ -98,69 +81,64 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			}
 		}
 
-		function crawlNext(elem, isHomeLayout = false) {
-			if (elem.tagName === "clipPath") return;
+		function crawlNext(elem) {
+			if (elem.tagName === "clipPath" || elem.tagName === "defs") return;
+			if (elem.properties?.id) {
+				let id = elem.properties.id.split("_")[0];
+				if (MapBodies[id] && !ignoreMapBody.includes(id)) {
+					if (!out[id]) out[id] = [];
+					let rect = elem.children[elem.children.length - 1];
+					let options = { x: rect.properties.x, y: rect.properties.y };
+					if (id === "spawn") {
+						let angle = (Number(rect.properties.transform.replace("rotate(", "").split(" ")[0]) || 0) * Math.PI / 180;
+						let centerOffset = new vec(50, 30).rotate(angle);
+						options.angle = angle;
+						options.x += centerOffset.x;
+						options.y += centerOffset.y;
+					}
+					out[id].push(options);
+					return;
+				}
+			}
 			if (Array.isArray(elem.children) && elem.children.length > 0) {
-				isHomeLayout = isHomeLayout || elem.properties?.id === "markers";
 				for (let child of elem.children) {
-					crawlNext(child, isHomeLayout);
+					crawlNext(child);
+				}
+			}
+
+			let name;
+			if (elem.tagName === "rect" || elem.tagName === "path") {
+				// Get element name
+				if (elem.properties?.fill === "none") return;
+				name = elem.properties?.id?.split("_")[0];
+				if (!name) {
+					console.warn("no name: " + name, elem.properties);
+					return;
+				}
+				if (!ignoreMapBody.includes(name)) return;
+				if (!out[name]) {
+					out[name] = [];
 				}
 			}
 
 			if (elem.tagName === "rect") {
 				let rect = elem.properties;
-				let name = "wall";
-				if (objColors[rect.fill]) {
-					name = objColors[rect.fill];
-				}
-				if (!out[name]) {
-					out[name] = [];
-				}
-
-
 				let vertices = getVertices(rect);
 				let obj = {
 					x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),
 					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
 					vertices: vertices[0],
 				}
-				if (isHomeLayout) {
-					console.log(obj);
-					name = "";
-
-					if (out.roadHitbox) {
-						homeOut.push({
-							x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),
-							y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
-						});
+				if (name === "spawn") {
+					let a = 0;
+					if (rect.transform) {
+						let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
+						a = transform[0] / 180 * Math.PI;
 					}
+					obj.angle = a;
+					delete obj.vertices;
 				}
-				else {
-					if (name === "tree") {
-						delete obj.vertices;
-					}
-					if (name === "spawn") {
-						let a = 0;
-						if (rect.transform) {
-							let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
-							a = transform[0] / 180 * Math.PI;
-						}
-						obj.angle = a;
-						delete obj.vertices;
-					}
-					if (name === "trafficCone") {
-						let a = 0;
-						if (rect.transform) {
-							let transform = rect.transform.replace("rotate(", "").replace(")", "").split(" ");
-							a = transform[0] / 180 * Math.PI;
-						}
-						obj.angle = a;
-						obj.width = Math.round(rect.width / 0.1) * 0.1;
-						obj.height = Math.round(rect.height / 0.1) * 0.1;
-						delete obj.vertices;
-					}
-					out[name].push(obj);
-				}
+				out[name].push(obj);
 			}
 			else if (elem.tagName === "path") {
 				// parse path
@@ -177,7 +155,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						x = Math.round(Number(part[0]));
 						y = Math.round(Number(part[1]));
 
-						if (i !== 0) { // remove when necessary
+						if (i !== 0) { // remove when you need multiple moves
 							console.warn("More than 1 path");
 							path = [];
 							paths.push(path);
@@ -224,104 +202,69 @@ document.getElementById("mapInput").addEventListener("input", event => {
 
 				for (let path of paths) {
 					if (path.length > 1) {
-						let pathObj = elem.properties;
-						let name = "wall";
-						if (objColors[pathObj.fill] || objColors[pathObj.stroke]) {
-							name = objColors[pathObj.fill] || objColors[pathObj.stroke];
-						}
-						if (!out[name]) {
-							out[name] = [];
-						}
 						let center = getCenterOfMass(path);
-	
-						if (isHomeLayout) {
-							console.log(path);
+						
+						if (name === "wall") {
+							let vertices = [];
+							for (let vertice of path) {
+								if (vertice.x) {
+									vertices.push(vertice);
+								}
+								else {
+									let bezier = new Bezier(vertice.posA, vertice.cPts[0], vertice.cPts[1], vertice.posB);
+									let pointDensity = 100;
+									let numPoints = Math.floor(bezier.length / pointDensity);
+
+									vertices.push(bezier.a);
+									for (let i = 0; i < numPoints; i++) {
+										let point = bezier.getAtT((i + 1) / (numPoints + 1));
+										vertices.push(point);
+									}
+									vertices.push(bezier.d);
+								}
+							}
+							for (let vertice of vertices) {
+								roundVert(vertice);
+							}
+							// Remove duplicate vertices
+							let verticeIds = new Set();
+							for (let i = 0; i < vertices.length; ++i) {
+								let id = ter.Common.pairCommon(new vec(vertices[i]).round2());
+								if (verticeIds.has(id)) {
+									vertices.splice(i, 1);
+									--i;
+								}
+								else {
+									verticeIds.add(id);
+								}
+							}
+							let center = getCenterOfMass(vertices);
+							out[name].push({
+								x: center.x,
+								y: center.y,
+								vertices: vertices
+							});
+							return;
 						}
-						else {
-							if (name !== "path" && Common.angleDiff(center.sub(path[0]).angle, center.sub(path[1]).angle) > 0) {
-								path.reverse();
+						else if (name === "road") {
+							let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"], undefined, false);
+							for (let hitbox of roadHitbox) {
+								roundVert(hitbox.position);
+								roundVert(hitbox.vertices);
+								out[name].push(hitbox);
 							}
-		
-							if (name === "path") {
-								let decompPoints = path.map(v => [v.x, v.y]);
-								decomp.makeCCW(decompPoints);
-								decomp.removeDuplicatePoints(decompPoints, 0.01);
-								path = decompPoints.map(v => ({ x: v[0], y: v[1] }));
-							}
-		
-							if (name === "road") {
-								if (path[0].x) { // first point might be vec instead of bezier, so we have to remove it
-									path.shift();
-								}
-	
-								let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
-								for (let hitbox of roadHitbox) {
-									roundVert(hitbox.position);
-									roundVert(hitbox.vertices);
-									out[name + "Hitbox"].push(hitbox);
-								}
-		
-								let roadPath = generateRoadPath(path, 200);
-								out[name].push(roadPath);
-							}
-							else if (name === "dirt") {
-								if (path[0].x) {
-									path.shift();
-								}
-								let dirtHitbox = generateRoadHitbox(path, elem.properties["stroke-width"]);
-								let dirtPath = generateRoadPath(path, 0);
-								for (let hitbox of dirtHitbox) {
-									roundVert(hitbox.position);
-									roundVert(hitbox.vertices);
-									out[name + "Hitbox"].push(hitbox);
-								}
-	
-								let beziers = [];
-								for (let bezier of dirtPath) {
-									beziers.push(bezier.toObject());
-								}
-								out[name].push(beziers);
-							}
-							else if (name === "rail") {
-								if (path[0].x) {
-									path.shift();
-								}
-								let hitbox = generateRoadHitbox(path, elem.properties["stroke-width"] + 10, 150, false);
-								for (let obj of hitbox) {
-									if (!out.wall) out.wall = [];
-									roundVert(obj.position);
-									roundVert(obj.vertices);
-									out["wall"].push(obj);
-								}
-							}
-							else if (name === "wall" || name.includes("Hitbox")) {
-								let decompPoints = path.map(v => [v.x, v.y]);
-								decomp.removeDuplicatePoints(decompPoints, 0.01);
-								decomp.makeCCW(decompPoints);
-								let convex = decomp.quickDecomp(decompPoints);
-		
-								for (let shape of convex) {
-									let verts = shape.map(v => ({ x: Math.round(v[0] / 0.01) * 0.01, y: Math.round(v[1] / 0.01) * 0.01 }));
-									let center = getCenterOfMass(verts);
-									out[name].push({
-										x: Math.round(center.x),
-										y: Math.round(center.y),
-										vertices: verts,
-									});
-								}
-							}
-							else {
-								if (new vec(path[0]).equals(path[path.length - 1])) {
-									path.pop();
-								}
-				
-								out[name].push({
-									x: Math.round(center.x),
-									y: Math.round(center.y),
-									vertices: path,
-								});
-							}
+							return;
 						}
+						
+						if (new vec(path[0]).equals(path[path.length - 1])) {
+							path.pop();
+						}
+		
+						out[name].push({
+							x: Math.round(center.x),
+							y: Math.round(center.y),
+							vertices: path,
+						});
 					}
 				}
 			}
@@ -330,13 +273,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 
 		// out = JSON.stringify(out, null, "\t");
 
-		if (homeOut.length > 0) {
-			homeOut.sort((a, b) => b.y - a.y);
-			out = JSON.stringify(homeOut);
-		}
-		else {
-			out = JSON.stringify(out);
-		}
+		out = JSON.stringify(out);
 
 		copyToClipboard(out);
 		console.log(out);

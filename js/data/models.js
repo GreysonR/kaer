@@ -26,7 +26,7 @@ class Model {
 		// drifting / sliding
 		tireGrip: 6, // [0.0001, Infinity] grip for car to before it's sliding
 		slidingGrip: 6, // [0.0001, tireGrip] grip for car while it's sliding
-		slide: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
+		steeringWeight: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
 		power: 0.3, // [-1, 1] min amount of acceleration kept when sliding
 
 		// rotation point settings
@@ -46,21 +46,21 @@ class Model {
 }
 
 var Models = {
-	"Ford Escort Mk2": new Model({
-		model: "Ford Escort Mk2",
+	"car1": new Model({
+		model: "car1",
 		car: {
 			// basic stats
-			maxSpeed: 21,
-			maxReverseSpeed: 12,
-			acceleration: 2,
-			reverseAcceleration: 0.4,
-			turnSpeed: 3.6,
+			maxSpeed: 18,
+			maxReverseSpeed: 9,
+			acceleration: 1.7,
+			reverseAcceleration: 0.3,
+			turnSpeed: 3.2,
 
 			// drifting / sliding
-			tireGrip: 6,
-			slidingGrip: 6,
-			slide: 0.05,
-			power: 0.3,
+			tireGrip:    4.3,
+			slidingGrip: 4.3,
+			steeringWeight: 0.05,
+			power: 0.1,
 
 			// rotation point settings
 			rotationBounds: [-40, 0],
@@ -68,16 +68,16 @@ var Models = {
 
 			// health
 			maxHealth:	12,
-			health:	12,
+			health:	    12,
 			ramDamage: 6,
 		},
 		body: {
-			width: 240*0.53,
-			height: 127*0.42,
+			width: 110,
+			height: 55,
 			mass: 2,
 			render: {
-				sprite: "cars/Ford Escort Mk2.png",
-				spriteScale: new vec(1, 1.25),
+				sprite: "cars/car1.png",
+				spriteScale: new vec(1, 1),
 			}
 		},
 	}),
@@ -85,16 +85,16 @@ var Models = {
 		model: "Police Basic",
 		car: {
 			// basic stats
-			maxSpeed: 21,
-			maxReverseSpeed: 12,
-			acceleration: 2,
-			reverseAcceleration: 0.4,
-			turnSpeed: 3.6,
+			maxSpeed: 18,
+			maxReverseSpeed: 9,
+			acceleration: 1.7,
+			reverseAcceleration: 0.3,
+			turnSpeed: 3.2,
 
 			// drifting / sliding
-			tireGrip: 6,
-			slidingGrip: 6,
-			slide: 0.05,
+			tireGrip:    4.3,
+			slidingGrip: 4.3,
+			steeringWeight: 0.05,
 			power: 0.3,
 
 			// rotation point settings
@@ -102,17 +102,17 @@ var Models = {
 			rotationSensitivity: 0.2,
 
 			// health
-			maxHealth:	12,
-			health:	12,
-			ramDamage: 6,
+			maxHealth:	10,
+			health:	    10,
+			ramDamage: 2,
 		},
 		body: {
-			width: 90*1.5,
-			height: 47*1.5 / 1.25,
+			width: 118,
+			height: 55,
 			mass: 2,
 			render: {
 				sprite: "cars/policeCar.png",
-				spriteScale: new vec(1, 1.25),
+				spriteScale: new vec(1, 1),
 			}
 		},
 	}),
