@@ -54,6 +54,54 @@ class Enemy extends Car {
 		sightBox.on("collisionEnd", collision => {
 			delete sightBox.collisions[collision.id];
 		});
+
+		let renderHealth = this.renderHealth.bind(this);
+		Render.on("afterRender", renderHealth);
+		car.body.on("delete", () => {
+			Render.off("afterRender", renderHealth);
+		});
+
+		this.takeDamage = function(damage) {
+			const now = Performance.aliveTime;
+			const enemy = this;
+			if (now - this.lastDamage >= this.damageCooldown) {
+				this.lastDamage = now;
+				this.health = Math.max(0, this.health - damage);
+	
+				// health animation
+				let startPercent = this.healthBarPercent;
+				let nextPercent = this.health / this.maxHealth;
+				if (this.healthAnimation && this.healthAnimation.running) {
+					this.healthAnimation.stop();
+				}
+				this.healthAnimation = animations.create({
+					duration: 300,
+					curve: ease.out.quintic,
+					callback: p => {
+						enemy.healthBarPercent = p * (nextPercent - startPercent) + startPercent;
+					},
+				});
+	
+				// health background animation
+				if (this.healthBackgroundAnimation && this.healthBackgroundAnimation.running) {
+					this.healthBackgroundAnimation.stop();
+				}
+				let startBGPercent = this.healthBarPercent;
+				this.healthBackgroundAnimation = animations.create({
+					duration: 500,
+					delay: 300,
+					curve: ease.inOut.quintic,
+					callback: p => {
+						enemy.healthBarBackgroundPercent = p * (nextPercent - startBGPercent) + startBGPercent;
+					},
+				});
+				
+	
+				if (this.health <= 0) {
+					this.delete();
+				}
+			}
+		}
 	}
 	update() {
 
@@ -67,6 +115,47 @@ class Enemy extends Car {
 			ctx.fillStyle = "#ff000080";
 			ctx.fill();
 		});
+	}
+
+	healthBarPercent = 1;
+	healthBarBackgroundPercent = 1;
+	healthAnimation;
+	healthBackgroundAnimation;
+	renderHealth() {
+		if (this.health < this.maxHealth) {
+			let innerWidth = 200;
+			let innerHeight = 18;
+			let margin = 10;
+			let position = this.body.position.add(new vec(0, -100));
+			// background
+			ctx.beginPath();
+			Render.roundedRect(innerWidth + margin * 2, innerHeight + margin * 2, position, 16);
+			ctx.fillStyle = "#28363E";
+			ctx.fill();
+			
+			// inner lighter gray
+			ctx.beginPath();
+			Render.roundedRect(innerWidth, innerHeight, position, 6);
+			ctx.fillStyle = "#314753";
+			ctx.fill();
+
+			// dark red health background
+			{
+				ctx.beginPath();
+				let width = innerWidth * this.healthBarBackgroundPercent;//innerWidth * (this.health / this.maxHealth);
+				Render.roundedRect(width, innerHeight, position.sub(new vec((innerWidth - width) / 2, 0)), 6);
+				ctx.fillStyle = "#774251";
+				ctx.fill();
+			}
+			{
+				// red health
+				ctx.beginPath();
+				let width = innerWidth * this.healthBarPercent;// innerWidth * (this.health / this.maxHealth);
+				Render.roundedRect(width, innerHeight, position.sub(new vec((innerWidth - width) / 2, 0)), 6);
+				ctx.fillStyle = "#DC567C";
+				ctx.fill();
+			}
+		}
 	}
 }
 

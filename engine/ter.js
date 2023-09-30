@@ -1337,6 +1337,14 @@ var ter = {
 
 			ctx.closePath();
 		}
+		Render.roundedRect = function(width, height, position, round) {
+			Render.roundedPolygon([
+				new vec(-width/2, -height/2).add2(position),
+				new vec( width/2, -height/2).add2(position),
+				new vec( width/2,  height/2).add2(position),
+				new vec(-width/2,  height/2).add2(position),
+			], round);
+		}
 		Render.arrow = function(position, direction, size = 10) {
 			let endPos = new vec(position.x + direction.x, position.y + direction.y);
 			let sideA = direction.rotate(Math.PI * 3/4).normalize2().mult(size);

@@ -16,6 +16,7 @@ const animations = {
 		let t = start * duration;
 		let p = t !== 0 && t !== 1 ? curve(t) : t === 0 ? 0 : 1;
 		let run = true;
+		let timeout;
 
 		function loop() {
 			if (run === true) {
@@ -55,11 +56,17 @@ const animations = {
 			set percent(value) {
 				p = Math.max(0, Math.min(value, 1));
 			},
+			get running() {
+				return run;
+			},
 			stop: () => {
 				if (run === true) {
 					run = false;
 					if (typeof onstop === "function") {
 						onstop(p);
+					}
+					if (timeout != undefined) {
+						clearTimeout(timeout);
 					}
 					return p;
 				}
@@ -67,7 +74,7 @@ const animations = {
 			start: () => {
 				if (run === false) {
 					run = true;
-					setTimeout(loop, delay);
+					timeout = setTimeout(loop, delay);
 				}
 			},
 		};
