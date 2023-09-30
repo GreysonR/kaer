@@ -22,7 +22,7 @@ class Gun {
 
 			const { bulletSpeed } = this;
 			let velocity = new vec(Math.cos(angle), Math.sin(angle)).mult2(bulletSpeed);
-			new Bullet(this, position, velocity, parent);
+			new Bullet(this, position, velocity, this.trailLength, parent);
 		}
 	}
 	reload() {
@@ -32,16 +32,17 @@ class Gun {
 
 class Bullet {
 	static all = new Set();
-	constructor(gun, position, velocity, parent) {
+	constructor(gun, position, velocity, trailLength, parent) {
 		let bulletSpeed = velocity.length;
 		Bullet.all.add(this);
 		let body = this.body = Bodies.rectangle(14, 50, new vec(position), {
 			isSensor: true,
 			frictionAir: 0,
+			removed: true,
 			render: {
 				layer: -2,
 				round: 4,
-				background: "#DC567C00",
+				background: "transparent",
 			}
 		});
 		body.setAngle(velocity.angle - Math.PI/2);
@@ -59,6 +60,9 @@ class Bullet {
 				if (otherBody.parentCar && otherBody.parentCar.takeDamage) {
 					otherBody.parentCar.takeDamage(gun.damage);
 				}
+				else {
+					bullet.hitStatic();
+				}
 				bullet.delete();
 				clearTimeout(timeout);
 			}
@@ -67,21 +71,21 @@ class Bullet {
 		this.lastPositions = [];
 
 		// Render bullet trail
-		let startPosition = new vec(position);
-		this.maxTrailLength = 200;
+		this.startPosition = new vec(position);
+		this.maxTrailLength = trailLength;
 		this.deleteTime = 0;
 		this.renderTrail = function() {
 			let trailLength = bullet.maxTrailLength;
 			if (body.removed) {
 				const now = Performance.aliveTime;
-				trailLength = (1 - (now - bullet.deleteTime) * velocity.length / 3000) * bullet.maxTrailLength;
-				if (trailLength <= 0) {
+				trailLength = (1 - (now - bullet.deleteTime) * velocity.length / 10 / bullet.maxRealizedTrailLength) * bullet.maxRealizedTrailLength;
+				if (trailLength <= 0 || bullet.maxRealizedTrailLength <= 0) {
 					Render.off("beforeLayer-2", bullet.renderTrail);
 					return;
 				}
 			}
 			let start = body.position.add(body.velocity.normalize().mult(body.height / 2));
-			let end = startPosition.sub(start);
+			let end = bullet.startPosition.sub(start);
 			if (end.length > trailLength) {
 				end.length = trailLength;
 			}
@@ -90,14 +94,20 @@ class Bullet {
 			renderTrail(start, start.add(direction.mult(0.25)), start.add(direction.mult(0.75)), end, body.width, 0, -2, 1);
 			let angle = body.angle;
 			ctx.arc(start.x, start.y, body.width / 2, angle, Math.PI + angle);
-			ctx.fillStyle = createGradient(start, end, [["#DC567Cff", 0], ["#DC567C30", 0.6], ["#DC567C00", 1]]);
+			ctx.fillStyle = createGradient(start, end, [["#DC567Cff", 0], ["#DC975600", 1]]);
 			ctx.fill();
 		}
 		Render.on("beforeLayer-2", this.renderTrail);
+
+		body.add();
 	}
 	delete() {
 		this.body.delete();
 		Bullet.all.delete(this);
 		this.deleteTime = Performance.aliveTime;
+		this.maxRealizedTrailLength = Math.min(this.startPosition.sub(this.body.position).length, this.maxTrailLength);
+	}
+	hitStatic() { // effects for hitting a static body
+		// console.log("hit static body");
 	}
 }

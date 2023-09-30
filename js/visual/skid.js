@@ -17,6 +17,7 @@ camera.lastPosition = new vec(camera.translation);
 Render.on("beforeLayer0", () => {
 	let now = Performance.aliveTime;
 
+	ctx.beginPath();
 	for (let skid of Skid.all) {
 		let { path } = skid;
 
@@ -29,8 +30,6 @@ Render.on("beforeLayer0", () => {
 
 		// render
 		if (path.size > 1) {
-			ctx.beginPath();
-
 			let moved = false;
 			for (let point of path) {
 				// let camDiff = point[0].mult(camera.scale).add(camera.translation);
@@ -42,17 +41,16 @@ Render.on("beforeLayer0", () => {
 
 				if (moved === false) {
 					moved = true;
-					ctx.lineTo(point[0].x, point[0].y);
+					ctx.moveTo(point[0].x, point[0].y);
 				}
 				else {
 					ctx.lineTo(point[0].x, point[0].y);
 				}
 			}
-
-			ctx.strokeStyle = "#1C1C1C20";
-			ctx.lineWidth = 15;
-			ctx.lineCap = "round";
-			ctx.stroke();
 		}
 	}
+	ctx.strokeStyle = "#1C1C1C20";
+	ctx.lineWidth = 15;
+	ctx.lineCap = "round";
+	ctx.stroke();
 });

@@ -9,6 +9,7 @@ class Weapon {
 	fireRate = 500; // time between shots in ms
 	bulletSpeed = 10; // bullet speed
 	range = 1000; // max distance bullet travels
+	trailLength = 600;
 	
 	magazineSize = 6; // number of bullets before reload
 	reloadTime = 600; // reload time in ms
@@ -17,7 +18,7 @@ class Weapon {
 var Weapons = {
 	"pistol": new Weapon({
 		damage: 8,
-		fireRate: 20,
+		fireRate: 100,
 		bulletSpeed: 30, // 70
 		range: 1000,
 		

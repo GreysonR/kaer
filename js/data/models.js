@@ -31,6 +31,7 @@ class Model {
 		maxHealth:	12,
 		health:	12,
 		ramDamage: 6,
+		damageCooldown: 500,
 	};
 	body = {
 		friction: 0.05,
@@ -99,9 +100,10 @@ var Models = {
 			rotationSensitivity: 0.2,
 
 			// health
-			maxHealth:	10,
-			health:	    10,
+			maxHealth:	50,
+			health:	    50,
 			ramDamage: 2,
+			damageCooldown: 0,
 		},
 		body: {
 			width: 118,
