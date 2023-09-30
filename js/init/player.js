@@ -3,8 +3,19 @@
 // const car = Bodies.rectangle(246*0.53, 118*0.53, new vec(0, 0), { // default
 // const car = Bodies.rectangle(195*0.58, 118*0.58, new vec(0, 0), { // fiat 124
 const player = new Car("car1");
-player.body.on("collisionStart", carCollision);
-player.body.on("collisionActive", carCollision);
+// player.body.on("collisionStart", carCollision);
+// player.body.on("collisionActive", carCollision);
+player.controls.shoot = false;
+player.gun = new Gun("pistol");
+player.gun.magazine = Infinity;
+
+window.addEventListener("mousedown", event => {
+	let screenPosition = new vec(event.clientX, event.clientY);
+	let gamePosition = camera.screenPtToGame(screenPosition);
+	let angle = gamePosition.sub(player.body.position).angle;
+	player.gun.shoot(player.body.position.add(new vec(Math.cos(angle), Math.sin(angle)).mult2(player.body.height / 2)), angle, player.body);
+});
+
 function carCollision(event) {
 	let { bodyA, bodyB, contacts, normal, start } = event;
 	let otherBody = bodyA === player ? bodyB : bodyA;
@@ -136,6 +147,7 @@ function updateGamepad() {
 player.body.on("beforeUpdate", updateGamepad);
 
 
+// - update camera
 let lastFov = [];
 let lastPos = [];
 let baseFov = 1800;

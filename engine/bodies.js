@@ -289,7 +289,6 @@ class Body {
 	hasCollisions = true;
 
 
-	checkedPairs = [];
 	pairs = [];
 	lastSeparations = {};
 	numContacts = 0;

@@ -859,6 +859,11 @@ var ter = {
 				return x*x + x + y;
 			return y*y + x;
 		},
+		unpair: function(n) {
+			let z = Math.floor(Math.sqrt(n));
+			let l = n - z * z;
+			return l < z ? new vec(l, z) : new vec(z, l - z);
+		},
 		pairCommon: function(x, y) { // Elegant pairing function, but gives the same result if x/y are switched
 			if (x > y)
 				return x*x + x + y;

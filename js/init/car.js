@@ -11,6 +11,7 @@ class Car {
 		merge(this, options);
 
 		this.body = modelBase.getBody();
+		this.body.parentCar = this;
 		this.body.on("beforeUpdate", this.update.bind(this));
 		this.model = model;
 
@@ -18,7 +19,7 @@ class Car {
 	}
 
 	// ~ names
-	name = "Unknown";
+	// name = "Unknown"; // if multiplayer / leaderboard added in future
 	model = "car1";
 
 	// ~ drifting / sliding
@@ -30,7 +31,6 @@ class Car {
 	// ~ health
 	lastDamage = -5000;
 	damageCooldown = 500;
-	minDamageSpeed = 5;
 
 	// ~ visual
 	driftHistory = [];
@@ -49,6 +49,22 @@ class Car {
 		locked: false, // whether you have control of car or not; controlled by game state not player
 	};
 
+	takeDamage = function(damage) {
+		const now = Performance.aliveTime;
+		if (now - this.lastDamage >= this.damageCooldown) {
+			this.lastDamage = now;
+			this.health = Math.max(0, this.health - damage);
+			console.log(this.health);
+
+			if (this.health <= 0) {
+				this.delete();
+			}
+		}
+	}
+	delete = function() {
+		this.body.delete();
+		Car.all.delete(this);
+	}
 	update = function() {
 		let delta = Engine.delta;
 
@@ -150,8 +166,9 @@ class Car {
 		}
 	
 		// ~ turn
-		let maxTurnAmt = turnSpeed * 0.04;
-		let turnAmt = Math.min(maxTurnAmt * 0.09, (Math.abs(velocity.dot(carDir)) / 30 + velocity.length / 40) * maxTurnAmt * 0.09);
+		let maxTurnAmt = turnSpeed * 0.0036;
+		// turnAmt = (speed car is moving straight + total car speed) * maxTurnAmt, clamped to max of maxTurnAmt 
+		let turnAmt = Math.min(maxTurnAmt, (Math.abs(velocity.dot(carDir)) / 25 + velocity.length / 40) * maxTurnAmt);
 		if (left) {
 			addAngle -= turnAmt * velDotCar * left;
 		}
@@ -196,7 +213,7 @@ class Car {
 	
 		// ~ apply forces
 		body.applyForce(addVel);
-		body.applyTorque(addAngle * 0.5);
+		body.applyTorque(addAngle * 0.5); // some weird multiplication bc of engine update
 	
 		// ~ limit speed
 		if (speed > maxSpeed) {
@@ -297,6 +314,3 @@ class Car {
 		}
 	}
 }
-
-
-// new Player("car1");

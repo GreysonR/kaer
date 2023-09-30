@@ -212,7 +212,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 								}
 								else {
 									let bezier = new Bezier(vertice.posA, vertice.cPts[0], vertice.cPts[1], vertice.posB);
-									let pointDensity = 100;
+									let pointDensity = 50;
 									let numPoints = Math.floor(bezier.length / pointDensity);
 
 									vertices.push(bezier.a);

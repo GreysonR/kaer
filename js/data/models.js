@@ -1,21 +1,15 @@
 "use strict";
 
 class Model {
-	static types = [];
-	static all = {};
 	constructor(options = {}) {
 		ter.Common.merge(this, options);
-		Model.types.push(this.model);
-		Model.all[this.model] = this;
-
 		this.getBody = function() {
 			return Bodies.rectangle(this.body.width, this.body.height, new vec(0, 0), this.body);
 		}
 	}
 	
+	model = "";
 	car = {
-		model: "",
-
 		// basic stats
 		maxSpeed: 21, // [0, Infinity]
 		maxReverseSpeed: 12, // [0, Infinity]
@@ -42,6 +36,9 @@ class Model {
 		friction: 0.05,
 		restitution: 0.1,
 		mass: 3,
+		render: {
+			layer: 1,
+		},
 	};
 }
 
@@ -50,17 +47,17 @@ var Models = {
 		model: "car1",
 		car: {
 			// basic stats
-			maxSpeed: 18,
-			maxReverseSpeed: 9,
-			acceleration: 1.7,
+			maxSpeed: 17,
+			maxReverseSpeed: 7,
+			acceleration: 1.6,
 			reverseAcceleration: 0.3,
-			turnSpeed: 3.2,
+			turnSpeed: 3.4,
 
 			// drifting / sliding
-			tireGrip:    4.3,
-			slidingGrip: 4.3,
-			steeringWeight: 0.05,
-			power: 0.1,
+			tireGrip:    3.9,
+			slidingGrip: 3.9,
+			steeringWeight: 0.02,
+			power: 0.2,
 
 			// rotation point settings
 			rotationBounds: [-40, 0],
@@ -85,16 +82,16 @@ var Models = {
 		model: "Police Basic",
 		car: {
 			// basic stats
-			maxSpeed: 18,
-			maxReverseSpeed: 9,
+			maxSpeed: 16,
+			maxReverseSpeed: 8,
 			acceleration: 1.7,
 			reverseAcceleration: 0.3,
-			turnSpeed: 3.2,
+			turnSpeed: 3.4,
 
 			// drifting / sliding
 			tireGrip:    4.3,
 			slidingGrip: 4.3,
-			steeringWeight: 0.05,
+			steeringWeight: 0.02,
 			power: 0.3,
 
 			// rotation point settings
