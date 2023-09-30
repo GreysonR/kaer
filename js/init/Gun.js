@@ -53,15 +53,17 @@ class Bullet {
 		let bullet = this;
 		let timeout = setTimeout(() => {
 			bullet.delete();
+			bullet.hitNothing();
 		}, gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67);
 		body.on("collisionStart", collision => {
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (!otherBody.isSensor && otherBody != parent) {
 				if (otherBody.parentCar && otherBody.parentCar.takeDamage) {
 					otherBody.parentCar.takeDamage(gun.damage);
+					bullet.hitCharacter(collision);
 				}
 				else {
-					bullet.hitStatic();
+					bullet.hitStatic(collision);
 				}
 				bullet.delete();
 				clearTimeout(timeout);
@@ -107,7 +109,397 @@ class Bullet {
 		this.deleteTime = Performance.aliveTime;
 		this.maxRealizedTrailLength = Math.min(this.startPosition.sub(this.body.position).length, this.maxTrailLength);
 	}
-	hitStatic() { // effects for hitting a static body
-		// console.log("hit static body");
+	hitStatic(collision) { // effects for hitting a static body
+		let { normal, contacts } = collision;
+		if (collision.bodyA.isSensor) { // bodyA is the bullet, so the normal is of the bullet
+			normal = normal.mult(-1);
+		}
+		let point = contacts.reduce((prev, cur) => { // get average position of contacts to find collision point
+			return prev.add2(cur.vertice);
+		}, new vec(0, 0)).div2(contacts.length);
+		let normalAngle = Math.atan2(normal.y, normal.x);
+		let tangentAngle = normalAngle + Math.PI/2;
+
+		// circle
+		{
+			let duration = 400;
+			let maxRadius = Math.random() * 30 + 30;
+			let maxLineWidth = 8;
+			let radius = 0;
+			let lineWidth = maxLineWidth;
+			let position = point.add(normal.mult(10));
+			let maxDash = 30;
+			let dash = 0;
+			function render() {
+				if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
+					ctx.beginPath();
+					ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
+					ctx.strokeStyle = "#C5938380";
+					ctx.lineWidth = lineWidth;
+					if (dash >= 1) {
+						ctx.lineCap = "round";
+						ctx.setLineDash([dash, maxDash - dash])
+					}
+					ctx.stroke();
+					ctx.setLineDash([]);
+				}
+			}
+			animations.create({
+				duration: duration,
+				curve: ease.out.quintic,
+				callback: p => {
+					radius = maxRadius * p;
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			animations.create({
+				duration: duration * 0.7,
+				delay: duration * 0.3,
+				curve: ease.linear,
+				callback: p => {
+					lineWidth = maxLineWidth * (1 - p);
+					dash = maxDash * (1 - p);
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+
+		// lines
+		let numLines = 5; // must be > 1
+		let lineVelocityBounds = [2, 5]; // [min, max]
+		for (let i = 0; i < numLines; i++) {
+			let angle = (i / (numLines - 1)) * Math.PI + tangentAngle + (Math.random() * 0.4 - 0.2);
+			let speed = Math.random() * (lineVelocityBounds[1] - lineVelocityBounds[0]) + lineVelocityBounds[0];
+			let distance = Math.random() * 20 + 60;
+			let start = new vec(point);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let offset = direction.mult(distance);
+			let length = 20;
+			
+			let ptA = new vec(start);
+			let ptB = new vec(start);
+			function render() {
+				ctx.beginPath();
+				ctx.moveTo(ptA.x, ptA.y);
+				ctx.lineTo(ptB.x, ptB.y);
+				ctx.strokeStyle = "#FFF4EB";
+				ctx.lineWidth = 8;
+				ctx.lineCap = "round";
+				ctx.stroke();
+			}
+			let animation = animations.create({
+				duration: distance / speed * 16.67,
+				curve: ease.out.quadratic,
+				callback: p => {
+					let lengthPercent = length / distance;
+					p = p * (1 + lengthPercent);
+					let percentB = Math.min(1, p);
+					let percentA = Math.max(0, p - lengthPercent);
+					ptA = start.add(offset.mult(percentA));
+					ptB = start.add(offset.mult(percentB));
+
+					if (percentA >= 0.995) {
+						animation.stop();
+					}
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+				onstop() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+
+		// dots
+		let numDots = 6;
+		for (let i = 0; i < numDots; i++) {
+			let angle = Math.random() * Math.PI + tangentAngle;
+			let duration = Math.random() * 200 + 200;
+			let maxRadius = Math.random() * 14 + 8;
+			let distance = Math.random() * 60 + 30 - (maxRadius / (14 + 8) * 30);
+			let start = new vec(point);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let offset = direction.mult(distance);
+			
+			let pt = new vec(start);
+			let radius = maxRadius;
+			function render() {
+				ctx.beginPath();
+				ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+				ctx.closePath();
+				ctx.fillStyle = "#FFF4EB";
+				ctx.fill();
+			}
+			let positionAnimation = animations.create({
+				duration: duration,
+				curve: ease.linear,
+				callback: p => {
+					pt.set(start.add(offset.mult(p)));
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			let radiusAnimation = animations.create({
+				duration: duration * 0.6,
+				delay: duration * 0.4,
+				curve: ease.linear,
+				callback: p => {
+					radius = maxRadius * Math.max(0, 1 - p);
+				},
+				onend() {
+					radius = 0;
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+	}
+	hitCharacter(collision) { // effects for hitting a character
+		let { normal, contacts } = collision;
+		if (collision.bodyA.isSensor) { // bodyA is the bullet, so the normal is of the bullet
+			normal = normal.mult(-1);
+		}
+		let point = contacts.reduce((prev, cur) => { // get average position of contacts to find collision point
+			return prev.add2(cur.vertice);
+		}, new vec(0, 0)).div2(contacts.length);
+		let normalAngle = Math.atan2(normal.y, normal.x);
+		let tangentAngle = normalAngle + Math.PI/2;
+
+		// circle
+		{
+			let startAngle = tangentAngle - 0.4;
+			let endAngle = startAngle + Math.PI + 0.8;
+			let duration = 400;
+			let maxRadius = Math.random() * 30 + 30;
+			let maxLineWidth = 10;
+			let radius = 0;
+			let lineWidth = maxLineWidth;
+			let position = point.add(normal.mult(10));
+			let maxDash = 30;
+			let dash = 0;
+			function render() {
+				if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
+					ctx.beginPath();
+					ctx.arc(position.x, position.y, radius, startAngle, endAngle);
+					// ctx.arc(position.x, position.y, radius, 0, Math.PI*2);
+					ctx.strokeStyle = "#E4749480";
+					ctx.lineWidth = lineWidth;
+					if (dash >= 1) {
+						ctx.lineCap = "round";
+						ctx.setLineDash([dash, maxDash - dash]);
+					}
+					ctx.stroke();
+					ctx.setLineDash([]);
+				}
+			}
+			animations.create({
+				duration: duration,
+				curve: ease.out.quintic,
+				callback: p => {
+					radius = maxRadius * p;
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			animations.create({
+				duration: duration * 0.7,
+				delay: duration * 0.3,
+				curve: ease.linear,
+				callback: p => {
+					lineWidth = maxLineWidth * (1 - p);
+					dash = maxDash * (1 - p);
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+
+		// lines
+		let numLines = 5; // must be > 1
+		let lineVelocityBounds = [2, 5]; // [min, max]
+		for (let i = 0; i < numLines; i++) {
+			let angle = (i / (numLines - 1)) * Math.PI + tangentAngle + (Math.random() * 0.4 - 0.2);
+			let speed = Math.random() * (lineVelocityBounds[1] - lineVelocityBounds[0]) + lineVelocityBounds[0];
+			let distance = Math.random() * 20 + 60;
+			let start = new vec(point);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let offset = direction.mult(distance);
+			let length = 20;
+			
+			let ptA = new vec(start);
+			let ptB = new vec(start);
+			function render() {
+				ctx.beginPath();
+				ctx.moveTo(ptA.x, ptA.y);
+				ctx.lineTo(ptB.x, ptB.y);
+				ctx.strokeStyle = "#FFF4EB";
+				ctx.lineWidth = 8;
+				ctx.lineCap = "round";
+				ctx.stroke();
+			}
+			let animation = animations.create({
+				duration: distance / speed * 16.67,
+				curve: ease.out.quadratic,
+				callback: p => {
+					let lengthPercent = length / distance;
+					p = p * (1 + lengthPercent);
+					let percentB = Math.min(1, p);
+					let percentA = Math.max(0, p - lengthPercent);
+					ptA = start.add(offset.mult(percentA));
+					ptB = start.add(offset.mult(percentB));
+
+					if (percentA >= 0.995) {
+						animation.stop();
+					}
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+				onstop() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+
+		// dots
+		let numDots = 6;
+		for (let i = 0; i < numDots; i++) {
+			let angle = Math.random() * Math.PI + tangentAngle;
+			let duration = Math.random() * 200 + 200;
+			let maxRadius = Math.random() * 14 + 8;
+			let distance = Math.random() * 60 + 30 - (maxRadius / (14 + 8) * 30);
+			let start = new vec(point);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let offset = direction.mult(distance);
+			
+			let pt = new vec(start);
+			let radius = maxRadius;
+			function render() {
+				ctx.beginPath();
+				ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+				ctx.closePath();
+				ctx.fillStyle = "#FFF4EB";
+				ctx.fill();
+			}
+			let positionAnimation = animations.create({
+				duration: duration,
+				curve: ease.linear,
+				callback: p => {
+					pt.set(start.add(offset.mult(p)));
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			let radiusAnimation = animations.create({
+				duration: duration * 0.6,
+				delay: duration * 0.4,
+				curve: ease.linear,
+				callback: p => {
+					radius = maxRadius * Math.max(0, 1 - p);
+				},
+				onend() {
+					radius = 0;
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+	}
+	hitNothing() { // effects for hitting nothing
+		let point = new vec(this.body.position).add(this.body.velocity.normalize().mult(15));
+		// circle
+		{
+			let duration = 300;
+			let maxRadius = Math.random() * 20 + 10;
+			let maxLineWidth = 9;
+			let radius = 0;
+			let lineWidth = maxLineWidth;
+			let position = point;
+			let maxDash = 30;
+			let dash = 0;
+			function render() {
+				if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
+					ctx.beginPath();
+					ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
+					ctx.strokeStyle = "#ffffff20";
+					ctx.lineWidth = lineWidth;
+					if (dash >= 1) {
+						ctx.lineCap = "round";
+						ctx.setLineDash([dash, maxDash - dash])
+					}
+					ctx.stroke();
+					ctx.setLineDash([]);
+				}
+			}
+			animations.create({
+				duration: duration,
+				curve: ease.out.quintic,
+				callback: p => {
+					radius = maxRadius * p;
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			animations.create({
+				duration: duration * 0.7,
+				delay: duration * 0.3,
+				curve: ease.linear,
+				callback: p => {
+					lineWidth = maxLineWidth * (1 - p);
+					dash = maxDash * (1 - p);
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
+
+		// dots
+		let numDots = 6;
+		for (let i = 0; i < numDots; i++) {
+			let angle = Math.random() * Math.PI * 2;
+			let duration = Math.random() * 200 + 200;
+			let maxRadius = Math.random() * 8 + 5;
+			let distance = Math.random() * 50 + 30 - (maxRadius / (14 + 8) * 30);
+			let start = new vec(point);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let offset = direction.mult(distance);
+			
+			let pt = new vec(start);
+			let radius = maxRadius;
+			function render() {
+				ctx.beginPath();
+				ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
+				ctx.closePath();
+				ctx.fillStyle = "#FFF4EB80";
+				ctx.fill();
+			}
+			let positionAnimation = animations.create({
+				duration: duration,
+				curve: ease.linear,
+				callback: p => {
+					pt.set(start.add(offset.mult(p)));
+				},
+				onend() {
+					Render.off("beforeLayer-2", render);
+				},
+			});
+			let radiusAnimation = animations.create({
+				duration: duration * 0.6,
+				delay: duration * 0.4,
+				curve: ease.linear,
+				callback: p => {
+					radius = maxRadius * Math.max(0, 1 - p);
+				},
+				onend() {
+					radius = 0;
+				},
+			});
+			Render.on("beforeLayer-2", render);
+		}
 	}
 }
