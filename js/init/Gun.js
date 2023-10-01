@@ -46,8 +46,6 @@ class Bullet {
 			}
 		});
 		body.setAngle(velocity.angle - Math.PI/2);
-		// velocity.add2(parent.velocity.mult(Math.max(0, parent.velocity.normalize().dot(velocity.normalize())) ** 0.5));
-		// velocity.add2(parent.velocity);
 		body.velocity.set(velocity);
 
 		let bullet = this;
@@ -96,7 +94,7 @@ class Bullet {
 			renderTrail(start, start.add(direction.mult(0.25)), start.add(direction.mult(0.75)), end, body.width, 0, -2, 1);
 			let angle = body.angle;
 			ctx.arc(start.x, start.y, body.width / 2, angle, Math.PI + angle);
-			ctx.fillStyle = createGradient(start, end, [["#DC567Cff", 0], ["#DC975600", 1]]);
+			ctx.fillStyle = createGradient(start, end, [["#DC567Cff", 0], ["#E9644700", 1]]);
 			ctx.fill();
 		}
 		Render.on("beforeLayer-2", this.renderTrail);
@@ -134,7 +132,7 @@ class Bullet {
 				if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
 					ctx.beginPath();
 					ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
-					ctx.strokeStyle = "#C5938380";
+					ctx.strokeStyle = "#DBA391";
 					ctx.lineWidth = lineWidth;
 					if (dash >= 1) {
 						ctx.lineCap = "round";

@@ -3,16 +3,8 @@
 const player = new Car("car1");
 // player.body.on("collisionStart", carCollision);
 // player.body.on("collisionActive", carCollision);
-player.controls.shoot = false;
 player.gun = new Gun("pistol");
 player.gun.magazine = Infinity;
-
-window.addEventListener("mousedown", event => {
-	let screenPosition = new vec(event.clientX, event.clientY);
-	let gamePosition = camera.screenPtToGame(screenPosition);
-	let angle = gamePosition.sub(player.body.position).angle;
-	player.gun.shoot(player.body.position.add(new vec(Math.cos(angle), Math.sin(angle)).mult2(player.body.height / 2)), angle, player.body);
-});
 
 function carCollision(event) {
 	let { bodyA, bodyB, contacts, normal, start } = event;
@@ -53,16 +45,8 @@ function carCollision(event) {
 	}
 }
 
-/*
-// Render car rotation point
-Render.on("afterRender", () => {
-	ctx.beginPath();
-	let angle = car.angle;
-	let rotationPos = car.rotationPoint.rotate(angle);
-	ctx.arc(car.position.x + rotationPos.x, car.position.y + rotationPos.y, 5, 0, Math.PI*2);
-	ctx.fillStyle = "blue";
-	ctx.fill();
-});/* */
+
+// - shooting
 
 // - velocity graph
 let graphPts = [];

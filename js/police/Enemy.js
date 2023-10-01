@@ -9,8 +9,7 @@ class Enemy extends Car {
 		this.reverseTime = -10000;
 		this.state = "attack";
 		this.target = player.body.position;
-		console.log(player.body.position);	
-		let sightBox = this.sightBox = Bodies.rectangle(800, 600, new vec(this.body.position), {
+		let sightBox = this.sightBox = Bodies.rectangle(500, 500, new vec(this.body.position), {
 			isSensor: true,
 			render: {
 				visible: false,
@@ -86,15 +85,17 @@ class Enemy extends Car {
 				if (this.healthBackgroundAnimation && this.healthBackgroundAnimation.running) {
 					this.healthBackgroundAnimation.stop();
 				}
-				let startBGPercent = this.healthBarPercent;
+				let startBGPercent = this.healthBarBackgroundPercent;
 				this.healthBackgroundAnimation = animations.create({
 					duration: 500,
-					delay: 300,
+					delay: 0,
 					curve: ease.inOut.quintic,
 					callback: p => {
 						enemy.healthBarBackgroundPercent = p * (nextPercent - startBGPercent) + startBGPercent;
 					},
 				});
+
+				this.showDamageNumber(damage);
 				
 	
 				if (this.health <= 0) {
@@ -105,6 +106,54 @@ class Enemy extends Car {
 	}
 	update() {
 
+	}
+	showDamageNumber(damage) {
+		let relativePosition = new vec(Math.random() * 150 - 75, -130);
+		let offset = new vec(0, Math.random() * -10 - 50);
+		let position = relativePosition.add(this.body.position);
+		let opacity = 1;
+		let duration = 400;
+		let colors = [[15, "#FBF9F9"], [25, "#F8BA97"], [50, "#F897B3"], [Infinity, "#F39EFA"]]; // [max damage, color]
+		let color = (() => {
+			for (let color of colors) {
+				if (damage < color[0]) {
+					return color[1];
+				}
+			}
+		})();
+		let fontSize = 37 + Math.log2(Math.max(1, damage)) * 3;
+		animations.create({
+			duration: duration,
+			curve: ease.linear,
+			callback: p => {
+				position = relativePosition.add(this.body.position).add2(offset.mult(p));
+			},
+			onend: () => {
+				Render.off("afterRender", render);
+			}
+		});
+		animations.create({
+			duration: duration * 0.3,
+			delay: duration * 0.7,
+			curve: ease.linear,
+			callback: p => {
+				opacity = 1 - p;
+			},
+		});
+
+		function render() {
+			ctx.globalAlpha = opacity;
+			ctx.beginPath();
+			ctx.font = `bold ${fontSize}px Dosis`;
+			ctx.lineJoin = "round";
+			ctx.textAlign = "center";
+			ctx.fillStyle = color;
+			ctx.strokeStyle = "#28363E80";
+			ctx.strokeText(damage, position.x, position.y);
+			ctx.fillText(damage, position.x, position.y);
+			ctx.globalAlpha = 1;
+		}
+		Render.on("afterRender", render);
 	}
 	renderTarget() {
 		Render.on("afterRender", () => {

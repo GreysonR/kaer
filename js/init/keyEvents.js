@@ -1,5 +1,7 @@
 "use strict";
 
+var mousePosition = new vec(0, 0);
+
 window.addEventListener("keydown", event => {
 	let key = event.key.toLowerCase();
 
@@ -102,5 +104,20 @@ window.addEventListener("gamepaddisconnected", event => {
 	if (event.gamepad.index === 0) {
 		gamepad.connected = false;
 		gamepad.controller = null;
+	}
+});
+
+window.addEventListener("mousemove", event => {
+	let screenPosition = new vec(event.clientX, event.clientY);
+	mousePosition.set(screenPosition);
+});
+window.addEventListener("mousedown", event => {
+	if (event.button === 0) {
+		player.controls.shoot = true;
+	}
+});
+window.addEventListener("mouseup", event => {
+	if (event.button === 0) {
+		player.controls.shoot = false;
 	}
 });
