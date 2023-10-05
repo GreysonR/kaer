@@ -2,6 +2,59 @@
 
 class Enemy extends Car {
 	static all = [];
+	static update() {
+		let subAngle = ter.Common.angleDiff;
+		let now = Performance.aliveTime;
+	
+		for (let enemy of Enemy.all) {
+			let { state, reverseTime, body, controls, target } = enemy;
+			let { position, angle } = body;
+			let dist = position.sub(target).length;
+			let angleToTarget = position.sub(target).angle - Math.PI;
+			let angleDiff = subAngle(angleToTarget, angle);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+	
+			if (state === "attack") {
+				if (angleDiff * Math.sign(direction.dot(body.velocity)) > 0) {
+					controls.right = true;
+					controls.left = false;
+				}
+				else {
+					controls.right = false;
+					controls.left = true;
+				}
+				controls.up = true;
+	
+				// slow down to make tight turn
+				if (Math.abs(angleDiff) > Math.PI*0.3 && dist < 500) {
+					controls.up = (Math.max(10, dist) / 500) ** 3;
+				}
+				
+				// start reversing
+				if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000) {
+					controls.up = false;
+					controls.down = true;
+					enemy.reverseTime = Performance.aliveTime;
+					enemy.state = "reverse";
+				}
+			}
+			else if (state === "reverse") {
+				if (angleDiff < 0) {
+					controls.right = true;
+					controls.left = false;
+				}
+				else {
+					controls.right = false;
+					controls.left = true;
+				}
+	
+				if (now - reverseTime > 2000 || Math.abs(angleDiff) < Math.PI * 0.2) {
+					controls.down = false;
+					enemy.state = "attack";
+				}
+			}
+		}
+	}
 	constructor(model, options = {}) {
 		super(model, options);
 		Enemy.all.push(this);
@@ -19,33 +72,10 @@ class Enemy extends Car {
 		});
 		let car = this;
 		sightBox.collisions = {};
-		sightBox.on("beforeUpdate", () => {
-			// set sightBox to follow car
-			let angle = car.body.angle;
-			let offsetAmount = sightBox.width * 0.5 - 50;
-			let offset = new vec(Math.cos(angle) * offsetAmount, Math.sin(angle) * offsetAmount);
-			sightBox.setPosition(car.body.position.add(offset));
-			sightBox.setAngle(angle);
-
-			// iterate through collision pairs to update target
-			let carDirection = new vec(Math.cos(car.body.angle), Math.sin(car.body.angle));
-			let direction = player.body.position.sub(car.body.position).normalize2().mult2(500);
-			let directionNormalized = direction.normalize();
-			for (let collision of Object.values(sightBox.collisions)) {
-				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
-				if (otherBody != car.body && otherBody != player.body && !otherBody.isSensor) {
-					let closestPoint = closestPointBetweenBodies(car.body, otherBody);
-					let distance = car.body.position.sub(closestPoint);
-					let distNormalized = distance.normalize();
-					if (Math.abs(distNormalized.dot(carDirection)) > 0.94) {
-						distNormalized.normal2();
-						if (distNormalized.dot(directionNormalized) < 0) distNormalized.mult2(-1);
-					}
-					
-					direction.add2(distNormalized.mult((400 / distance.length) ** 0.4 * 100 * carDirection.dot(distance.normalize()) ** 2));
-				}
-			}
-			car.target = car.body.position.add(direction);
+		let updateTarget = this.updateTarget.bind(this);
+		sightBox.on("beforeUpdate", updateTarget);
+		car.body.on("delete", () => {
+			sightBox.off("beforeUpdate", updateTarget);
 		});
 		sightBox.on("collisionStart", collision => {
 			sightBox.collisions[collision.id] = collision;
@@ -104,9 +134,6 @@ class Enemy extends Car {
 			}
 		}
 	}
-	update() {
-
-	}
 	showDamageNumber(damage) {
 		let relativePosition = new vec(Math.random() * 150 - 75, -130);
 		let offset = new vec(0, Math.random() * -10 - 50);
@@ -154,6 +181,36 @@ class Enemy extends Car {
 			ctx.globalAlpha = 1;
 		}
 		Render.on("afterRender", render);
+	}
+	updateTarget() {
+		// set sightBox to follow car
+		let sightBox = this.sightBox;
+		let angle = this.body.angle;
+		let offsetAmount = sightBox.width * 0.5 - 50;
+		let offset = new vec(Math.cos(angle) * offsetAmount, Math.sin(angle) * offsetAmount);
+		sightBox.setPosition(this.body.position.add(offset));
+		sightBox.setAngle(angle);
+
+		// iterate through collision pairs to update target
+		let carDirection = new vec(Math.cos(this.body.angle), Math.sin(this.body.angle));
+		let direction = player.body.position.sub(this.body.position).normalize2().mult2(500);
+		let directionNormalized = direction.normalize();
+		for (let collision of Object.values(sightBox.collisions)) {
+			let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
+			if (otherBody != this.body && otherBody != player.body && !otherBody.isSensor) {
+				let closestPoint = closestPointBetweenBodies(this.body, otherBody);
+				let distance = this.body.position.sub(closestPoint);
+				let distNormalized = distance.normalize();
+				if (Math.abs(distNormalized.dot(carDirection)) > 0.94) {
+					distNormalized.normal2();
+					if (distNormalized.dot(directionNormalized) < 0) distNormalized.mult2(-1);
+				}
+				
+				direction.add2(distNormalized.mult((400 / distance.length) ** 0.4 * 100 * carDirection.dot(distance.normalize()) ** 2));
+			}
+		}
+		direction.normalize2().mult2(this.body.position.sub(player.body.position).length);
+		this.target = this.body.position.add(direction);
 	}
 	renderTarget() {
 		Render.on("afterRender", () => {
@@ -208,62 +265,10 @@ class Enemy extends Car {
 	}
 }
 
+// Update police AI
+Render.on("afterRender", Enemy.update);
+
 
 let police = new Enemy("Police Basic");
 police.body.setPosition(new vec(2450, 2400));
-
-
-// Update police AI
-Render.on("afterRender", () => {
-	let subAngle = ter.Common.angleDiff;
-	let now = Performance.aliveTime;
-
-	for (let enemy of Enemy.all) {	
-		let { state, reverseTime, body, controls, target } = enemy;
-		let { position, angle } = body;
-		let dist = position.sub(target).length;
-		let angleToTarget = position.sub(target).angle - Math.PI;
-		let angleDiff = subAngle(angleToTarget, angle);
-		let direction = new vec(Math.cos(angle), Math.sin(angle));
-
-		if (state === "attack") {
-			if (angleDiff * Math.sign(direction.dot(body.velocity)) > 0) {
-				controls.right = true;
-				controls.left = false;
-			}
-			else {
-				controls.right = false;
-				controls.left = true;
-			}
-			controls.up = true;
-
-			// slow down to make tight turn
-			if (Math.abs(angleDiff) > Math.PI*0.3 && dist < 500) {
-				controls.up = (Math.max(10, dist) / 500) ** 3;
-			}
-			
-			// start reversing
-			if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000) {
-				controls.up = false;
-				controls.down = true;
-				enemy.reverseTime = Performance.aliveTime;
-				enemy.state = "reverse";
-			}
-		}
-		else if (state === "reverse") {
-			if (angleDiff < 0) {
-				controls.right = true;
-				controls.left = false;
-			}
-			else {
-				controls.right = false;
-				controls.left = true;
-			}
-
-			if (now - reverseTime > 2000 || Math.abs(angleDiff) < Math.PI * 0.2) {
-				controls.down = false;
-				enemy.state = "attack";
-			}
-		}
-	}
-});
+police.renderTarget();
