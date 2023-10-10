@@ -271,4 +271,3 @@ Render.on("afterRender", Enemy.update);
 
 let police = new Enemy("Police Basic");
 police.body.setPosition(new vec(2450, 2400));
-police.renderTarget();

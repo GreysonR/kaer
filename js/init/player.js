@@ -132,7 +132,7 @@ player.body.on("beforeUpdate", updateGamepad);
 // - update camera
 let lastFov = [];
 let lastPos = [];
-let baseFov = 1800;
+let baseFov = 1700;
 Render.on("beforeLayer0", () => {
 	let g = 0.09; // higher g = fov more sensitive to speed changes
 	let carBody = player.body;

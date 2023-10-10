@@ -90,7 +90,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					let rect = elem.children[elem.children.length - 1];
 					let options = { x: rect.properties.x, y: rect.properties.y };
 					if (id === "spawn") {
-						let angle = (Number(rect.properties.transform.replace("rotate(", "").split(" ")[0]) || 0) * Math.PI / 180;
+						let angle = (rect.properties.transform ? (Number(rect.properties.transform.replace("rotate(", "").split(" ")[0]) || 0) : 0) * Math.PI / 180;
 						let centerOffset = new vec(50, 30).rotate(angle);
 						options.angle = angle;
 						options.x += centerOffset.x;
