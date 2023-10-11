@@ -76,6 +76,7 @@ class Enemy extends Car {
 		sightBox.on("beforeUpdate", updateTarget);
 		car.body.on("delete", () => {
 			sightBox.off("beforeUpdate", updateTarget);
+			sightBox.delete();
 		});
 		sightBox.on("collisionStart", collision => {
 			sightBox.collisions[collision.id] = collision;
@@ -269,5 +270,5 @@ class Enemy extends Car {
 Render.on("afterRender", Enemy.update);
 
 
-let police = new Enemy("Police Basic");
-police.body.setPosition(new vec(2450, 2400));
+// let police = new Enemy("Police Basic");
+// police.body.setPosition(new vec(2450, 2400));

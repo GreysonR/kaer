@@ -29,16 +29,135 @@ function getCenterOfMass(vertices) { /* https://bell0bytes.eu/centroid-convex/ *
 	return centroid;
 }
 
+function getSVGPaths(elem) {
+	let pathArr = elem.properties.d.replace(/M/g, "!M").replace(/H/g, "!H").replace(/V/g, "!V").replace(/L/g, "!L").replace(/C/g, "!C").replace(/Z/g, "!Z").split("!").filter(v => v != "");
+	let x = 0;
+	let y = 0;
+	let path = [];
+	let paths = [path];
+	for (let i = 0; i < pathArr.length; i++) {
+		let func = pathArr[i][0];
+		let part = pathArr[i].slice(1).split(" ");
+
+		if (func === "M") {
+			x = Math.round(Number(part[0]));
+			y = Math.round(Number(part[1]));
+
+			if (i !== 0) {
+				console.warn("More than 1 path");
+				paths.push(path);
+				path = [];
+			}
+		}
+		else if (func === "H") {
+			x = Math.round(Number(part[0]));
+
+			if (isNaN(Number(part[0]))) console.error(part, pathArr);
+		}
+		else if (func === "V") {
+			y = Math.round(Number(part[0]));
+		}
+		else if (func === "L") {
+			x = Math.round(Number(part[0]));
+			y = Math.round(Number(part[1].replace("Z", "")));
+		}
+		else if (func === "C") {
+			path.push({
+				posA: { x: x, y: y },
+				posB: { x: Number(part[4]), y: Number(part[5]) },
+				cPts: [{ x: Number(part[0]), y: Number(part[1]) },{ x: Number(part[2]), y: Number(part[3]) }],
+			});
+			x = Number(part[4]);
+			y = Number(part[5]);
+			continue;
+		}
+		else if (func === "Z") {
+			if (i !== pathArr.length - 1) {
+				console.warn("More than 1 path");
+				path = [];
+				paths.push(path);
+				// pathNum++;
+			}
+		}
+		else {
+			console.error(func, part);
+			console.error(pathArr, i);
+		}
+
+		path.push({ x: Math.round(x), y: Math.round(y) });
+	}
+
+	return paths;
+}
+
+function radiusFromPoints(a, b, c) { // https://math.stackexchange.com/a/2836488
+	let db = b.sub(a);
+	let dc = c.sub(a);
+	let distX = ((db.x**2 * dc.y - dc.x**2 * db.y + db.y ** 2 * dc.y - dc.y ** 2 * db.y) / (2 * (dc.x * db.y - db.x * dc.y)));
+	let distY = ((db.x ** 2 * dc.x - dc ** 2 * db.x + db.y ** 2 * dc.x - dc.y ** 2 * db.x) / (2 * (dc.x * db.y - db.x * dc.y)));
+	return Math.sqrt(distX ** 2 + distY ** 2);
+}
+
+function createShadowData(elem) { // elem must be path
+	// get path
+	let path;
+	for (let child of elem.children[0].children[0].children[0].children) {
+		if (child.tagName === "path") {
+			path = getSVGPaths(child);
+			path = path[0]; // assumes there's 1 path (which there should be)
+			break;
+		}
+	}
+
+	// get height of points based on nearest rectangle's round amount
+	let finalPoints = new Array(path.length);
+	function crawl(elem) {
+		for (let child of elem.children) {
+			if (child.tagName != "clipPath") {
+				crawl(child);
+			}
+		}
+		if (elem.tagName === "rect") {
+			let { properties } = elem;
+			let height = properties.rx;
+			let position = new vec(properties);
+			for (let i = 0; i < path.length; i++) {
+				let point = path[i];
+				if (position.sub(point).length < 1) {
+					finalPoints[i] = {
+						position: position.toObject(),
+						height: height,
+					}
+				}
+			}
+		}
+	}
+	crawl(elem.children[0]);
+
+	return finalPoints.filter(v => v != null);
+}
+
 document.getElementById("mapInput").addEventListener("input", event => {
 	let input = event.target;
 	let fr = new FileReader();
 	fr.readAsText(input.files[0]);
+	let filename = input.files[0].name;
 	// let name = input.value.replace(/\\/g, "/").split("/"); // gets the filename
 	// name = name[name.length - 1].replace(".svg", "");
 
 	fr.onload = function() {
 		// Compile file
 		let res = fr.result;
+		let parsed = svgParse(res);
+
+		if (filename.includes("ShadowBase")) { // secondary functionality of making shadow data
+			let out = createShadowData(parsed);
+			out = JSON.stringify(out);
+			copyToClipboard(out);
+			console.log(out);
+			input.value = "";
+			return;
+		}
 		
 		let out = {
 		}
@@ -67,7 +186,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			return [vertices, vx, vy];
 		}
 		
-		let parsed = svgParse(res);
 
 		function roundVert(vert) {
 			if (Array.isArray(vert)) {
@@ -142,63 +260,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			}
 			else if (elem.tagName === "path") {
 				// parse path
-				let pathArr = elem.properties.d.replace(/M/g, "!M").replace(/H/g, "!H").replace(/V/g, "!V").replace(/L/g, "!L").replace(/C/g, "!C").replace(/Z/g, "!Z").split("!").filter(v => v != "");
-				let x = 0;
-				let y = 0;
-				let path = [];
-				let paths = [path];
-				for (let i = 0; i < pathArr.length; i++) {
-					let func = pathArr[i][0];
-					let part = pathArr[i].slice(1).split(" ");
-
-					if (func === "M") {
-						x = Math.round(Number(part[0]));
-						y = Math.round(Number(part[1]));
-
-						if (i !== 0) { // remove when you need multiple moves
-							console.warn("More than 1 path");
-							path = [];
-							paths.push(path);
-							// pathNum++;
-						}
-					}
-					else if (func === "H") {
-						x = Math.round(Number(part[0]));
-
-						if (isNaN(Number(part[0]))) console.error(part, pathArr);
-					}
-					else if (func === "V") {
-						y = Math.round(Number(part[0]));
-					}
-					else if (func === "L") {
-						x = Math.round(Number(part[0]));
-						y = Math.round(Number(part[1].replace("Z", "")));
-					}
-					else if (func === "C") {
-						path.push({
-							posA: { x: x, y: y },
-							posB: { x: Number(part[4]), y: Number(part[5]) },
-							cPts: [{ x: Number(part[0]), y: Number(part[1]) },{ x: Number(part[2]), y: Number(part[3]) }],
-						});
-						x = Number(part[4]);
-						y = Number(part[5]);
-						continue;
-					}
-					else if (func === "Z") {
-						if (i !== pathArr.length - 1) {
-							console.warn("More than 1 path");
-							path = [];
-							paths.push(path);
-							// pathNum++;
-						}
-					}
-					else {
-						console.error(func, part);
-						console.error(pathArr, i);
-					}
-
-					path.push({ x: Math.round(x), y: Math.round(y) });
-				}
+				let paths = getSVGPaths(elem);
 
 				for (let path of paths) {
 					if (path.length > 1) {
