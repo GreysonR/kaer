@@ -53,7 +53,7 @@ var MapBodies = {
 
 		return obj;
 	},
-	circle: function(x, y, width, height, name, treePositions, radius = 26, layer = 7) {
+	circle: function(x, y, width, height, name, positions, radius = 26, layer = 7, dir = "nature") {
 		var scene = new Scene();
 		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
 			isStatic: true,
@@ -62,7 +62,7 @@ var MapBodies = {
 			render: {
 				visible: true,
 				layer: layer,
-				sprite: `nature/${name}.png`,
+				sprite: `${dir}/${name}.png`,
 			}
 		});
 		scene.addBody(img);
@@ -76,8 +76,61 @@ var MapBodies = {
 				visible: false,
 			}
 		};
-		for (let position of treePositions) {
+		for (let position of positions) {
 			scene.addBody(Bodies.circle(radius, new vec(x + position.x, y + position.y), hitboxOptions));
+		}
+		return scene;
+	},
+	rectangle: function(x, y, width, height, name, layer = 7, dir = "nature") {
+		var scene = new Scene();
+		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
+			isStatic: true,
+			hasCollisions: false,
+			removed: true,
+			render: {
+				visible: true,
+				layer: layer,
+				sprite: `${dir}/${name}.png`,
+			}
+		});
+		scene.addBody(img);
+
+		let hitboxOptions = {
+			isStatic: true,
+			hasCollisions: true,
+			removed: true,
+			render: {
+				visible: false,
+			}
+		};
+		scene.addBody(Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), hitboxOptions));
+		return scene;
+	},
+	genericBody: function(x, y, width, height, name, verticesList, layer = 7, dir = "nature") {
+		var scene = new Scene();
+		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
+			isStatic: true,
+			hasCollisions: false,
+			removed: true,
+			render: {
+				visible: true,
+				layer: layer,
+				sprite: `${dir}/${name}.png`,
+			}
+		});
+		scene.addBody(img);
+
+		let hitboxOptions = {
+			isStatic: true,
+			hasCollisions: true,
+			removed: true,
+			render: {
+				visible: false,
+			}
+		};
+		for (let vertices of verticesList) {
+			let position = getCenterOfMass(vertices);
+			scene.addBody(Bodies.fromVertices(vertices, new vec(x + position.x, y + position.y), hitboxOptions));
 		}
 		return scene;
 	},
@@ -135,34 +188,6 @@ var MapBodies = {
 		return MapBodies.circle(x, y, width, height, "bush1", [
 		], 5);
 	},
-	genericBody: function(x, y, width, height, name, verticesList, layer = 7) {
-		var scene = new Scene();
-		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
-			isStatic: true,
-			hasCollisions: false,
-			removed: true,
-			render: {
-				visible: true,
-				layer: layer,
-				sprite: `nature/${name}.png`,
-			}
-		});
-		scene.addBody(img);
-
-		let hitboxOptions = {
-			isStatic: true,
-			hasCollisions: true,
-			removed: true,
-			render: {
-				visible: false,
-			}
-		};
-		for (let vertices of verticesList) {
-			let position = getCenterOfMass(vertices);
-			scene.addBody(Bodies.fromVertices(vertices, new vec(x + position.x, y + position.y), hitboxOptions));
-		}
-		return scene;
-	},
 	stone1: function({ x, y }) {
 		let width  = 149;
 		let height = 134;
@@ -186,6 +211,24 @@ var MapBodies = {
 		return MapBodies.circle(x, y, width, height, "barrel", [
 			new vec(35, 35),
 		], 37, -1);
+	},
+	house1: function({ x, y, angle = 0 }) {
+		let width  = 400;
+		let height = 300;
+		
+		let body = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
+			isStatic: true,
+			hasCollisions: true,
+			removed: true,
+			render: {
+				visible: true,
+				layer: -1,
+				sprite: `buildings/house1.png`,
+			}
+		});
+		body.setAngle(angle);
+
+		return body;
 	}
 }
 
