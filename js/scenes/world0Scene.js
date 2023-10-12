@@ -24,7 +24,7 @@ let world0Scene = (function createWorld0Scene() {
 		render: {
 			sprite: "world0/walls.svg",
 			useBuffer: true,
-			layer: 6,
+			layer: 10,
 		}
 	});
 	scene.addBody(walls);
