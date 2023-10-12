@@ -121,13 +121,18 @@ function createShadowData(elem) { // elem must be path
 			let { properties } = elem;
 			let height = properties.rx;
 			let position = new vec(properties);
+			if (!position.x) position.x = 0;
+			if (!position.y) position.y = 0;
+			console.warn(position);
 			for (let i = 0; i < path.length; i++) {
 				let point = path[i];
-				if (position.sub(point).length < 1) {
+				if (position.sub(point).length < 3) {
+					console.log(point, "found");
 					finalPoints[i] = {
 						position: position.toObject(),
 						height: height,
 					}
+					break;
 				}
 			}
 		}
@@ -207,9 +212,11 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					if (!out[id]) out[id] = [];
 					let rect = elem.children[elem.children.length - 1];
 					let options = { x: rect.properties.x, y: rect.properties.y };
-					if (id === "spawn") {
+					if (id === "spawn" || id.includes("house") || rect.properties.transform?.includes("rotate")) {
+						let { width, height } = rect.properties;
+						console.log(elem);
 						let angle = (rect.properties.transform ? (Number(rect.properties.transform.replace("rotate(", "").split(" ")[0]) || 0) : 0) * Math.PI / 180;
-						let centerOffset = new vec(50, 30).rotate(angle);
+						let centerOffset = new vec(width/2, height/2).rotate(angle);
 						options.angle = angle;
 						options.x += centerOffset.x;
 						options.y += centerOffset.y;

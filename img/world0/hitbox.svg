@@ -796,17 +796,17 @@
 </g>
 <g id="house1">
 <g id="Mask group">
-<mask id="mask0_1527_45514" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="2811" y="598" width="400" height="300">
-<rect id="Rectangle 2184" x="2811" y="598" width="400" height="300" rx="20" fill="#D9D9D9"/>
+<mask id="mask0_1527_45514" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="2810" y="595" width="400" height="300">
+<rect id="Rectangle 2184" x="2810" y="595" width="400" height="300" rx="20" fill="#D9D9D9"/>
 </mask>
 <g mask="url(#mask0_1527_45514)">
 <g id="Group 146">
-<rect id="Rectangle 2182" x="2811" y="748" width="400" height="150" fill="#1C506F"/>
-<rect id="Rectangle 2183" x="2811" y="598" width="400" height="150" fill="#296A91"/>
+<rect id="Rectangle 2182" x="2810" y="745" width="400" height="150" fill="#1C506F"/>
+<rect id="Rectangle 2183" x="2810" y="595" width="400" height="150" fill="#296A91"/>
 </g>
 </g>
 </g>
-<rect id="Rectangle 2165_113" x="2811" y="598" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
+<rect id="Rectangle 2165_113" x="2810" y="595" width="400" height="300" fill="#A4C424" fill-opacity="0.01"/>
 </g>
 <g id="walls">
 <path id="wall" d="M2743.98 3347L3263.83 3300.29C3300.12 3297.03 3335.31 3313.76 3355.68 3343.96L3614.65 3727.88C3649.15 3779.03 3629.57 3848.91 3573.51 3874.67L2957.6 4157.72C2914.24 4177.64 2862.84 4164.16 2834.85 4125.51L2557.1 3741.97C2535.49 3712.12 2532.04 3672.81 2548.12 3639.66L2662.96 3402.95C2678.28 3371.38 2709.03 3350.14 2743.98 3347Z" fill="#BB816E"/>
@@ -818,7 +818,7 @@
 </g>
 <path id="road_2" d="M2171.5 4395.68C2171.19 4083.45 2171.2 3909.26 2171.5 3599.9" stroke="#1C506F" stroke-opacity="0.05" stroke-width="330" stroke-linecap="round"/>
 <g id="spawn" clip-path="url(#clip79_1527_45514)">
-<rect id="Rectangle 2166" x="3730" y="2369" width="100" height="60" fill="#DC567C"/>
+<rect id="Rectangle 2166" x="2778" y="1096" width="100" height="60" fill="#DC567C"/>
 </g>
 </g>
 <defs>
@@ -1105,7 +1105,7 @@
 <rect width="168" height="176" fill="white" transform="translate(3260 2341)"/>
 </clipPath>
 <clipPath id="clip79_1527_45514">
-<rect width="100" height="60" fill="white" transform="translate(3730 2369)"/>
+<rect width="100" height="60" fill="white" transform="translate(2778 1096)"/>
 </clipPath>
 </defs>
 </svg>

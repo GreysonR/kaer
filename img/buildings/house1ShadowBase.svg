@@ -7,7 +7,7 @@
 <rect id="Rectangle 2193" x="7" y="295" width="4" height="4" rx="1" fill="#FF2F2F"/>
 <rect id="Rectangle 2194" y="150" width="4" height="4" rx="1.5" fill="#FF2F2F"/>
 <rect id="Rectangle 2195" x="400" y="150" width="4" height="4" rx="1.5" fill="#FF2F2F"/>
-<path id="Vector 1038" d="M395 7L6 6L0 150L11 295L394 294L400 150L395 7Z" stroke="#FF0000"/>
+<path id="Vector 1038" d="M395 7L6 6L0 150L7 295L394 294L400 150L395 7Z" stroke="#FF0000"/>
 </g>
 </g>
 <defs>

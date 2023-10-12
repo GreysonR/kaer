@@ -216,17 +216,19 @@ var MapBodies = {
 		let width  = 400;
 		let height = 300;
 		
-		let body = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
+		let body = Bodies.rectangle(width, height, new vec(x, y), {
 			isStatic: true,
 			hasCollisions: true,
 			removed: true,
 			render: {
 				visible: true,
-				layer: -1,
+				layer: 8,
 				sprite: `buildings/house1.png`,
 			}
 		});
 		body.setAngle(angle);
+
+		new Shadow("house1", new vec(x, y), width, height, angle);
 
 		return body;
 	}
