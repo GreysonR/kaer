@@ -47,6 +47,9 @@ function carCollision(event) {
 
 
 // - shooting
+Render.on("beforeRender", () => {
+	player.gunTarget.set(camera.screenPtToGame(mousePosition));
+});
 
 // - velocity graph
 let graphPts = [];

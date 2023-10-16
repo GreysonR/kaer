@@ -53,14 +53,36 @@ class Enemy extends Car {
 					enemy.state = "attack";
 				}
 			}
+			
+			if (player.health > 0) {
+				let { aimVariation } = enemy;
+				enemy.gunTarget.set(player.body.position.add(new vec(Math.random() * aimVariation - aimVariation/2, Math.random() * aimVariation - aimVariation/2)));
+				if (dist <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
+					controls.shoot = true;
+				}
+				else {
+					controls.shoot = false;
+				}
+			}
+			else {
+				controls.shoot = false;
+			}
 		}
 	}
 	constructor(model, options = {}) {
 		super(model, options);
 		Enemy.all.push(this);
 
+		// init gun
+		this.aimVariation = 200;
+		this.gun = new Gun(Models[model].gun);
+		this.gun.magazine = Infinity;
+
+		// reset state
 		this.reverseTime = -10000;
 		this.state = "attack";
+
+		// set up targeting
 		this.target = player.body.position;
 		let sightBox = this.sightBox = Bodies.rectangle(500, 500, new vec(this.body.position), {
 			isSensor: true,
@@ -74,17 +96,18 @@ class Enemy extends Car {
 		sightBox.collisions = {};
 		let updateTarget = this.updateTarget.bind(this);
 		sightBox.on("beforeUpdate", updateTarget);
-		car.body.on("delete", () => {
-			sightBox.off("beforeUpdate", updateTarget);
-			sightBox.delete();
-		});
 		sightBox.on("collisionStart", collision => {
 			sightBox.collisions[collision.id] = collision;
 		});
 		sightBox.on("collisionEnd", collision => {
 			delete sightBox.collisions[collision.id];
 		});
+		car.body.on("delete", () => {
+			sightBox.off("beforeUpdate", updateTarget);
+			sightBox.delete();
+		});
 
+		// set up rendering health
 		let renderHealth = this.renderHealth.bind(this);
 		Render.on("afterRender", renderHealth);
 		car.body.on("delete", () => {

@@ -31,6 +31,8 @@ class Car {
 	// ~ health
 	lastDamage = -5000;
 	damageCooldown = 500;
+	gun = null;
+	gunTarget = new vec(0, 0);
 
 	// ~ visual
 	driftHistory = [];
@@ -221,8 +223,8 @@ class Car {
 	}
 	updateShoot() {
 		if (this.controls.shoot && this.gun !== undefined) {
-			let gamePosition = camera.screenPtToGame(mousePosition);
-			let angle = gamePosition.sub(this.body.position).angle;
+			let target = this.gunTarget;
+			let angle = target.sub(this.body.position).angle;
 			this.gun.shoot(this.body.position.add(new vec(Math.cos(angle), Math.sin(angle)).mult2(this.body.height / 2)), angle, this.body);
 			if (this.gun.singleFire) {
 				this.controls.shoot = false;

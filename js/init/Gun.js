@@ -52,7 +52,8 @@ class Bullet {
 		let timeout = setTimeout(() => {
 			bullet.delete();
 			bullet.hitNothing();
-		}, gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67);
+		// }, gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67);
+		}, gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67 * 1.8);
 		body.on("collisionStart", collision => {
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (!otherBody.isSensor && otherBody != parent) {
