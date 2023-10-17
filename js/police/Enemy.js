@@ -56,7 +56,9 @@ class Enemy extends Car {
 			
 			if (player.health > 0) {
 				let { aimVariation } = enemy;
-				enemy.gunTarget.set(player.body.position.add(new vec(Math.random() * aimVariation - aimVariation/2, Math.random() * aimVariation - aimVariation/2)));
+				let diff = player.body.position.sub(enemy.body.position);
+				let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
+				enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
 				if (dist <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
 					controls.shoot = true;
 				}
@@ -74,7 +76,7 @@ class Enemy extends Car {
 		Enemy.all.push(this);
 
 		// init gun
-		this.aimVariation = 200;
+		this.aimVariation = 0.2; // radians
 		this.gun = new Gun(Models[model].gun);
 		this.gun.magazine = Infinity;
 

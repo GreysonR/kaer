@@ -14,6 +14,7 @@
 	
 	<!-- css -->
 	<link rel="stylesheet" href="./css/main.css">
+	<link rel="stylesheet" href="./css/healthbar.css">
 </head>
 <body>
 	<!-- canvas -->
@@ -31,6 +32,23 @@
 			</filter>
 		</defs>
 	</svg>
+
+	<!-- healthbar -->
+	<div class="healthbarWrapper">
+		<div id="healthbar"></div>
+		<div class="healthbarText">
+			<svg width="340" height="40">
+				<text id="text" text-anchor="middle">
+					<tspan id="healthbarText" x="170" y="33" text-align="center">10/12</tspan>
+				</text>
+				<use xlink:href="#text" style="stroke-width:8px;stroke:#314753bb"></use>
+				<use xlink:href="#text" style="fill:white"></use>
+			</svg>
+		</div>
+	</div>
+
+	<!-- red outline when hit or low health -->
+	<div id="redOutline"></div>
 </body>
 <!-- engine -->
 <script src="./engine/poly-decomp.js"></script>

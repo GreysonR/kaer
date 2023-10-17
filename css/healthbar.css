@@ -1,0 +1,90 @@
+.healthbarWrapper {
+	width: 340px;
+	height: 34px;
+	border-radius: 4px;
+	background: #314753;
+	outline: 14px solid #28363E;
+
+	position: absolute;
+	bottom: 40px;
+	left:   40px;
+
+	pointer-events: none;
+}
+
+#healthbar {
+	width:  inherit;
+	height: inherit;
+	transition: width 250ms cubic-bezier(0.165, 0.84, 0.44, 1);
+	border-radius: inherit;
+}
+#healthbar::after {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+	
+	width:  inherit;
+	height: inherit;
+	border-radius: inherit;
+	
+	transition: width 200ms cubic-bezier(0.165, 0.84, 0.44, 1);
+	background-color: #DC567C;
+}
+#healthbar::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	left: 0;
+
+	width:  inherit;
+	height: inherit;
+	border-radius: inherit;
+	
+	transition: width 250ms cubic-bezier(0.165, 0.84, 0.44, 1);
+	transition-delay: 100ms;
+	background-color: #774251;
+}
+.healthbarText {
+	user-select: none;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+#healthbarText {
+	font-family: "Dosis", "Arial", sans-serif;
+	font-weight: bold;
+	font-size: 30px;
+}
+
+.redOutline {
+	width: 100vw;
+	height: 100vh;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	background: transparent;
+	box-shadow: inset  0  0 0px 0px #DC567C;
+}
+.redOutline.hit {
+	animation-name: redOutlineHit;
+	animation-duration: 600ms;
+	animation-fill-mode: forwards;
+	animation-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+@keyframes redOutlineHit {
+	0% {
+		box-shadow: inset  0 0 0 0 #DC567C;
+	}
+	20% {
+		box-shadow: inset  0 0 150px 20px #DC567C;
+	}
+	40% {
+		box-shadow: inset  0 0 100px 20px #DC567C;
+	}
+	100% {
+		box-shadow: inset  0 0 0 0 #DC567C;
+	}
+}

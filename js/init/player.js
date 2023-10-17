@@ -5,6 +5,55 @@ const player = new Car("car1");
 // player.body.on("collisionActive", carCollision);
 player.gun = new Gun("pistol");
 player.gun.magazine = Infinity;
+let healthbarWrapperWidth = document.getElementsByClassName("healthbarWrapper")[0].clientWidth;
+player.on("takeDamage", updateHealthBar);
+function updateHealthBar() {
+	let health = player.health;
+	let width = health / player.maxHealth * healthbarWrapperWidth;
+	document.getElementById("healthbar").style.width = width + "px";
+	document.getElementById("healthbarText").innerHTML = health + "/" + player.maxHealth;
+}
+updateHealthBar();
+player.on("takeDamage", function effects() {
+	// blur
+	blurCanvas(new vec(2.5, 2.5), 60, 250);
+
+	// camera zoom
+	let scale = 1;
+	let scaleDelta = 0.02;
+	function zoom() {
+		camera.fov *= scale;
+	}
+	Render.on("beforeSave", zoom);
+	animations.create({
+		duration: 100,
+		curve: ease.out.circular,
+		callback: p => {
+			scale = 1 - scaleDelta * p;
+		},
+		onend: () => {
+			animations.create({
+				duration: 500,
+				curve: ease.out.sine,
+				callback: p => {
+					scale = 1 - scaleDelta * (1 - p);
+				},
+				onend: () => {
+					Render.off("beforeSave", zoom);
+				}
+			});
+		}
+	});
+
+	// red outline
+	let redOutline = createElement("div", {
+		class: "redOutline hit",
+		parent: document.body,
+	});
+	redOutline.addEventListener("animationend", function end() {
+		redOutline.remove();
+	});
+});
 
 function carCollision(event) {
 	let { bodyA, bodyB, contacts, normal, start } = event;

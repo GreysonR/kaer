@@ -18,9 +18,9 @@ class Model {
 		turnSpeed: 3.6, // [0, Infinity]
 	
 		// drifting / sliding
-		tireGrip: 6, // [0.0001, Infinity] grip for car to before it's sliding
-		slidingGrip: 6, // [0.0001, tireGrip] grip for car while it's sliding
-		steeringWeight: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding, values between 0 - 0.2 recommended
+		tireGrip: 6, // (0, Infinity] grip for car while not sliding
+		slidingGrip: 6, // (0, tireGrip] grip for car while sliding
+		steeringWeight: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding
 		power: 0.3, // [-1, 1] min amount of acceleration kept when sliding
 
 		// rotation point settings
@@ -65,9 +65,10 @@ var Models = {
 			rotationSensitivity: 0.2,
 
 			// health
-			maxHealth:	12,
-			health:	    12,
+			maxHealth:	50,
+			health:	    50,
 			ramDamage: 6,
+			damageCooldown: 200,
 		},
 		body: {
 			width: 110,

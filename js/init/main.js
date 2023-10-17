@@ -105,6 +105,34 @@ function createSeededRandom(seed) { // Returns function that generates numbers b
 		return result;
 	}
 }
+function blurCanvas(direction = new vec(0, 10), durationIn = 200, durationOut = 200) {
+	direction = new vec(direction);
+	canv.style.filter = "url(#blurFilter)";
+	let filter = document.getElementById("blurFilterItem");
+	
+	animations.create({
+		duration: durationIn,
+		curve: ease.out.cubic,
+		callback: p => {
+			filter.setAttribute("stdDeviation", `${direction.x * p},${direction.y * p}`);
+		}
+	});
+	animations.create({
+		delay: durationIn,
+		duration: durationOut,
+		curve: ease.linear,
+		callback: p => {
+			filter.setAttribute("stdDeviation", `${direction.x * (1 - p)},${direction.y * (1 - p)}`);
+		}
+	});
+
+	setTimeout(() => {
+		canv.style.filter = "none";
+	}, durationIn + durationOut);
+}
+function setCSSVariable(varName, value) {
+	root.style.setProperty(`--${varName}`, value);
+}
 
 String.prototype.toCapital = function() {
 	return this.slice(0, 1).toUpperCase() + this.slice(1);

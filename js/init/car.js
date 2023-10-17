@@ -30,7 +30,7 @@ class Car {
 
 	// ~ health
 	lastDamage = -5000;
-	damageCooldown = 500;
+	damageCooldown = 0;
 	gun = null;
 	gunTarget = new vec(0, 0);
 
@@ -52,12 +52,37 @@ class Car {
 		shoot: false,
 	};
 
+	events = {
+		takeDamage: [],
+	}
+	on(event, callback) {
+		if (!this.events[event]) {
+			this.events[event] = [];
+		}
+		this.events[event].push(callback);
+	}
+	off(event, callback) {
+		event = this.events[event];
+		if (event.includes(callback)) {
+			event.splice(event.indexOf(callback), 1);
+		}
+	}
+	trigger(event, arg1, arg2) {
+		let events = this.events[event];
+		for (let i = 0; i < events.length; i++) {
+			events[i](arg1, arg2);
+		}
+
+		if (this.parent) {
+			this.parent.trigger(event, arg1, arg2);
+		}
+	}
 	takeDamage = function(damage) {
 		const now = Performance.aliveTime;
 		if (now - this.lastDamage >= this.damageCooldown) {
 			this.lastDamage = now;
 			this.health = Math.max(0, this.health - damage);
-			console.log(this.health);
+			this.trigger("takeDamage");
 
 			if (this.health <= 0) {
 				this.delete();
