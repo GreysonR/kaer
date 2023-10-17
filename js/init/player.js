@@ -20,21 +20,21 @@ player.on("takeDamage", function effects() {
 
 	// camera zoom
 	let scale = 1;
-	let scaleDelta = 0.02;
+	let scaleDelta = 0.06;
 	function zoom() {
 		camera.fov *= scale;
 	}
 	Render.on("beforeSave", zoom);
 	animations.create({
 		duration: 100,
-		curve: ease.out.circular,
+		curve: ease.out.cubic,
 		callback: p => {
 			scale = 1 - scaleDelta * p;
 		},
 		onend: () => {
 			animations.create({
-				duration: 500,
-				curve: ease.out.sine,
+				duration: 600,
+				curve: ease.linear,
 				callback: p => {
 					scale = 1 - scaleDelta * (1 - p);
 				},
@@ -58,7 +58,7 @@ player.on("takeDamage", function effects() {
 function carCollision(event) {
 	let { bodyA, bodyB, contacts, normal, start } = event;
 	let otherBody = bodyA === player ? bodyB : bodyA;
-	let now = Performance.aliveTime;
+	let now = World.time;
 
 	if (!(otherBody.isCar || otherBody.isStatic) || otherBody.isSensor) return;
 	if (now - player.lastDamage < player.damageCooldown) return;

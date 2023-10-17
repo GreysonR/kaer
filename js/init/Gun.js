@@ -15,7 +15,7 @@ class Gun {
 	magazine = 0; // bullets left in magazine
 
 	shoot(position, angle, parent) {
-		const now = Performance.aliveTime;
+		const now = World.time;
 		if (now - this.lastShot >= this.fireRate && this.magazine > 0) {
 			this.lastShot = now;
 			--this.magazine;
@@ -49,11 +49,15 @@ class Bullet {
 		body.velocity.set(velocity);
 
 		let bullet = this;
-		let timeout = setTimeout(() => {
-			bullet.delete();
-			bullet.hitNothing();
-		// }, gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67);
-		}, gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67 * 1.8);
+		let timeout = animations.create({
+			duration: gun.range / (bulletSpeed + velocity.sub(parent.velocity).length) * 16.67 * 1.8,
+			curve: ease.linear,
+			callback: () => {},
+			onend: () => {
+				bullet.delete();
+				bullet.hitNothing();
+			}
+		})
 		body.on("collisionStart", collision => {
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (!otherBody.isSensor && otherBody != parent) {
@@ -65,7 +69,7 @@ class Bullet {
 					bullet.hitStatic(collision);
 				}
 				bullet.delete();
-				clearTimeout(timeout);
+				timeout.stop();
 			}
 		});
 
@@ -78,7 +82,7 @@ class Bullet {
 		this.renderTrail = function() {
 			let trailLength = bullet.maxTrailLength;
 			if (body.removed) {
-				const now = Performance.aliveTime;
+				const now = World.time;
 				trailLength = (1 - (now - bullet.deleteTime) * velocity.length / 10 / bullet.maxRealizedTrailLength) * bullet.maxRealizedTrailLength;
 				if (trailLength <= 0 || bullet.maxRealizedTrailLength <= 0) {
 					Render.off("beforeLayer-2", bullet.renderTrail);
@@ -105,7 +109,7 @@ class Bullet {
 	delete() {
 		this.body.delete();
 		Bullet.all.delete(this);
-		this.deleteTime = Performance.aliveTime;
+		this.deleteTime = World.time;
 		this.maxRealizedTrailLength = Math.min(this.startPosition.sub(this.body.position).length, this.maxTrailLength);
 	}
 	hitStatic(collision) { // effects for hitting a static body

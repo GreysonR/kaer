@@ -68,7 +68,7 @@ var Models = {
 			maxHealth:	50,
 			health:	    50,
 			ramDamage: 6,
-			damageCooldown: 200,
+			damageCooldown: 100,
 		},
 		body: {
 			width: 110,

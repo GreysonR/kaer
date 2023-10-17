@@ -9,13 +9,13 @@ class Skid {
 	}
 
 	addPt = function(point) {
-		this.path.add([ point, Performance.aliveTime]);
+		this.path.add([ point, World.time]);
 	}
 }
 
 camera.lastPosition = new vec(camera.translation);
 Render.on("beforeLayer0", () => {
-	let now = Performance.aliveTime;
+	let now = World.time;
 
 	ctx.beginPath();
 	for (let skid of Skid.all) {

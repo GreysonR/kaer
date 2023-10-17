@@ -4,7 +4,7 @@ class Enemy extends Car {
 	static all = [];
 	static update() {
 		let subAngle = ter.Common.angleDiff;
-		let now = Performance.aliveTime;
+		let now = World.time;
 	
 		for (let enemy of Enemy.all) {
 			let { state, reverseTime, body, controls, target } = enemy;
@@ -34,7 +34,7 @@ class Enemy extends Car {
 				if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000) {
 					controls.up = false;
 					controls.down = true;
-					enemy.reverseTime = Performance.aliveTime;
+					enemy.reverseTime = World.time;
 					enemy.state = "reverse";
 				}
 			}
@@ -117,7 +117,7 @@ class Enemy extends Car {
 		});
 
 		this.takeDamage = function(damage) {
-			const now = Performance.aliveTime;
+			const now = World.time;
 			const enemy = this;
 			if (now - this.lastDamage >= this.damageCooldown) {
 				this.lastDamage = now;

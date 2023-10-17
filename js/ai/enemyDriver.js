@@ -1,7 +1,7 @@
 Render.on("afterRender", () => {
 	let subAngle = ter.Common.angleDiff;
 	let timescale = 144 / Performance.fps;
-	let now = Performance.aliveTime;
+	let now = World.time;
 
 	for (let enemy of Enemy.all) {
 		let { position, angle, state, reverseTime, sensor } = enemy;
@@ -56,7 +56,7 @@ Render.on("afterRender", () => {
 			if (enemy.velocity.length / timescale < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 3000) {
 				enemy.up = false;
 				enemy.down = true;
-				enemy.reverseTime = Performance.aliveTime;
+				enemy.reverseTime = World.time;
 				enemy.state = "reverse";
 			}
 		}

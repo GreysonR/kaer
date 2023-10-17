@@ -78,7 +78,7 @@ class Car {
 		}
 	}
 	takeDamage = function(damage) {
-		const now = Performance.aliveTime;
+		const now = World.time;
 		if (now - this.lastDamage >= this.damageCooldown) {
 			this.lastDamage = now;
 			this.health = Math.max(0, this.health - damage);
