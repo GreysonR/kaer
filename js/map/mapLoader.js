@@ -212,10 +212,7 @@ var MapBodies = {
 			new vec(35, 35),
 		], 37, -1);
 	},
-	house1: function({ x, y, angle = 0 }) {
-		let width  = 400;
-		let height = 300;
-		
+	house: function(x, y, angle = 0, width, height, name, sprite) {
 		let body = Bodies.rectangle(width, height, new vec(x, y), {
 			isStatic: true,
 			hasCollisions: true,
@@ -223,15 +220,30 @@ var MapBodies = {
 			render: {
 				visible: true,
 				layer: 8,
-				sprite: `buildings/house1.png`,
+				sprite: `buildings/${sprite}.png`,
 			}
 		});
 		body.setAngle(angle);
 
-		new Shadow("house1", new vec(x, y), width, height, angle);
+		new Shadow(name, new vec(x, y), width, height, angle);
 
 		return body;
-	}
+	},
+	house1: function({ x, y, angle = 0 }) {
+		let width  = 400;
+		let height = 300;
+		return MapBodies.house(x, y, angle, width, height, "house1", "house1");
+	},
+	house2A: function({ x, y, angle = 0 }) {
+		let width  = 600;
+		let height = 300;
+		return MapBodies.house(x, y, angle, width, height, "house2", "house2A");
+	},
+	house2B: function({ x, y, angle = 0 }) {
+		let width  = 600;
+		let height = 300;
+		return MapBodies.house(x, y, angle, width, height, "house2", "house2B");
+	},
 }
 
 function createMap(mapData) {

@@ -123,17 +123,20 @@ function createShadowData(elem) { // elem must be path
 			let position = new vec(properties);
 			if (!position.x) position.x = 0;
 			if (!position.y) position.y = 0;
-			console.warn(position);
+			let found = false;
 			for (let i = 0; i < path.length; i++) {
 				let point = path[i];
 				if (position.sub(point).length < 3) {
-					console.log(point, "found");
 					finalPoints[i] = {
 						position: position.toObject(),
 						height: height,
 					}
+					found = true;
 					break;
 				}
+			}
+			if (!found) {
+				console.warn("not found: ", point, position);
 			}
 		}
 	}

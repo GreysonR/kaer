@@ -92,6 +92,8 @@ class Car {
 	add = function() {
 		this.body.add();
 		Car.all.push(this);
+		this.health = this.maxHealth;
+		if (this === player) updateHealthBar();
 	}
 	delete = function() {
 		this.body.delete();
