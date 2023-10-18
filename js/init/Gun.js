@@ -23,6 +23,8 @@ class Gun {
 			const { bulletSpeed } = this;
 			let velocity = new vec(Math.cos(angle), Math.sin(angle)).mult2(bulletSpeed);
 			new Bullet(this, position, velocity, this.trailLength, parent);
+
+			parent.velocity.add2(velocity.normalize().mult(-this.kick));
 		}
 	}
 	reload() {
@@ -276,9 +278,9 @@ class Bullet {
 		{
 			let startAngle = tangentAngle - 0.4;
 			let endAngle = startAngle + Math.PI + 0.8;
-			let duration = 400;
-			let maxRadius = Math.random() * 30 + 30;
-			let maxLineWidth = 10;
+			let duration = 600;
+			let maxRadius = Math.random() * 30 + 35;
+			let maxLineWidth = 12;
 			let radius = 0;
 			let lineWidth = maxLineWidth;
 			let position = point.add(normal.mult(10));
@@ -322,8 +324,8 @@ class Bullet {
 		}
 
 		// lines
-		let numLines = 5; // must be > 1
-		let lineVelocityBounds = [2, 5]; // [min, max]
+		let numLines = 7; // must be > 1
+		let lineVelocityBounds = [3, 7]; // [min, max]
 		for (let i = 0; i < numLines; i++) {
 			let angle = (i / (numLines - 1)) * Math.PI + tangentAngle + (Math.random() * 0.4 - 0.2);
 			let speed = Math.random() * (lineVelocityBounds[1] - lineVelocityBounds[0]) + lineVelocityBounds[0];
@@ -370,12 +372,12 @@ class Bullet {
 		}
 
 		// dots
-		let numDots = 6;
+		let numDots = 8;
 		for (let i = 0; i < numDots; i++) {
 			let angle = Math.random() * Math.PI + tangentAngle;
-			let duration = Math.random() * 200 + 200;
-			let maxRadius = Math.random() * 14 + 8;
-			let distance = Math.random() * 60 + 30 - (maxRadius / (14 + 8) * 30);
+			let duration = Math.random() * 200 + 300;
+			let maxRadius = Math.random() * 16 + 8;
+			let distance = Math.random() * 60 + 40 - (maxRadius / (14 + 8) * 30);
 			let start = new vec(point);
 			let direction = new vec(Math.cos(angle), Math.sin(angle));
 			let offset = direction.mult(distance);

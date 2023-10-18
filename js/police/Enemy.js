@@ -232,7 +232,7 @@ class Enemy extends Car {
 					if (distNormalized.dot(directionNormalized) < 0) distNormalized.mult2(-1);
 				}
 				
-				direction.add2(distNormalized.mult((400 / distance.length) ** 0.4 * 100 * carDirection.dot(distance.normalize()) ** 2));
+				direction.add2(distNormalized.mult((400 / distance.length) ** 0.4 * 200 * carDirection.dot(distance.normalize()) ** 2));
 			}
 		}
 		direction.normalize2().mult2(this.body.position.sub(player.body.position).length);
