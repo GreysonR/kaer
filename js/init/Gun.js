@@ -24,7 +24,13 @@ class Gun {
 			let velocity = new vec(Math.cos(angle), Math.sin(angle)).mult2(bulletSpeed);
 			new Bullet(this, position, velocity, this.trailLength, parent);
 
-			parent.velocity.add2(velocity.normalize().mult(-this.kick));
+			animations.create({
+				duration: 80,
+				curve: ease.linear,
+				callback: p => {
+					parent.applyForce(velocity.normalize().mult(-this.kick * (1 - p) * 0.7));
+				},
+			});
 		}
 	}
 	reload() {

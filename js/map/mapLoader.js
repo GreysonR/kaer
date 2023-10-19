@@ -81,9 +81,12 @@ var MapBodies = {
 		}
 		return scene;
 	},
-	rectangle: function(x, y, width, height, name, layer = 7, dir = "nature") {
+	rectangle: function(x, y, width, height, name, layer = 7, dir = "nature", spriteWidth, spriteHeight) {
+		if (!spriteWidth) spriteWidth = width;
+		if (!spriteHeight) spriteHeight = height;
+
 		var scene = new Scene();
-		let img = Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), {
+		let img = Bodies.rectangle(spriteWidth, spriteHeight, new vec(x + spriteWidth/2, y + spriteHeight/2), {
 			isStatic: true,
 			hasCollisions: false,
 			removed: true,
@@ -212,7 +215,7 @@ var MapBodies = {
 			new vec(35, 35),
 		], 37, -1);
 	},
-	house: function(x, y, angle = 0, width, height, name, sprite) {
+	building: function(x, y, angle = 0, width, height, sprite, shadowName) {
 		let body = Bodies.rectangle(width, height, new vec(x, y), {
 			isStatic: true,
 			hasCollisions: true,
@@ -225,24 +228,30 @@ var MapBodies = {
 		});
 		body.setAngle(angle);
 
-		new Shadow(name, new vec(x, y), width, height, angle);
+		if (shadowName)
+			new Shadow(shadowName, new vec(x, y), width, height, angle);
 
 		return body;
 	},
 	house1: function({ x, y, angle = 0 }) {
 		let width  = 400;
 		let height = 300;
-		return MapBodies.house(x, y, angle, width, height, "house1", "house1");
+		return MapBodies.building(x, y, angle, width, height, "house1", "house1");
 	},
 	house2A: function({ x, y, angle = 0 }) {
 		let width  = 600;
 		let height = 300;
-		return MapBodies.house(x, y, angle, width, height, "house2", "house2A");
+		return MapBodies.building(x, y, angle, width, height, "house2A", "house2");
 	},
 	house2B: function({ x, y, angle = 0 }) {
 		let width  = 600;
 		let height = 300;
-		return MapBodies.house(x, y, angle, width, height, "house2", "house2B");
+		return MapBodies.building(x, y, angle, width, height, "house2B", "house2");
+	},
+	building1: function({ x, y }) {
+		let width  = 700;
+		let height = 700;
+		return MapBodies.rectangle(x, y, width, height, "building1", 8, "buildings", 1285, 1274);
 	},
 }
 

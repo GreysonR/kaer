@@ -42,7 +42,7 @@ class Shadow {
 
 		console.log(data);
 
-		// create projected points from 
+		// create projected points 
 		let points = [];
 		for (let vertice of data) {
 			let { position: relPos, height } = vertice;
@@ -51,7 +51,7 @@ class Shadow {
 			points.push(originalPoint, projectedPoint);
 		}
 
-		// create convex hull from vertices
+		// create convex hull
 		let hull = [];
 		let hullCenter = points.reduce((a, b) => a.add(b), new vec(0, 0)).div2(points.length); // average positions to get center, not correct in this case but close enough
 		for (let vertice of points) {
