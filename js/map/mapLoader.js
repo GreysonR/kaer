@@ -102,6 +102,7 @@ var MapBodies = {
 			isStatic: true,
 			hasCollisions: true,
 			removed: true,
+			round: 30,
 			render: {
 				visible: false,
 			}
@@ -220,6 +221,7 @@ var MapBodies = {
 			isStatic: true,
 			hasCollisions: true,
 			removed: true,
+			round: 20,
 			render: {
 				visible: true,
 				layer: 8,
@@ -248,10 +250,20 @@ var MapBodies = {
 		let height = 300;
 		return MapBodies.building(x, y, angle, width, height, "house2B", "house2");
 	},
-	building1: function({ x, y }) {
+	house3A: function({ x, y, angle = 0 }) {
 		let width  = 700;
-		let height = 700;
-		return MapBodies.rectangle(x, y, width, height, "building1", 8, "buildings", 1285, 1274);
+		let height = 450;
+		return MapBodies.building(x, y, angle, width, height, "house3A", "house3");
+	},
+	house3B: function({ x, y, angle = 0 }) {
+		let width  = 700;
+		let height = 450;
+		return MapBodies.building(x, y, angle, width, height, "house3B", "house3");
+	},
+	building1: function({ x, y }) {
+		let width  = 560;
+		let height = 560;
+		return MapBodies.rectangle(x, y, width, height, "building1", 8, "buildings", 940, 931);
 	},
 }
 

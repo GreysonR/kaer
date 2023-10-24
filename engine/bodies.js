@@ -11,6 +11,38 @@ Array.prototype.choose = function() {
 }
 
 class Body {
+	static roundVertices(vertices, round, dx = 20) {
+		let newVertices = [];
+		let verticesLength = vertices.length;
+		for (let i = 0; i < verticesLength; i++) {
+			let prev = vertices[(i - 1 + verticesLength) % verticesLength];	
+			let cur = vertices[i];	
+			let next = vertices[(i + 1) % verticesLength];	
+
+			// get vectors
+			let prevToCur = cur.sub(prev);
+			let curToNext = next.sub(cur);
+			let prevCurNormalized = prevToCur.normalize();
+			let curNextNormalized = curToNext.normalize();
+
+			// get round amount
+			let prevRound = Math.min(round, prevToCur.length / 2);
+			let nextRound = Math.min(round, curToNext.length / 2);
+			let curRound = Math.min(prevRound, nextRound);
+
+			let start = prevCurNormalized.mult(-curRound).add(cur);
+			let cp1 = prevCurNormalized.mult(-curRound * 0.45).add(cur);
+			let cp2 = curNextNormalized.mult(curRound *  0.45).add(cur);
+			let end = curNextNormalized.mult(curRound).add(cur);
+			let bezier = new Bezier(start, cp1, cp2, end);
+			for (let i = 0; i < bezier.length;) {
+				newVertices.push(bezier.get(i));
+				i += dx / bezier.getDx(i).length * 30;
+			}
+			newVertices.push(end);
+		}
+		return newVertices;
+	}
 	constructor(type, options, vertices, position) {
 		this.type = type;
 		this.id = ter.Bodies.uniqueId;
@@ -31,7 +63,11 @@ class Body {
 		}
 
 		this.vertices = vertices.map(v => new vec(v));
-		this.removeDuplicatesVertices();
+		if (options.round && options.round > 0) {
+			// round edges
+			this.vertices = Body.roundVertices(this.vertices, this.round, this.roundQuality);
+		}
+		this.removeDuplicateVertices();
 		this.resetVertices(false);
 
 		if (!this.isConvex() && (!Array.isArray(options.children) || options.children.length === 0)) {
@@ -86,7 +122,7 @@ class Body {
 			this.setAngle(-options.angle);
 		}
 	}
-	removeDuplicatesVertices(minDist = 0.1) { // remove vertices that are the same
+	removeDuplicateVertices(minDist = 1) { // remove vertices that are the same
 		let vertices = this.vertices;
 		for (let i = 0; i < vertices.length; i++) {
 			let curVert = vertices[i];
@@ -506,9 +542,10 @@ class Body {
 			let curVert = verts[i];
 			let nextVert = verts[(i + 1) % verts.length];
 
-			if (i >= verts.length / 2) { // Prevents duplicate axes
+			axes.push(nextVert.sub(curVert));
+			/*
+			if (i >= verts.length / 2) { // Prevents duplicate axes, not correct
 				let axis = curVert.sub(nextVert);
-				/*
 				let dupe = false;
 				for (let j = 0; j < axes.length; j++) {
 					if (axes[j].x === axis.y && axes[j].y === axis.x || axes[j].x === -axis.y && axes[j].y === -axis.x) {
@@ -518,12 +555,12 @@ class Body {
 				}
 				if (!dupe) {
 					axes.push(axis);
-				}*/
+				}
 				axes.push(axis);
 			}
 			else {
 				axes.push(nextVert.sub(curVert));
-			}
+			}/* */
 		}
 		for (let i = 0; i < axes.length; i++) {
 			axes[i] = axes[i].normal().normalize2();

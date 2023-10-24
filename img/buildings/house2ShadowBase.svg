@@ -1,18 +1,18 @@
-<svg width="604" height="300" viewBox="0 0 604 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="607" height="306" viewBox="0 0 607 306" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g id="house2ShadowBase" clip-path="url(#clip0_1744_958)">
 <g id="Group 148">
-<path id="Vector 1038" d="M595 7L6 6L0 150L7 295L594 294L600.5 150L595 7Z" stroke="#FF0000"/>
-<rect id="Rectangle 2190" x="6" y="6" width="4" height="4" rx="1" fill="#FF2F2F"/>
-<rect id="Rectangle 2193" x="7" y="295" width="4" height="4" rx="1" fill="#FF2F2F"/>
-<rect id="Rectangle 2194" y="150" width="4" height="4" rx="1.5" fill="#FF2F2F"/>
-<rect id="Rectangle 2191" x="595" y="7" width="4" height="4" rx="1" fill="#FF2F2F"/>
-<rect id="Rectangle 2192" x="594" y="294" width="4" height="4" rx="1" fill="#FF2F2F"/>
-<rect id="Rectangle 2195" x="600" y="150" width="4" height="4" rx="1.5" fill="#FF2F2F"/>
+<path id="Vector 1038" d="M594.21 5.04091L5.99203 4.04224L0 147.851L6.99071 292.658L593.211 291.66L599.703 147.851L594.21 5.04091Z" stroke="#FF0000"/>
+<rect id="Rectangle 2190" x="5.99207" y="4.04224" width="4.7968" height="4.7968" rx="1" fill="#FF2F2F"/>
+<rect id="Rectangle 2193" x="6.99072" y="292.658" width="4.7968" height="4.7968" rx="1" fill="#FF2F2F"/>
+<rect id="Rectangle 2194" y="147.851" width="4.7968" height="4.7968" rx="1.5" fill="#FF2F2F"/>
+<rect id="Rectangle 2191" x="594.21" y="5.04089" width="4.7968" height="4.7968" rx="1" fill="#FF2F2F"/>
+<rect id="Rectangle 2192" x="593.211" y="291.66" width="4.7968" height="4.7968" rx="1" fill="#FF2F2F"/>
+<rect id="Rectangle 2195" x="599.203" y="147.851" width="4.7968" height="4.7968" rx="1.5" fill="#FF2F2F"/>
 </g>
 </g>
 <defs>
 <clipPath id="clip0_1744_958">
-<rect width="604" height="300" fill="white"/>
+<rect width="607" height="306" fill="white"/>
 </clipPath>
 </defs>
 </svg>

@@ -34,6 +34,8 @@ class Model {
 		damageCooldown: 500,
 	};
 	body = {
+		round: 10,
+		roundQuality: 10,
 		friction: 0.05,
 		restitution: 0.1,
 		mass: 3,

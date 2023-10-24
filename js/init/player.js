@@ -186,11 +186,11 @@ let lastFov = [];
 let lastPos = [];
 let baseFov = 1700;
 Render.on("beforeLayer0", () => {
-	let g = 0.09; // higher g = fov more sensitive to speed changes
+	let g = 0.15; // higher g = fov more sensitive to speed changes
 	let carBody = player.body;
 	let carUp = new vec(Math.cos(carBody.angle), Math.sin(carBody.angle));
 	
-	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*carBody.velocity.length)) / g)) ** 3 * 2000;
+	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*carBody.velocity.length)) / g)) ** 3 * 600;
 	lastFov.unshift(curFov);
 	let maxFovLen = Math.max(1, Math.round(Performance.fps * 0.5));
 	if (lastFov.length > maxFovLen) {

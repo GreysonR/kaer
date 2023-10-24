@@ -136,7 +136,7 @@ function createShadowData(elem) { // elem must be path
 				}
 			}
 			if (!found) {
-				console.warn("not found: ", point, position);
+				console.warn("not found: ", position);
 			}
 		}
 	}
@@ -217,7 +217,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					let options = { x: rect.properties.x, y: rect.properties.y };
 					if (id === "spawn" || id.includes("house") || rect.properties.transform?.includes("rotate")) {
 						let { width, height } = rect.properties;
-						console.log(elem);
 						let angle = (rect.properties.transform ? (Number(rect.properties.transform.replace("rotate(", "").split(" ")[0]) || 0) : 0) * Math.PI / 180;
 						let centerOffset = new vec(width/2, height/2).rotate(angle);
 						options.angle = angle;

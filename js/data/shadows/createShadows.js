@@ -55,7 +55,7 @@ class Shadow {
 		let hull = [];
 		let hullCenter = points.reduce((a, b) => a.add(b), new vec(0, 0)).div2(points.length); // average positions to get center, not correct in this case but close enough
 		for (let vertice of points) {
-			let support = this.getSupport(hullCenter, vertice, points, 100);
+			let support = this.getSupport(hullCenter, vertice, points, 70);
 			if (support === vertice) {
 				hull.push(vertice);
 			}
