@@ -86,7 +86,7 @@ class Enemy extends Car {
 
 		// set up targeting
 		this.target = player.body.position;
-		let sightBox = this.sightBox = Bodies.rectangle(500, 500, new vec(this.body.position), {
+		let sightBox = this.sightBox = Bodies.rectangle(600, 500, new vec(this.body.position), {
 			isSensor: true,
 			render: {
 				visible: false,
@@ -209,6 +209,7 @@ class Enemy extends Car {
 		Render.on("afterRender", render);
 	}
 	updateTarget() {
+		this.normals = [];
 		// set sightBox to follow car
 		let sightBox = this.sightBox;
 		let angle = this.body.angle;
@@ -219,20 +220,20 @@ class Enemy extends Car {
 
 		// iterate through collision pairs to update target
 		let carDirection = new vec(Math.cos(this.body.angle), Math.sin(this.body.angle));
-		let direction = player.body.position.sub(this.body.position).normalize2().mult2(500);
+		let direction = player.body.position.sub(this.body.position).normalize2().mult2(400);
 		let directionNormalized = direction.normalize();
 		for (let collision of Object.values(sightBox.collisions)) {
 			let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 			if (otherBody != this.body && otherBody != player.body && !otherBody.isSensor) {
-				let closestPoint = closestPointBetweenBodies(this.body, otherBody);
+				let { point: closestPoint, normal: closestNormal } = closestEdgeBetweenBodies(this.body, otherBody);
 				let distance = this.body.position.sub(closestPoint);
-				let distNormalized = distance.normalize();
-				if (Math.abs(distNormalized.dot(carDirection)) > 0.94) {
-					distNormalized.normal2();
-					if (distNormalized.dot(directionNormalized) < 0) distNormalized.mult2(-1);
+				if (Math.abs(closestNormal.dot(carDirection)) > 0.8) {
+					closestNormal.normal2();
+					if (closestNormal.dot(directionNormalized) < 0) closestNormal.mult2(-1);
 				}
-				
-				direction.add2(distNormalized.mult((400 / distance.length) ** 0.4 * 200 * carDirection.dot(distance.normalize()) ** 2));
+				let scale = ((400 / distance.length) ** 1) * (carDirection.dot(distance.normalize()) ** 2) * 150;
+				this.normals.push([closestPoint, closestNormal.mult(scale)]);
+				direction.add2(closestNormal.mult(scale));
 			}
 		}
 		direction.normalize2().mult2(this.body.position.sub(player.body.position).length);
@@ -246,6 +247,24 @@ class Enemy extends Car {
 			ctx.arc(point.x, point.y, 10 / camera.scale, 0, Math.PI*2);
 			ctx.fillStyle = "#ff000080";
 			ctx.fill();
+
+			for (let edge of this.normals) {
+				let [point, normal] = edge;
+				ctx.beginPath();
+				ctx.moveTo(point.x, point.y);
+				ctx.arc(point.x, point.y, 4 / camera.scale, 0, Math.PI * 2);
+				ctx.closePath();
+				ctx.fillStyle = "blue";
+				ctx.fill();
+
+				ctx.beginPath();
+				ctx.moveTo(point.x, point.y);
+				let line = normal.mult(0.15 / camera.scale);
+				ctx.lineTo(point.x + line.x, point.y + line.y);
+				ctx.strokeStyle = "blue";
+				ctx.lineWidth = 3 / camera.scale;
+				ctx.stroke();
+			}
 		});
 	}
 

@@ -60,6 +60,49 @@ function closestPointBetweenBodies(bodyA, bodyB) { // returns the closest point 
 	}
 	return point;
 }
+function closestEdgeBetweenBodies(bodyA, bodyB) { // returns the closest point and its normal (point and normal are only on bodyB)
+	let verticesA = bodyA.vertices;
+	let verticesB = bodyB.vertices;
+	let point = null;
+	let normal = new vec(1, 0);
+	let minDistance = Infinity;
+	for (let i = 0; i < verticesA.length; i++) {
+		let verticeA = verticesA[i];
+		let region = getVoronoiRegion(bodyB, verticeA);
+
+		if (region.length > 0) {
+			let projected;
+			let curNormal;
+
+			if (region.length === 1) {
+				projected = new vec(verticesB[region[0]]);
+				let prev = verticesB[(region[0] - 1 + verticesB.length) % verticesB.length];
+				let next = verticesB[(region[0] + 1) % verticesB.length];
+				let axisA = projected.sub(prev).normalize();
+				let axisB = next.sub(projected).normalize();
+				curNormal = axisA.add(axisB).normalize();
+			}
+			else if (region.length === 2) {
+				let pointBA = verticesB[region[0]];
+				let pointBB = verticesB[region[1]];
+				let axis = pointBB.sub(pointBA).normalize();
+				projected = axis.mult(axis.dot(verticeA.sub(pointBA))).add(pointBA);
+				curNormal = axis;
+			}
+
+			let distance = projected.sub(verticeA).length;
+			if (distance < minDistance) {
+				minDistance = distance;
+				point = projected;
+				normal = curNormal.normal();
+			}
+		}
+	}
+	return {
+		point: point,
+		normal: normal,
+	};
+}
 
 function createGradient(startPosition, endPosition, colorStops = [["#ff0000ff", 0], ["#ff000000", 1]]) {
 	let gradient = ctx.createLinearGradient(startPosition.x, startPosition.y, endPosition.x, endPosition.y);
