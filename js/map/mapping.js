@@ -270,7 +270,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			else if (elem.tagName === "path") {
 				// parse path
 				let paths = getSVGPaths(elem);
-				if (name === "road") console.log(paths);
 
 				for (let path of paths) {
 					if (path.length > 1) {
@@ -397,7 +396,6 @@ function generateRoadHitbox(path, roadWidth = 700, dt = 300, canRemoveIntersecti
 			beziers.push(new Bezier(new vec(posA), new vec(cPts[0]), new vec(cPts[1]), new vec(posB)));
 		}
 	}
-	console.log(beziers);
 
 	// create points for left / right sides
 	let leftSide = [];

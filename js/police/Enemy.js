@@ -227,11 +227,15 @@ class Enemy extends Car {
 			if (otherBody != this.body && otherBody != player.body && !otherBody.isSensor) {
 				let { point: closestPoint, normal: closestNormal } = closestEdgeBetweenBodies(this.body, otherBody);
 				let distance = this.body.position.sub(closestPoint);
+				let scale = ((500 / distance.length) ** 1) * 140;
 				if (Math.abs(closestNormal.dot(carDirection)) > 0.8) {
 					closestNormal.normal2();
 					if (closestNormal.dot(directionNormalized) < 0) closestNormal.mult2(-1);
 				}
-				let scale = ((400 / distance.length) ** 1) * (carDirection.dot(distance.normalize()) ** 2) * 150;
+				else {
+					scale *= Math.max(0, -carDirection.dot(closestNormal.normalize()));
+				}
+				// let scale = ((400 / distance.length) ** 1) * (carDirection.dot(distance.normalize()) ** 2) * 150;
 				this.normals.push([closestPoint, closestNormal.mult(scale)]);
 				direction.add2(closestNormal.mult(scale));
 			}
@@ -312,7 +316,3 @@ class Enemy extends Car {
 
 // Update police AI
 Render.on("afterRender", Enemy.update);
-
-
-let police = new Enemy("Police Basic");
-police.body.setPosition(new vec(2450, 2400));

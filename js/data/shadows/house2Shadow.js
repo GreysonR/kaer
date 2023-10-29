@@ -1,1 +1,1 @@
-shadowData["house2"] = [{"position":{"x":594.21,"y":5.04089},"height":1},{"position":{"x":5.99207,"y":4.04224},"height":1},{"position":{"x":0,"y":147.851},"height":1.5},{"position":{"x":6.99072,"y":292.658},"height":1},{"position":{"x":593.211,"y":291.66},"height":1},{"position":{"x":599.203,"y":147.851},"height":1.5}]
+shadowData["house2"] = [{"position":{"x":594.21,"y":5.04089},"height":1},{"position":{"x":5.99207,"y":4.04224},"height":1},{"position":{"x":6.99072,"y":292.658},"height":1},{"position":{"x":593.211,"y":291.66},"height":1}]

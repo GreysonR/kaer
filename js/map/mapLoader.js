@@ -40,6 +40,7 @@ var MapBodies = {
 			material: "road",
 			hasCollisions: false,
 			isStatic: true,
+			removed: true,
 
 			render: {
 				visible: false,
@@ -48,8 +49,12 @@ var MapBodies = {
 				layer: -1,
 			}
 		});
-		obj.delete();
-		SurfaceGrid.addBody(obj);
+		obj.on("add", () => {
+			SurfaceGrid.addBody(obj);
+		});
+		obj.on("delete", () => {
+			SurfaceGrid.removeBody(obj);
+		});
 
 		return obj;
 	},
@@ -232,9 +237,17 @@ var MapBodies = {
 			}
 		});
 		body.setAngle(angle);
+		let shadow;
 
-		if (shadowName)
-			new Shadow(shadowName, new vec(x, y), width, height, angle);
+		body.on("add", () => {
+			if (shadowName)
+				shadow = new Shadow(shadowName, new vec(x, y), width, height, angle);
+		});
+		body.on("delete", () => {
+			if (shadow)
+				shadow.delete();
+		})
+
 
 		return body;
 	},
