@@ -34,7 +34,7 @@ function getSVGPaths(elem) {
 	let x = 0;
 	let y = 0;
 	let path = [];
-	let paths = [path];
+	let paths = [];
 	for (let i = 0; i < pathArr.length; i++) {
 		let func = pathArr[i][0];
 		let part = pathArr[i].slice(1).split(" ");
@@ -74,9 +74,8 @@ function getSVGPaths(elem) {
 		else if (func === "Z") {
 			if (i !== pathArr.length - 1) {
 				console.warn("More than 1 path");
-				path = [];
 				paths.push(path);
-				// pathNum++;
+				path = [];
 			}
 		}
 		else {
@@ -87,6 +86,7 @@ function getSVGPaths(elem) {
 		path.push({ x: Math.round(x), y: Math.round(y) });
 	}
 
+	paths.push(path);
 	return paths;
 }
 
@@ -270,6 +270,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			else if (elem.tagName === "path") {
 				// parse path
 				let paths = getSVGPaths(elem);
+				if (name === "road") console.log(paths);
 
 				for (let path of paths) {
 					if (path.length > 1) {
@@ -315,7 +316,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 								y: center.y,
 								vertices: vertices
 							});
-							return;
+							continue;
 						}
 						else if (name === "road") {
 							let roadHitbox = generateRoadHitbox(path, elem.properties["stroke-width"], undefined, false);
@@ -324,7 +325,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 								roundVert(hitbox.vertices);
 								out[name].push(hitbox);
 							}
-							return;
+							continue;
 						}
 						
 						if (new vec(path[0]).equals(path[path.length - 1])) {
@@ -396,6 +397,7 @@ function generateRoadHitbox(path, roadWidth = 700, dt = 300, canRemoveIntersecti
 			beziers.push(new Bezier(new vec(posA), new vec(cPts[0]), new vec(cPts[1]), new vec(posB)));
 		}
 	}
+	console.log(beziers);
 
 	// create points for left / right sides
 	let leftSide = [];

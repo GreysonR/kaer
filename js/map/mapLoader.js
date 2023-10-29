@@ -81,7 +81,7 @@ var MapBodies = {
 		}
 		return scene;
 	},
-	rectangle: function(x, y, width, height, name, layer = 7, dir = "nature", spriteWidth, spriteHeight) {
+	rectangle: function(x, y, spriteWidth, spriteHeight, rectangles, name, layer = 7, dir = "nature", round = 30) {
 		if (!spriteWidth) spriteWidth = width;
 		if (!spriteHeight) spriteHeight = height;
 
@@ -102,12 +102,15 @@ var MapBodies = {
 			isStatic: true,
 			hasCollisions: true,
 			removed: true,
-			round: 30,
+			round: round,
 			render: {
 				visible: false,
 			}
 		};
-		scene.addBody(Bodies.rectangle(width, height, new vec(x + width/2, y + height/2), hitboxOptions));
+		for (let rectangle of rectangles) {
+			let { x: bodyX, y: bodyY, width, height } = rectangle;
+			scene.addBody(Bodies.rectangle(width, height, new vec(x + bodyX + width/2, y + bodyY + height/2), hitboxOptions));
+		}
 		return scene;
 	},
 	genericBody: function(x, y, width, height, name, verticesList, layer = 7, dir = "nature") {
@@ -263,7 +266,47 @@ var MapBodies = {
 	building1: function({ x, y }) {
 		let width  = 560;
 		let height = 560;
-		return MapBodies.rectangle(x, y, width, height, "building1", 8, "buildings", 940, 931);
+		return MapBodies.rectangle(x, y, 940, 931, [
+			{ x: 0, y: 0, width: width, height: height },
+		], "building1", 8, "buildings");
+	},
+	building2: function({ x, y }) {
+		let width  = 594;
+		let height = 594;
+		return MapBodies.rectangle(x, y, 1087, 1067, [
+			{ x: 0, y: 0, width: width, height: height },
+		], "building2", 8, "buildings", 45);
+	},
+
+	LHouseA: function({ x, y }) {
+		return MapBodies.rectangle(x, y, 946, 699, [
+			{ x: 0, y: 0, width: 300, height: 600 },
+			{ x: 0, y: 300, width: 800, height: 300 },
+		], "LHouseA", 8, "buildings", 20);
+	},
+	LHouseB: function({ x, y }) {
+		return MapBodies.rectangle(x, y, 950, 703, [
+			{ x: 0, y: 0, width: 300, height: 600 },
+			{ x: 0, y: 0, width: 800, height: 300 },
+		], "LHouseB", 8, "buildings", 20);
+	},
+	LHouseC: function({ x, y }) {
+		return MapBodies.rectangle(x, y, 903, 699, [
+			{ x: 500, y: 0, width: 300, height: 600 },
+			{ x: 0, y: 300, width: 800, height: 300 },
+		], "LHouseC", 8, "buildings", 20);
+	},
+	LHouseD: function({ x, y }) {
+		return MapBodies.rectangle(x, y, 901, 731, [
+			{ x: 500, y: 0, width: 300, height: 600 },
+			{ x: 0, y: 0, width: 800, height: 300 },
+		], "LHouseD", 8, "buildings", 20);
+	},
+	LHouseE: function({ x, y }) {
+		return MapBodies.rectangle(x, y, 697, 926, [
+			{ x: 300, y: 0, width: 300, height: 800 },
+			{ x: 0, y: 0, width: 600, height: 300 },
+		], "LHouseE", 8, "buildings", 20);
 	},
 }
 

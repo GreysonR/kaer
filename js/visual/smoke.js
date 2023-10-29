@@ -323,9 +323,9 @@ class Smoke {
 	aliveTime = 700;
 	verticeTime = [140, 160]; // [min time, max time]
 	variation = {
-		angle: Math.PI*1,
-		position: [-20, 30],
-		curveLength: [20, 40],
+		angle: Math.PI*0.5,
+		position: [-20, 40],
+		curveLength: [30, 50],
 	}
 	render = {
 		background: "#CBCBCB41",

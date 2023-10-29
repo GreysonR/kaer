@@ -432,7 +432,7 @@ class Car {
 			this.path.length = Math.ceil(100 / World.timescale);
 		}
 	
-		// ~ skid marks
+		// ~ toggle skid marks
 		let hadTireSkid = this.hasTireSkid;
 		this.hasTireSkid = avgDrift > maxGrip * 11;
 		if (this.hasTireSkid !== hadTireSkid) {
@@ -444,7 +444,7 @@ class Car {
 			}
 		}
 	
-		// ~ smoke
+		// ~ toggle smoke
 		let hadTireSmoke = this.hasTireSmoke;
 		this.hasTireSmoke = avgDrift > maxGrip * 17 && materialProps.hasTireSmoke;
 		if (this.hasTireSmoke !== hadTireSmoke) {
@@ -452,7 +452,7 @@ class Car {
 				let options = {
 					position: body.position,
 					render: {
-						background: "#ffffff40",
+						background: "#ffffff70",
 					}
 				}
 				this.smoke.push(new Smoke(options));
