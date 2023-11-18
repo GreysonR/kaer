@@ -79,7 +79,10 @@ var Models = {
 			render: {
 				sprite: "cars/car1.png",
 				spriteScale: new vec(1, 1),
-			}
+			},
+			collisionFilter: {
+				category: "1"
+			},
 		},
 	}),
 	"Police Basic": new Model({

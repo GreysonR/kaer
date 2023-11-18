@@ -1,6 +1,6 @@
 "use strict";
 let world2Scene = (function createWorld2Scene() {
-	let scene = new Scene();
+	let scene = createMap(world2Data);
 
 	// floor + outer walls
 	let sceneWidth =  10000;
@@ -28,21 +28,23 @@ let world2Scene = (function createWorld2Scene() {
 		}
 	});
 	scene.addBody(walls);
-
-	let objectsScene = createMap(world2Data);
-	scene.addBody(objectsScene);
 	
 	
 	scene.on("beforeAdd", function spawnCar() {
-		if (objectsScene.spawn) {
-			player.body.setPosition(new vec(objectsScene.spawn.position));
-			player.body.setAngle(objectsScene.spawn.angle);
+		// put player at spawn
+		if (scene.spawn) {
+			player.body.setPosition(new vec(scene.spawn.position));
+			player.body.setAngle(scene.spawn.angle);
 			lastFov.length = 0;
 			lastPos.length = 0;
 		}
 
+		// reset orders
+		scene.completedOrders = 0;
+
 		let police = window.police = new Enemy("Police Basic");
-		police.body.setPosition(new vec(2450, 2400));
+		police.body.setPosition(new vec(2100, 5000));
+		police.body.setAngle(-Math.PI/2);
 	});
 
 	return scene;

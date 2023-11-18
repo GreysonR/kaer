@@ -314,6 +314,7 @@ class Body {
 	frictionAir = 0.05;
 	frictionAngular = 0.01;
 	friction = 0.01;
+	round = 0;
 
 	mass = 1;
 	inverseMass = 1;

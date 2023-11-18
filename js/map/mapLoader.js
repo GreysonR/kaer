@@ -321,12 +321,18 @@ var MapBodies = {
 			{ x: 0, y: 0, width: 600, height: 300 },
 		], "LHouseE", 8, "buildings", 20);
 	},
+	order: true, // this isn't supposed to be used, it's here to tell the map loader it exists
 }
 
 function createMap(mapData) {
 	let scene = new Scene();
+	scene.orders = [];
+	scene.requiredOrders = mapData.orderCount;
+	scene.completedOrders = 0;
+	console.log(scene.requiredOrders);
 	
 	for (let typeName of Object.keys(mapData)) {
+		if (typeName === "orderCount") continue;
 		let objFunc = MapBodies[typeName]; // creator function of for this object type
 		if (!objFunc) {
 			console.warn("no map function for type " + typeName);
@@ -335,10 +341,23 @@ function createMap(mapData) {
 		let types = mapData[typeName]; // array of options for objects of this type
 
 		for (let options of types) {
-			let obj = objFunc(options, scene);
-			if (obj) {
-				obj.delete();
-				scene.addBody(obj);
+			if (typeName === "order") {
+				let order = new Order({
+					radius: options.radius,
+					position: new vec(options),
+					type: options.type,
+					scene: scene,
+					quantity: Math.round(Math.random() * 2) + 2,
+				});
+				scene.orders.push(order);
+				scene.addBody(order);
+			}
+			else {
+				let obj = objFunc(options, scene);
+				if (obj) {
+					obj.delete();
+					scene.addBody(obj);
+				}
 			}
 		}
 	}

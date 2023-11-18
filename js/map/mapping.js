@@ -170,7 +170,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		let out = {
 		}
 		
-		const ignoreMapBody = ["road", "wall"];
+		const ignoreMapBody = ["road", "wall", "order", "orderCount"];
 		
 		function getVertices(rect) {
 			let a = 0;
@@ -247,7 +247,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					out[name] = [];
 				}
 			}
-
+			
 			if (elem.tagName === "rect") {
 				let rect = elem.properties;
 				let vertices = getVertices(rect);
@@ -264,6 +264,26 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					}
 					obj.angle = a;
 					delete obj.vertices;
+				}
+				else if (name === "order") {
+					const types = {
+						"#BB816E": "brown",
+						"#DC567C": "red",
+						"#49ADE9": "blue",
+						"#A7D679": "green",
+					}
+					let type = types[rect.fill];
+					out[name].push({
+						x: Math.round(rect.x + rect.width /2),
+						y: Math.round(rect.y + rect.height/2),
+						radius: Math.round(rect.width / 2),
+						type: type,
+					});
+					return;
+				}
+				else if (name === "orderCount") {
+					out[name] = rect.rx; // just use border radius to get # of orders needed for this level
+					return;
 				}
 				out[name].push(obj);
 			}
