@@ -57,8 +57,8 @@ var Models = {
 			turnSpeed: 3.4,
 
 			// drifting / sliding
-			tireGrip:    3.9,
-			slidingGrip: 3.9,
+			tireGrip:    3.2,
+			slidingGrip: 3.2,
 			steeringWeight: 0.02,
 			power: 0.2,
 

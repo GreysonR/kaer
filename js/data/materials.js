@@ -26,8 +26,8 @@ let Materials = {
 		hasTireSmoke: false,
 	},
 	grass: {
-		tireGrip: 0.8,
-		slidingGrip: 0.8,
+		tireGrip: 0.9,
+		slidingGrip: 0.9,
 		steeringWeight: 1.7,
 		turnSpeed: 0.9,
 		acceleration: 0.8,

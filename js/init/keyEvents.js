@@ -52,9 +52,6 @@ window.addEventListener("keydown", event => {
 		if (event.altKey && key === "c") { // toggle graph
 			Render.rotationPoint = !Render.rotationPoint;
 		}
-		if (event.altKey && key === "x") { // toggle navmesh arrows (REMOVE)
-			Render.navmeshArrows = !Render.navmeshArrows;
-		}
 		if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing)
 			ctx.imageSmoothingEnabled = !ctx.imageSmoothingEnabled;
 		}

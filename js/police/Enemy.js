@@ -86,7 +86,7 @@ class Enemy extends Car {
 
 		// set up targeting
 		this.target = player.body.position;
-		let sightBox = this.sightBox = Bodies.rectangle(600, 500, new vec(this.body.position), {
+		let sightBox = this.sightBox = Bodies.rectangle(900, 600, new vec(this.body.position), {
 			isSensor: true,
 			render: {
 				visible: false,
@@ -202,6 +202,7 @@ class Enemy extends Car {
 			ctx.textAlign = "center";
 			ctx.fillStyle = color;
 			ctx.strokeStyle = "#28363E80";
+			ctx.lineWidth = 16;
 			ctx.strokeText(damage, position.x, position.y);
 			ctx.fillText(damage, position.x, position.y);
 			ctx.globalAlpha = 1;
@@ -227,7 +228,7 @@ class Enemy extends Car {
 			if (otherBody != this.body && otherBody != player.body && !otherBody.isSensor) {
 				let { point: closestPoint, normal: closestNormal } = closestEdgeBetweenBodies(this.body, otherBody);
 				let distance = this.body.position.sub(closestPoint);
-				let scale = ((500 / distance.length) ** 1) * 140;
+				let scale = ((500 / distance.length) ** 1.4) * 140;
 				if (Math.abs(closestNormal.dot(carDirection)) > 0.8) {
 					closestNormal.normal2();
 					if (closestNormal.dot(directionNormalized) < 0) closestNormal.mult2(-1);

@@ -325,7 +325,6 @@ var MapBodies = {
 
 function createMap(mapData) {
 	let scene = new Scene();
-	scene.navmesh = new Navmesh(1000);
 	
 	for (let typeName of Object.keys(mapData)) {
 		let objFunc = MapBodies[typeName]; // creator function of for this object type
@@ -340,22 +339,6 @@ function createMap(mapData) {
 			if (obj) {
 				obj.delete();
 				scene.addBody(obj);
-
-				
-				function addToNavmesh(body) {
-					if (body.hasCollisions && !body.isSensor && body.isStatic) {
-						scene.navmesh.addBody(body);
-					}
-				}
-				if (obj.bodies) { // this is a scene
-					for (let body of obj.bodies) {
-						addToNavmesh(body);
-					}
-				}
-				else {
-					addToNavmesh(obj);
-				}
-				/**/
 			}
 		}
 	}

@@ -1,16 +1,16 @@
 "use strict";
-let world1Scene = (function createWorld1Scene() {
+let world2Scene = (function createWorld2Scene() {
 	let scene = new Scene();
 
 	// floor + outer walls
-	let sceneWidth =  20000;
-	let sceneHeight = 20000;
+	let sceneWidth =  10000;
+	let sceneHeight = 10000;
 	let floor = Bodies.rectangle(sceneWidth, sceneHeight, new vec(sceneWidth/2, sceneHeight/2), {
 		isStatic: true,
 		hasCollisions: false,
 		removed: true,
 		render: {
-			sprite: "world1/floor.svg",
+			sprite: "world2/floor.svg",
 			useBuffer: true,
 			layer: -4,
 		}
@@ -22,14 +22,14 @@ let world1Scene = (function createWorld1Scene() {
 		hasCollisions: false,
 		removed: true,
 		render: {
-			sprite: "world1/walls.svg",
+			sprite: "world2/walls.svg",
 			useBuffer: true,
 			layer: 10,
 		}
 	});
 	scene.addBody(walls);
 
-	let objectsScene = createMap(world1Data);
+	let objectsScene = createMap(world2Data);
 	scene.addBody(objectsScene);
 	
 	
@@ -42,9 +42,10 @@ let world1Scene = (function createWorld1Scene() {
 		}
 
 		let police = window.police = new Enemy("Police Basic");
-		police.body.setPosition(new vec(8650, 14200));
-		// police.renderTarget()
+		police.body.setPosition(new vec(2450, 2400));
 	});
 
 	return scene;
 })();
+
+world2Scene.add();

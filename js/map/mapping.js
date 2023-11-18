@@ -463,7 +463,13 @@ function generateRoadHitbox(path, roadWidth = 700, dt = 300, canRemoveIntersecti
 	vertices = vertices.concat(leftSide).concat(rightSide.reverse());
 	let decompPoints = vertices.map(v => [v.x, v.y]);
 	decomp.removeDuplicatePoints(decompPoints, 0.01);
-	decomp.makeCCW(decompPoints);
+	try {
+		decomp.makeCCW(decompPoints);
+	}
+	catch(err) {
+		console.error(err);
+		console.error(path);
+	}
 	let convex = decomp.quickDecomp(decompPoints);
 
 	for (let shape of convex) {
