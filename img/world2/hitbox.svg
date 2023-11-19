@@ -894,7 +894,7 @@
 </g>
 <g id="orders">
 <rect id="order" x="4157" y="3825" width="511" height="511" rx="255.5" fill="#DC567C" fill-opacity="0.2"/>
-<rect id="order_2" x="2925" y="1687" width="213" height="213" rx="106.5" fill="#BB816E" fill-opacity="0.2"/>
+<rect id="order_2" x="2925" y="1687" width="213" height="213" rx="106.5" fill="#FFE8D8" fill-opacity="0.2"/>
 <rect id="order_3" x="8459" y="5130" width="275" height="275" rx="137.5" fill="#49ADE9" fill-opacity="0.2"/>
 <rect id="order_4" x="3240" y="5558" width="275" height="275" rx="137.5" fill="#A7D679" fill-opacity="0.2"/>
 </g>

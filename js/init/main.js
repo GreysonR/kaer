@@ -143,10 +143,11 @@ function renderMoneyGain(textStart, money) {
 	let textShift = new vec(0, Math.random() * -50 - 50);
 	let textOpacity = 1;
 	let text = `+$${money}`;
+	let fontSize = 22 + 4 * Math.log2(Math.max(1, money));
 	function renderText() {
 		ctx.globalAlpha = textOpacity;
 		ctx.beginPath();
-		ctx.font = `bold 45px Dosis`;
+		ctx.font = `bold ${fontSize}px Dosis`;
 		ctx.lineJoin = "round";
 		ctx.textAlign = "center";
 		ctx.fillStyle = "#9DF897";

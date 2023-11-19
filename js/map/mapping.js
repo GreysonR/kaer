@@ -169,6 +169,11 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		
 		let out = {
 		}
+
+		let resourceNames = {};
+		for (let resourceName of Object.keys(Resources)) {
+			resourceNames[Resources[resourceName].color] = resourceName;
+		}
 		
 		const ignoreMapBody = ["road", "wall", "order", "orderCount"];
 		
@@ -266,13 +271,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					delete obj.vertices;
 				}
 				else if (name === "order") {
-					const types = {
-						"#BB816E": "brown",
-						"#DC567C": "red",
-						"#49ADE9": "blue",
-						"#A7D679": "green",
-					}
-					let type = types[rect.fill];
+					let type = resourceNames[rect.fill];
 					out[name].push({
 						x: Math.round(rect.x + rect.width /2),
 						y: Math.round(rect.y + rect.height/2),

@@ -57,17 +57,6 @@ class Order {
 			}
 		});
 
-		this.icon = Bodies.rectangle(119 * 0.7, 156 * 0.7, new vec(position.x, position.y - 100), {
-			isStatic: true,
-			hasCollisions: false,
-			removed: true,
-			render: {
-				visible: false,
-				sprite: `ui/markers/${ this.type }.svg`,
-				layer: 100,
-			}
-		});
-
 		this.scene = scene;
 		this.requiredQuantity = quantity;
 		this.reward = reward;
@@ -81,7 +70,6 @@ class Order {
 		this.body.render.opacity = 1 - this.completeQuantity;
 		this.lastCompleteQuantity = this.completeQuantity;
 
-		this.icon.render.visible = false;
 		let percent = this.completeQuantity / this.requiredQuantity;
 
 		// render complete %
@@ -104,7 +92,6 @@ class Order {
 	}
 	add() {
 		this.body.add();
-		this.icon.add();
 		this.completeQuantity = 0;
 		this.lastCompleteQuantity = 0;
 		this.wholeCompleteQuanity = 0;
@@ -113,11 +100,9 @@ class Order {
 	}
 	delete() {
 		this.body.delete();
-		this.icon.delete();
 		Render.off("afterRender", this.updatePercentComplete);
 	}
 	body = null;
-	icon = null;
 	scene = null;
 	
 	type = "";
