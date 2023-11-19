@@ -2,16 +2,10 @@
 
 class Order {
 	static radius = 420;
-	static colors = {
-		brown: "#BB816E",
-		red: "#DC567C",
-		blue: "#49ADE9",
-		green: "#A7D679",
-	};
 	static id = -1;
 	constructor({ radius, position, scene, reward = 100, type = "blue", quantity = 4 }) {
 		this.type = type;
-		this.color = Order.colors[type];
+		this.color = Resources[type].color;
 		let body = this.body = Bodies.circle(radius + Order.radius, position, {
 			isSensor: true,
 			isStatic: true,
@@ -30,21 +24,35 @@ class Order {
 			let delta = Engine.delta;
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (otherBody === player.body) {
-				order.completeQuantity += delta * order.completeSpeed * 0.01 / this.requiredQuantity;
-				order.completeQuantity = Math.min(order.requiredQuantity, order.completeQuantity);
+				if (run.inventory[order.type] > 0) {
+					order.completeQuantity += delta * order.completeSpeed * 0.01 / this.requiredQuantity;
+					order.completeQuantity = Math.min(order.requiredQuantity, order.completeQuantity);
+	
+					if (Math.floor(order.completeQuantity) > order.wholeCompleteQuanity) {
+						order.wholeCompleteQuanity = Math.floor(order.completeQuantity);
+						++scene.completedOrders;
+						--run.inventory[order.type];
+						
+						let moneyGain = Resources[type].value;
+						run.money += moneyGain;
+						// console.log(`${order.type}: ${run.inventory[order.type]}, money: ${run.money}`);
 
-				if (Math.floor(order.completeQuantity) > order.wholeCompleteQuanity) {
-					order.wholeCompleteQuanity = Math.floor(order.completeQuantity);
-					++scene.completedOrders;
-
-					if (scene.completedOrders == scene.requiredOrders) {
-						console.log("COMPLETE");
+						// create text to show money gain
+						let numDots = this.requiredQuantity;
+						let dotRadius = 20;
+						let dotMargin = 10;
+						let textStart = position.add(new vec(((numDots - order.wholeCompleteQuanity) / (numDots - 1)) * (dotRadius * 2 + dotMargin) * numDots - (dotRadius * 2 + dotMargin) * numDots * 0.5, -50));
+						renderMoneyGain(textStart, moneyGain);
+	
+						if (scene.completedOrders == scene.requiredOrders) {
+							console.log("COMPLETE");
+						}
 					}
-				}
-
-				if (order.completeQuantity === order.requiredQuantity && !order.complete) {
-					order.complete = true;
-					order.delete();
+	
+					if (order.completeQuantity === order.requiredQuantity && !order.complete) {
+						order.complete = true;
+						order.delete();
+					}
 				}
 			}
 		});

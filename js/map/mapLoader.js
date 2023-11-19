@@ -329,7 +329,6 @@ function createMap(mapData) {
 	scene.orders = [];
 	scene.requiredOrders = mapData.orderCount;
 	scene.completedOrders = 0;
-	console.log(scene.requiredOrders);
 	
 	for (let typeName of Object.keys(mapData)) {
 		if (typeName === "orderCount") continue;

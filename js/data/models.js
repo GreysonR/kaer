@@ -88,6 +88,7 @@ var Models = {
 	"Police Basic": new Model({
 		model: "Police Basic",
 		gun: "pistol",
+		value: 100,
 		car: {
 			// basic stats
 			maxSpeed: 16,

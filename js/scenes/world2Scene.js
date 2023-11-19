@@ -42,6 +42,15 @@ let world2Scene = (function createWorld2Scene() {
 		// reset orders
 		scene.completedOrders = 0;
 
+		// reset run
+		run.reset();
+		
+		// add temp to inventory
+		for (let type of Object.keys(run.inventory)) {
+			run.inventory[type] = 4;
+		}
+		
+		// create enemy
 		let police = window.police = new Enemy("Police Basic");
 		police.body.setPosition(new vec(2100, 5000));
 		police.body.setAngle(-Math.PI/2);

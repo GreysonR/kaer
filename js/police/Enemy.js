@@ -75,6 +75,9 @@ class Enemy extends Car {
 		super(model, options);
 		Enemy.all.push(this);
 
+		// set money value
+		this.value = Models[model].value;
+
 		// init gun
 		this.aimVariation = 0.2; // radians
 		this.gun = new Gun(Models[model].gun);
@@ -156,6 +159,8 @@ class Enemy extends Car {
 	
 				if (this.health <= 0) {
 					this.delete();
+					run.money += this.value;
+					renderMoneyGain(this.body.position.add(new vec(0, -100)), this.value);
 				}
 			}
 		}

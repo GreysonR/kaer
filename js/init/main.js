@@ -137,3 +137,45 @@ function setCSSVariable(varName, value) {
 String.prototype.toCapital = function() {
 	return this.slice(0, 1).toUpperCase() + this.slice(1);
 }
+
+function renderMoneyGain(textStart, money) {
+	let textPosition = new vec(textStart);
+	let textShift = new vec(0, Math.random() * -50 - 50);
+	let textOpacity = 1;
+	let text = `+$${money}`;
+	function renderText() {
+		ctx.globalAlpha = textOpacity;
+		ctx.beginPath();
+		ctx.font = `bold 45px Dosis`;
+		ctx.lineJoin = "round";
+		ctx.textAlign = "center";
+		ctx.fillStyle = "#9DF897";
+		ctx.strokeStyle = "#314753CC";
+		ctx.lineWidth = 16;
+		ctx.strokeText(text, textPosition.x, textPosition.y);
+		ctx.fillText(text, textPosition.x, textPosition.y);
+		ctx.globalAlpha = 1;
+	}
+	animations.create({ // shift animation
+		duration: 900,
+		curve: ease.linear,
+		callback: p => {
+			textPosition.set(textStart.add(textShift.mult(p)));
+		},
+		onend: () => {
+			Render.off("afterRender", renderText);
+		},
+	});
+	animations.create({ // opacity animation
+		duration: 300,
+		delay: 600,
+		curve: ease.linear,
+		callback: p => {
+			textOpacity = Math.max(0, 1 - p);
+		},
+		onend: () => {
+			textOpacity = 0;
+		},
+	});
+	Render.on("afterRender", renderText);
+}
