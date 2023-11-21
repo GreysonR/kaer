@@ -15,6 +15,7 @@
 	<!-- css -->
 	<link rel="stylesheet" href="./css/main.css">
 	<link rel="stylesheet" href="./css/healthbar.css">
+	<link rel="stylesheet" href="./css/overheadRunUI.css">
 </head>
 <body>
 	<!-- canvas -->
@@ -47,9 +48,29 @@
 		</div>
 	</div>
 
+	<!-- overhead run UI -->
+	<div id="overheadRunUI">
+		<div id="inventoryWrapper">
+			<div id="inventory">
+				<!-- <div class="item white"><span>4</span></div>
+				<div class="item red"><span>3</span></div>
+				<div class="item blue"><span>12</span></div>
+				<div class="item green"><span>10</span></div> -->
+			</div>
+			<div id="runMoney">0</div>
+		</div>
+		<div id="orders">
+			<span id="ordersAmount">5</span> remaining
+		</div>
+	</div>
+
 	<!-- red outline when hit or low health -->
 	<div id="redOutline"></div>
 </body>
+<!-- global constants -->
+<script>
+	const devMode = true;
+</script>
 <!-- engine -->
 <script src="./engine/poly-decomp.js"></script>
 <script src="./engine/simplexNoise.js"></script>
@@ -83,7 +104,6 @@
 <script src="./js/map/data/world0.js"></script>
 <script src="./js/map/data/world1.js"></script>
 <script src="./js/map/data/world2.js"></script>
-
 <!-- shadow data -->
 <script src="./js/data/shadows/createShadows.js"></script>
 <script src="./js/data/shadows/house1Shadow.js"></script>
@@ -97,11 +117,12 @@
 
 <!-- scenes -->
 <script src="./js/scenes/Scene.js"></script>
+<script src="./js/scenes/Inventory.js"></script>
 <script src="./js/scenes/Order.js"></script>
-<script src="./js/scenes/Run.js"></script>
-<script src="./js/scenes/world0Scene.js"></script>
-<script src="./js/scenes/world1Scene.js"></script>
+<!-- <script src="./js/scenes/world0Scene.js"></script>
+<script src="./js/scenes/world1Scene.js"></script> -->
 <script src="./js/scenes/world2Scene.js"></script>
+<script src="./js/scenes/Run.js"></script>
 
 <!-- visuals -->
 <script src="./js/visual/skid.js"></script>

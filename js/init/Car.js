@@ -98,7 +98,10 @@ class Car {
 	delete = function() {
 		this.body.delete();
 		Car.all.delete(this);
-		this.destroyAnimation();
+
+		if (this.health <= 0) {	
+			this.destroyAnimation();
+		}
 		
 		for (let smoke of this.smoke) {
 			smoke.stop();
@@ -249,7 +252,7 @@ class Car {
 		}
 	}
 	updateShoot() {
-		if (this.controls.shoot && this.gun !== undefined) {
+		if (!this.controls.locked && this.controls.shoot && this.gun !== undefined) {
 			let target = this.gunTarget;
 			let angle = target.sub(this.body.position).angle;
 			this.gun.shoot(this.body.position.add(new vec(Math.cos(angle), Math.sin(angle)).mult2(this.body.height / 2)), angle, this.body);

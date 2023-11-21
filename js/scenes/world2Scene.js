@@ -1,10 +1,14 @@
 "use strict";
 let world2Scene = (function createWorld2Scene() {
 	let scene = createMap(world2Data);
+	scene.setCompletedOrders = function(value) {
+		scene.completedOrders = value;
+		document.getElementById("ordersAmount").innerHTML = Math.max(0, scene.requiredOrders - value);
+	}
 
 	// floor + outer walls
-	let sceneWidth =  10000;
-	let sceneHeight = 10000;
+	let sceneWidth =  12857;
+	let sceneHeight = 11078;
 	let floor = Bodies.rectangle(sceneWidth, sceneHeight, new vec(sceneWidth/2, sceneHeight/2), {
 		isStatic: true,
 		hasCollisions: false,
@@ -28,6 +32,12 @@ let world2Scene = (function createWorld2Scene() {
 		}
 	});
 	scene.addBody(walls);
+
+	function finishLevel() {
+		for (let body of scene.exitBlocks) {
+			body.delete();
+		}
+	}
 	
 	
 	scene.on("beforeAdd", function spawnCar() {
@@ -40,23 +50,23 @@ let world2Scene = (function createWorld2Scene() {
 		}
 
 		// reset orders
-		scene.completedOrders = 0;
+		scene.setCompletedOrders(0);
 
-		// reset run
-		run.reset();
-		
-		// add temp to inventory
-		for (let type of Object.keys(run.inventory)) {
-			run.inventory[type] = 4;
-		}
+		// add event listeners
+		window.addEventListener("levelFinish", finishLevel);
 		
 		// create enemy
 		let police = window.police = new Enemy("Police Basic");
-		police.body.setPosition(new vec(2100, 5000));
+		police.body.setPosition(new vec(3141, 5210));
 		police.body.setAngle(-Math.PI/2);
+	});
+
+	scene.on("beforeDelete", () => {
+		window.removeEventListener("levelFinish", finishLevel);
+		for (let enemy of Enemy.all) {
+			enemy.delete();
+		}
 	});
 
 	return scene;
 })();
-
-world2Scene.add();

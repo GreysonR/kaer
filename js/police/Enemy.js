@@ -277,6 +277,10 @@ class Enemy extends Car {
 			}
 		});
 	}
+	delete() {
+		this.body.delete();
+		Enemy.all.remove(this);
+	}
 
 	healthBarPercent = 1;
 	healthBarBackgroundPercent = 1;

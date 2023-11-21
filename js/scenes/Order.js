@@ -24,18 +24,19 @@ class Order {
 			let delta = Engine.delta;
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (otherBody === player.body) {
-				if (run.inventory[order.type] > 0) {
+				let inventoryItem = run.inventory[order.type];
+				if (inventoryItem.getValue() > 0) {
 					order.completeQuantity += delta * order.completeSpeed * 0.01 / this.requiredQuantity;
 					order.completeQuantity = Math.min(order.requiredQuantity, order.completeQuantity);
 	
 					if (Math.floor(order.completeQuantity) > order.wholeCompleteQuanity) {
 						order.wholeCompleteQuanity = Math.floor(order.completeQuantity);
-						++scene.completedOrders;
-						--run.inventory[order.type];
+						scene.setCompletedOrders(scene.completedOrders + 1);
+						inventoryItem.setValue(inventoryItem.getValue() - 1);
 						
 						let moneyGain = Resources[type].value;
 						run.money += moneyGain;
-						// console.log(`${order.type}: ${run.inventory[order.type]}, money: ${run.money}`);
+						// console.log(`${order.type}: ${inventoryItem.getValue()}, money: ${run.money}`);
 
 						// create text to show money gain
 						let numDots = this.requiredQuantity;
@@ -45,7 +46,7 @@ class Order {
 						renderMoneyGain(textStart, moneyGain);
 	
 						if (scene.completedOrders == scene.requiredOrders) {
-							console.log("COMPLETE");
+							window.dispatchEvent(new CustomEvent("levelFinish"));
 						}
 					}
 	

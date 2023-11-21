@@ -228,6 +228,10 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						options.x += centerOffset.x;
 						options.y += centerOffset.y;
 					}
+					if (id === "exit") {
+						options.width = rect.properties.width;
+						options.height = rect.properties.height;
+					}
 					out[id].push(options);
 					return;
 				}
@@ -259,7 +263,6 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				let obj = {
 					x: Math.round(rect.x + vertices[1].x / 2 + vertices[2].x / 2),
 					y: Math.round(rect.y + vertices[1].y / 2 + vertices[2].y / 2),
-					vertices: vertices[0],
 				}
 				if (name === "spawn") {
 					let a = 0;

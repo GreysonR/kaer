@@ -22,13 +22,14 @@ window.addEventListener("resize", () => {
 
 Render.on("afterRender", () => {
 	if (!useMotionBlur) return;
+	var car = player.body;
 	let filter = document.getElementById("blurFilterItem");
-	filter.setAttribute("stdDeviation", `${(car.velocity.length ** 0.4 * 0.9 + 1.3) * camera.scale}`);
+	filter.setAttribute("stdDeviation", `${(car.velocity.length ** 0.4 * 1 + 1.3) * camera.scale}`);
 
 	motionBlurCtx.save();
 	motionBlurCtx.clearRect(0, 0, motionBlur.width, motionBlur.height);
 	
-	motionBlurCtx.fillStyle = "#71B132";
+	motionBlurCtx.fillStyle = "#EEDAD5";
 	motionBlurCtx.fillRect(0, 0, motionBlur.width, motionBlur.height);
 	motionBlurCtx.drawImage(canv, 0, 0);
 	

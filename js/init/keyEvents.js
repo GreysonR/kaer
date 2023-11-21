@@ -32,28 +32,30 @@ window.addEventListener("keydown", event => {
 			// open pause menu
 		}
 	
-		// REMOVE ON RELEASE dev keybinds
-		if (event.altKey && key === "q") { // toggle map file input
-			document.getElementById("mapInput").classList.toggle("active");
-		}
-		if (event.altKey && key === "p") { // toggle performance render
-			Performance.enabled = !Performance.enabled;
-		}
-		if (event.altKey && key === "v") { // toggle vertice render
-			Render.showVertices = !Render.showVertices;
-			Render.showCollisions = Render.showVertices;
-		}
-		if (event.altKey && key === "b") { // toggle broadphase render
-			Render.showBroadphase = !Render.showBroadphase;
-		}
-		if (event.altKey && key === "g") { // toggle graph
-			Render.graph = !Render.graph;
-		}
-		if (event.altKey && key === "c") { // toggle graph
-			Render.rotationPoint = !Render.rotationPoint;
-		}
-		if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing)
-			ctx.imageSmoothingEnabled = !ctx.imageSmoothingEnabled;
+		// debug keybinds
+		if (devMode) {
+			if (event.altKey && key === "q") { // toggle map file input
+				document.getElementById("mapInput").classList.toggle("active");
+			}
+			if (event.altKey && key === "p") { // toggle performance render
+				Performance.enabled = !Performance.enabled;
+			}
+			if (event.altKey && key === "v") { // toggle vertice render
+				Render.showVertices = !Render.showVertices;
+				Render.showCollisions = Render.showVertices;
+			}
+			if (event.altKey && key === "b") { // toggle broadphase render
+				Render.showBroadphase = !Render.showBroadphase;
+			}
+			if (event.altKey && key === "g") { // toggle graph
+				Render.graph = !Render.graph;
+			}
+			if (event.altKey && key === "c") { // toggle graph
+				Render.rotationPoint = !Render.rotationPoint;
+			}
+			if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing)
+				ctx.imageSmoothingEnabled = !ctx.imageSmoothingEnabled;
+			}
 		}
 	}
 });
