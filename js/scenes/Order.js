@@ -106,12 +106,12 @@ class Order {
 		let circle = {
 			position: new vec(position),
 			radius: 0,
-			maxRadius: Math.random() * 10 + 30,
+			maxRadius: Math.random() * 10 + 20,
 			maxLineWidth: 6,
 			lineWidth: 6,
 		};
 		animations.create({ // radius animation
-			duration: 500,
+			duration: 400,
 			curve: ease.out.quadratic,
 			callback: p => {
 				circle.radius = p * circle.maxRadius;
@@ -121,8 +121,8 @@ class Order {
 			}
 		});
 		animations.create({ // lineWidth animation
-			duration: 300,
-			delay: 200,
+			duration: 350,
+			delay: 50,
 			curve: ease.out.quadratic,
 			callback: p => {
 				circle.lineWidth = (1 - p) * circle.maxLineWidth;
