@@ -42,17 +42,19 @@ class Order {
 						let numDots = this.requiredQuantity;
 						let dotRadius = 20;
 						let dotMargin = 10;
-						let textStart = position.add(new vec(((numDots - order.wholeCompleteQuanity) / (numDots - 1)) * (dotRadius * 2 + dotMargin) * numDots - (dotRadius * 2 + dotMargin) * numDots * 0.5, -50));
+						let dotPosition = position.add(new vec(((numDots - order.wholeCompleteQuanity) / (numDots - 1)) * (dotRadius * 2 + dotMargin) * numDots - (dotRadius * 2 + dotMargin) * numDots * 0.5, 0))
+						let textStart = dotPosition.add(new vec(0, -50));
 						renderMoneyGain(textStart, moneyGain);
+						
+						order.createParticles(dotPosition);
 	
 						if (scene.completedOrders == scene.requiredOrders) {
 							window.dispatchEvent(new CustomEvent("levelFinish"));
 						}
 					}
 	
-					if (order.completeQuantity === order.requiredQuantity && !order.complete) {
-						order.complete = true;
-						order.delete();
+					if (order.completeQuantity === order.requiredQuantity && !order.isComplete) {
+						order.complete();
 					}
 				}
 			}
@@ -62,6 +64,99 @@ class Order {
 		this.requiredQuantity = quantity;
 		this.reward = reward;
 		this.updatePercentComplete = this.updatePercentComplete.bind(this);
+	}
+	complete() {
+		this.isComplete = true;
+		this.delete();
+	}
+	createParticles(position) {
+		let order = this;
+		// - particle effects
+		// create particles
+		let particles = [];
+		for (let i = 0; i < 5; i++) {
+			let angle = Math.random() * Math.PI * 2;
+			let distance = Math.random() * 50 + 15;
+			let offset = new vec(Math.cos(angle) * distance, Math.sin(angle) * distance);
+			let start = new vec(position);
+			let maxLength = 10;
+			let particle = {
+				start: new vec(start),
+				end: new vec(start),
+			}
+			let pLength = maxLength / distance;
+			let pScale = (1 + pLength);
+			particles.push(particle);
+
+			// animate particle
+			animations.create({
+				duration: Math.random() * 300 + 400,
+				curve: ease.out.quadratic,
+				callback: p => {
+					p *= pScale;
+					particle.end = start.add(offset.mult(Math.min(1, p)));
+					particle.start = start.add(offset.mult(Math.max(0, p - pLength)));
+				},
+				onend: () => {
+					particles.delete(particle);
+				}
+			});
+		}
+		// create circle
+		let circle = {
+			position: new vec(position),
+			radius: 0,
+			maxRadius: Math.random() * 10 + 30,
+			maxLineWidth: 6,
+			lineWidth: 6,
+		};
+		animations.create({ // radius animation
+			duration: 500,
+			curve: ease.out.quadratic,
+			callback: p => {
+				circle.radius = p * circle.maxRadius;
+			},
+			onend: () => {
+				circle.radius = circle.maxRadius;
+			}
+		});
+		animations.create({ // lineWidth animation
+			duration: 300,
+			delay: 200,
+			curve: ease.out.quadratic,
+			callback: p => {
+				circle.lineWidth = (1 - p) * circle.maxLineWidth;
+			},
+			onend: () => {
+				circle.lineWidth = 0;
+			}
+		});
+		function render() {
+			if (particles.length === 0 && circle.lineWidth === 0) {
+				Render.off("afterRender", render);
+				return;
+			}
+
+			// particles
+			ctx.lineCap = "round";
+			ctx.strokeStyle = order.color;
+			ctx.beginPath();
+			ctx.lineWidth = 7;
+			for (let particle of particles) {
+				ctx.moveTo(particle.start.x, particle.start.y);
+				ctx.lineTo(particle.end.x, particle.end.y);
+			}
+			ctx.stroke();
+
+			// circle
+			if (circle.lineWidth > 0) {
+				ctx.beginPath();
+				ctx.arc(circle.position.x, circle.position.y, circle.radius, 0, Math.PI * 2);
+				ctx.lineWidth = circle.lineWidth;
+				ctx.stroke();
+			}
+		}
+		Render.on("afterRender", render);
 	}
 	updatePercentComplete() {
 		let delta = Engine.delta;
@@ -96,7 +191,7 @@ class Order {
 		this.completeQuantity = 0;
 		this.lastCompleteQuantity = 0;
 		this.wholeCompleteQuanity = 0;
-		this.complete = false;
+		this.isComplete = false;
 		Render.on("afterRender", this.updatePercentComplete);
 	}
 	delete() {
@@ -116,5 +211,5 @@ class Order {
 
 	requiredQuantity = 4;
 	completeSpeed = 8;
-	complete = false;
+	isComplete = false;
 }

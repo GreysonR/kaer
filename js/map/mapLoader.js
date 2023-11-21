@@ -405,7 +405,9 @@ var MapBodies = {
 		body.on("collisionStart", collision => {
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (otherBody === player.body) { // go to next level
-				run.switchScene(world2Scene)
+				// transition to next level
+				body.delete();
+				run.transitionToScene(world2Scene)
 			}
 		});
 

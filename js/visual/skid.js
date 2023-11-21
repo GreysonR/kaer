@@ -11,6 +11,9 @@ class Skid {
 	addPt = function(point) {
 		this.path.add([ point, World.time]);
 	}
+	delete() {
+		Skid.all.delete(this);
+	}
 }
 
 camera.lastPosition = new vec(camera.translation);
@@ -24,7 +27,7 @@ Render.on("beforeLayer0", () => {
 		// delete points
 		let maxTime = 1500;
 		if (path.size <= 0) {
-			Skid.all.delete(skid);
+			skid.delete();
 			continue;
 		}
 

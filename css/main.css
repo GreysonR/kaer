@@ -40,3 +40,19 @@ canvas.hidden {
 #mapInput.active {
 	display: block;
 }
+
+#blackScreen {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 100;
+
+	width: 100vw;
+	height: 100vh;
+	background: #0E2736;
+
+	display: none;
+}
+#blackScreen.active {
+	display: block;
+}

@@ -75,7 +75,7 @@ window.addEventListener("keyup", event => {
 		else if (key === "d" || key === "arrowright") {
 			player.controls.right = false;
 		}
-		else if (key === " " && !player.controls.locked) {
+		else if (key === " ") {
 			player.controls.handbrake = false;
 		}
 	}

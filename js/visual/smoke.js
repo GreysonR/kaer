@@ -307,10 +307,13 @@ class Smoke {
 				if (callback) callback();
 			},
 			onend: () => {
-				Smoke.all.delete(smoke);
-				if (typeof onend === "function") onend();
+				smoke.delete();
 			},
 		});
+	}
+	delete() {
+		Smoke.all.delete(this);
+		if (typeof onend === "function") onend();
 	}
 	stopped = false;
 
