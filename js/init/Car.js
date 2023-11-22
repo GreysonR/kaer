@@ -89,22 +89,25 @@ class Car {
 			}
 		}
 	}
-	add = function() {
+	add() {
 		this.body.add();
 		Car.all.push(this);
 		this.health = this.maxHealth;
 		if (this === player) updateHealthBar();
 	}
-	delete = function() {
-		this.body.delete();
-		Car.all.delete(this);
-
-		if (this.health <= 0) {	
-			this.destroyAnimation();
-		}
-		
-		for (let smoke of this.smoke) {
-			smoke.stop();
+	delete() {
+		if (!this.body.removed) {
+			console.log("deleted");
+			this.body.delete();
+			Car.all.delete(this);
+	
+			if (this.health <= 0) {	
+				this.destroyAnimation();
+			}
+			
+			for (let smoke of this.smoke) {
+				smoke.stop();
+			}
 		}
 	}
 	destroyAnimation() {

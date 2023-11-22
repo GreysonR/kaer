@@ -26,7 +26,15 @@ var MapBodies = {
 			position: new vec(x, y),
 			angle: angle,
 		}
-		// resetCar();
+	},
+	"Police Basic": function({ x, y, angle }, scene) {
+		let enemy = new Enemy("Police Basic", {
+			spawn: {
+				position: new vec(x, y),
+				angle: angle,
+			}
+		});
+		scene.enemies.push(enemy);
 	},
 	road: function({ x, y, position, vertices }) {
 		for (let i = 0; i < vertices.length; i++) {
@@ -420,8 +428,49 @@ function createMap(mapData) {
 	let scene = new Scene();
 	scene.orders = [];
 	scene.exitBlocks = [];
+	scene.enemies = [];
 	scene.requiredOrders = mapData.orderCount;
 	scene.completedOrders = 0;
+
+	function finishLevel() {
+		window.removeEventListener("levelFinish", finishLevel);
+		for (let body of scene.exitBlocks) {
+			body.delete();
+		}
+	}
+	scene.setCompletedOrders = function(value) {
+		scene.completedOrders = value;
+		document.getElementById("ordersAmount").innerHTML = Math.max(0, scene.requiredOrders - value);
+	}
+	
+	scene.on("beforeAdd", () => {
+		// reset orders
+		scene.setCompletedOrders(0);
+		
+		// spawn player
+		if (scene.spawn) {
+			player.body.setPosition(new vec(scene.spawn.position));
+			player.body.setAngle(scene.spawn.angle);
+			lastFov.length = 0;
+			lastPos.length = 0;
+		}
+
+		// add enemies
+		for (let enemy of scene.enemies) {
+			enemy.add();
+		}
+
+		// add event listeners
+		window.addEventListener("levelFinish", finishLevel);
+	});
+	scene.on("beforeDelete", () => {
+		console.log(scene);
+		// remove enemies
+		for (let enemy of scene.enemies) {
+			enemy.delete();
+		}
+	});
+	
 	
 	for (let typeName of Object.keys(mapData)) {
 		if (typeName === "orderCount") continue;

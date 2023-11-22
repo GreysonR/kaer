@@ -44,6 +44,7 @@ class Bullet {
 		let bulletSpeed = velocity.length;
 		Bullet.all.add(this);
 		let body = this.body = Bodies.rectangle(14, 50, new vec(position), {
+			isBullet: true,
 			isSensor: true,
 			frictionAir: 0,
 			removed: true,

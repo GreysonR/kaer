@@ -220,7 +220,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					if (!out[id]) out[id] = [];
 					let rect = elem.children[elem.children.length - 1];
 					let options = { x: rect.properties.x, y: rect.properties.y };
-					if (id === "spawn" || id.includes("house") || rect.properties.transform?.includes("rotate")) {
+					if (id === "spawn" || id.includes("house") || rect.properties.transform?.includes("rotate") || Models[id]) {
 						let { width, height } = rect.properties;
 						let angle = (rect.properties.transform ? (Number(rect.properties.transform.replace("rotate(", "").split(" ")[0]) || 0) : 0) * Math.PI / 180;
 						let centerOffset = new vec(width/2, height/2).rotate(angle);

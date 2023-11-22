@@ -2,6 +2,7 @@ body {
 	margin: 0;
 	background: #EEDAD5; /*71B132, 6CAC2D*/
 	overflow: hidden;
+	user-select: none;
 }
 canvas {
 	position: absolute;

@@ -11,7 +11,7 @@ Array.prototype.choose = function() {
 }
 
 class Body {
-	static roundVertices(vertices, round, dx = 20) {
+	static roundVertices(vertices, round, dx = 40) {
 		let newVertices = [];
 		let verticesLength = vertices.length;
 		for (let i = 0; i < verticesLength; i++) {
@@ -37,7 +37,7 @@ class Body {
 			let bezier = new Bezier(start, cp1, cp2, end);
 			for (let i = 0; i < bezier.length;) {
 				newVertices.push(bezier.get(i));
-				i += dx / bezier.getDx(i).length * 30;
+				i += dx;
 			}
 			newVertices.push(end);
 		}

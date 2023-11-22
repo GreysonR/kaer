@@ -7,14 +7,23 @@ class Enemy extends Car {
 		let now = World.time;
 	
 		for (let enemy of Enemy.all) {
-			let { state, reverseTime, body, controls, target } = enemy;
+			let { state, reverseTime, body, controls, target, seenTime } = enemy;
 			let { position, angle } = body;
 			let dist = position.sub(target).length;
 			let angleToTarget = position.sub(target).angle - Math.PI;
 			let angleDiff = subAngle(angleToTarget, angle);
 			let direction = new vec(Math.cos(angle), Math.sin(angle));
-	
-			if (state === "attack") {
+			
+			if (state === "wait") {
+				controls.up = false;
+				controls.down = false;
+				controls.left = false;
+				controls.right = false;
+				controls.shoot = false;
+				controls.handbrake = true;
+			}
+			else if (state === "attack") {
+				controls.handbrake = false;
 				if (angleDiff * Math.sign(direction.dot(body.velocity)) > 0) {
 					controls.right = true;
 					controls.left = false;
@@ -31,11 +40,27 @@ class Enemy extends Car {
 				}
 				
 				// start reversing
-				if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000) {
+				if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000 && now - seenTime > 1000) {
 					controls.up = false;
 					controls.down = true;
 					enemy.reverseTime = World.time;
 					enemy.state = "reverse";
+				}
+			
+				if (player.health > 0 && now - enemy.seenTime >= enemy.seenDelay) {
+					let { aimVariation } = enemy;
+					let diff = player.body.position.sub(enemy.body.position);
+					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
+					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
+					if (dist <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
+						controls.shoot = true;
+					}
+					else {
+						controls.shoot = false;
+					}
+				}
+				else {
+					controls.shoot = false;
 				}
 			}
 			else if (state === "reverse") {
@@ -53,27 +78,13 @@ class Enemy extends Car {
 					enemy.state = "attack";
 				}
 			}
-			
-			if (player.health > 0) {
-				let { aimVariation } = enemy;
-				let diff = player.body.position.sub(enemy.body.position);
-				let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
-				enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
-				if (dist <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
-					controls.shoot = true;
-				}
-				else {
-					controls.shoot = false;
-				}
-			}
-			else {
-				controls.shoot = false;
-			}
 		}
 	}
 	constructor(model, options = {}) {
 		super(model, options);
 		Enemy.all.push(this);
+
+		this.body.delete();
 
 		// set money value
 		this.value = Models[model].value;
@@ -85,12 +96,18 @@ class Enemy extends Car {
 
 		// reset state
 		this.reverseTime = -10000;
-		this.state = "attack";
+		this.state = "wait";
+
+		this.seenDelay = 1500;
+		this.seenTime = -10000;
 
 		// set up targeting
 		this.target = player.body.position;
-		let sightBox = this.sightBox = Bodies.rectangle(900, 600, new vec(this.body.position), {
+		let sightBox = this.sightBox = Bodies.rectangle(1200, 1000, new vec(this.body.position), {
 			isSensor: true,
+			removed: true,
+			round: 400,
+			roundQuality: 1000,
 			render: {
 				visible: false,
 				layer: 10,
@@ -98,26 +115,35 @@ class Enemy extends Car {
 			}
 		});
 		let car = this;
+		car.body.on("collisionStart", collision => {
+			if (car.state === "wait") {
+				let otherBody = collision.bodyA === car.body ? collision.bodyB : collision.bodyA;
+				if (otherBody === player.body || otherBody.isBullet) {
+					car.state = "attack";
+					car.seenTime = Performance.aliveTime;
+				}
+			}
+		});
 		sightBox.collisions = {};
-		let updateTarget = this.updateTarget.bind(this);
-		sightBox.on("beforeUpdate", updateTarget);
+		this.updateTarget = this.updateTarget.bind(this);
+		sightBox.on("beforeUpdate", this.updateTarget);
 		sightBox.on("collisionStart", collision => {
 			sightBox.collisions[collision.id] = collision;
+
+			if (car.state === "wait") {
+				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
+				if (otherBody === player.body || otherBody.isBullet) {
+					car.state = "attack";
+					car.seenTime = Performance.aliveTime;
+				}
+			}
 		});
 		sightBox.on("collisionEnd", collision => {
 			delete sightBox.collisions[collision.id];
 		});
-		car.body.on("delete", () => {
-			sightBox.off("beforeUpdate", updateTarget);
-			sightBox.delete();
-		});
 
 		// set up rendering health
-		let renderHealth = this.renderHealth.bind(this);
-		Render.on("afterRender", renderHealth);
-		car.body.on("delete", () => {
-			Render.off("afterRender", renderHealth);
-		});
+		this.renderHealth = this.renderHealth.bind(this);
 
 		this.takeDamage = function(damage) {
 			const now = World.time;
@@ -220,9 +246,16 @@ class Enemy extends Car {
 		let sightBox = this.sightBox;
 		let angle = this.body.angle;
 		let offsetAmount = sightBox.width * 0.5 - 50;
+		if (this.state === "wait") {
+			offsetAmount = sightBox.width * 0.3 - 50
+		}
 		let offset = new vec(Math.cos(angle) * offsetAmount, Math.sin(angle) * offsetAmount);
 		sightBox.setPosition(this.body.position.add(offset));
 		sightBox.setAngle(angle);
+
+		if (this.state === "wait") {
+			return;
+		}
 
 		// iterate through collision pairs to update target
 		let carDirection = new vec(Math.cos(this.body.angle), Math.sin(this.body.angle));
@@ -277,9 +310,37 @@ class Enemy extends Car {
 			}
 		});
 	}
+	add() {
+		super.add();
+		Enemy.all.push(this);
+		this.body.add();
+		this.sightBox.add();
+		Render.on("afterRender", this.renderHealth);
+
+		if (this.healthAnimation) this.healthAnimation.stop();
+		if (this.healthBackgroundAnimation) this.healthBackgroundAnimation.stop();
+		this.healthBarPercent = 1;
+		this.healthBarBackgroundPercent = 1;
+
+		this.state = "wait";
+		this.seenTime = -10000;
+		this.body.velocity.set(new vec(0, 0));
+
+		if (this.spawn) {
+			this.body.setPosition(new vec(this.spawn.position));
+			this.body.setAngle(this.spawn.angle);
+		}
+	}
 	delete() {
+		super.delete();
+		Enemy.all.delete(this);
 		this.body.delete();
-		Enemy.all.remove(this);
+		this.sightBox.delete();
+		Render.off("afterRender", this.renderHealth);
+		
+		this.state = "wait";
+		this.seenTime = -10000;
+		this.body.velocity.set(new vec(0, 0));
 	}
 
 	healthBarPercent = 1;

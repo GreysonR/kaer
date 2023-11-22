@@ -35,7 +35,7 @@ class Model {
 	};
 	body = {
 		round: 10,
-		roundQuality: 10,
+		roundQuality: 20,
 		friction: 0.05,
 		restitution: 0.1,
 		mass: 3,
@@ -98,9 +98,9 @@ var Models = {
 			turnSpeed: 3.4,
 
 			// drifting / sliding
-			tireGrip:    4.3,
-			slidingGrip: 4.3,
-			steeringWeight: 0.02,
+			tireGrip:    3.4,
+			slidingGrip: 3.4,
+			steeringWeight: 0.1,
 			power: 0.3,
 
 			// rotation point settings
@@ -108,8 +108,8 @@ var Models = {
 			rotationSensitivity: 0.2,
 
 			// health
-			maxHealth:	50,
-			health:	    50,
+			maxHealth:	30,
+			health:	    30,
 			ramDamage: 2,
 			damageCooldown: 0,
 		},
