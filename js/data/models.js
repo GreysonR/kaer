@@ -100,7 +100,7 @@ var Models = {
 			// drifting / sliding
 			tireGrip:    3.4,
 			slidingGrip: 3.4,
-			steeringWeight: 0.1,
+			steeringWeight: 0.02,
 			power: 0.3,
 
 			// rotation point settings
@@ -108,8 +108,8 @@ var Models = {
 			rotationSensitivity: 0.2,
 
 			// health
-			maxHealth:	30,
-			health:	    30,
+			maxHealth:	25,
+			health:	    25,
 			ramDamage: 2,
 			damageCooldown: 0,
 		},

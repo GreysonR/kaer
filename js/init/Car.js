@@ -97,7 +97,6 @@ class Car {
 	}
 	delete() {
 		if (!this.body.removed) {
-			console.log("deleted");
 			this.body.delete();
 			Car.all.delete(this);
 	

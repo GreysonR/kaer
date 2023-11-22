@@ -464,7 +464,6 @@ function createMap(mapData) {
 		window.addEventListener("levelFinish", finishLevel);
 	});
 	scene.on("beforeDelete", () => {
-		console.log(scene);
 		// remove enemies
 		for (let enemy of scene.enemies) {
 			enemy.delete();
