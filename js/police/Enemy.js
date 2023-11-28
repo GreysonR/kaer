@@ -116,12 +116,12 @@ class Enemy extends Car {
 		});
 		let car = this;
 		car.body.on("collisionStart", collision => {
-			let now = Performance.aliveTime;
+			let now = World.time;
 			if (car.state === "wait" && now - car.addTime > 2000) {
 				let otherBody = collision.bodyA === car.body ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
 					car.state = "attack";
-					car.seenTime = Performance.aliveTime;
+					car.seenTime = World.time;
 				}
 			}
 		});
@@ -129,14 +129,14 @@ class Enemy extends Car {
 		this.updateTarget = this.updateTarget.bind(this);
 		sightBox.on("beforeUpdate", this.updateTarget);
 		sightBox.on("collisionStart", collision => {
-			let now = Performance.aliveTime;
+			let now = World.time;
 			sightBox.collisions[collision.id] = collision;
 
 			if (car.state === "wait" && now - car.addTime > 2000) {
 				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
 					car.state = "attack";
-					car.seenTime = Performance.aliveTime;
+					car.seenTime = World.time;
 				}
 			}
 		});
@@ -326,7 +326,7 @@ class Enemy extends Car {
 
 		this.state = "wait";
 		this.seenTime = -10000;
-		this.addTime = Performance.aliveTime;
+		this.addTime = World.time;
 		this.body.velocity.set(new vec(0, 0));
 
 		if (this.spawn) {
