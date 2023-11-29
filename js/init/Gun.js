@@ -15,7 +15,7 @@ class Gun {
 	magazine = 0; // bullets left in magazine
 
 	shoot(position, angle, parent) {
-		const now = World.time;
+		const now = world.time;
 		if (now - this.lastShot >= this.fireRate && this.magazine > 0) {
 			this.lastShot = now;
 			--this.magazine;
@@ -91,7 +91,7 @@ class Bullet {
 		this.renderTrail = function() {
 			let trailLength = bullet.maxTrailLength;
 			if (body.removed) {
-				const now = World.time;
+				const now = world.time;
 				trailLength = (1 - (now - bullet.deleteTime) * velocity.length / 10 / bullet.maxRealizedTrailLength) * bullet.maxRealizedTrailLength;
 				if (trailLength <= 0 || bullet.maxRealizedTrailLength <= 0) {
 					Render.off("beforeLayer-2", bullet.renderTrail);
@@ -118,7 +118,7 @@ class Bullet {
 	delete() {
 		this.body.delete();
 		Bullet.all.delete(this);
-		this.deleteTime = World.time;
+		this.deleteTime = world.time;
 		this.maxRealizedTrailLength = Math.min(this.startPosition.sub(this.body.position).length, this.maxTrailLength);
 	}
 	hitStatic(collision) { // effects for hitting a static body

@@ -9,7 +9,7 @@ class Skid {
 	}
 
 	addPt = function(point) {
-		this.path.add([ point, World.time]);
+		this.path.add([ point, world.time]);
 	}
 	delete() {
 		Skid.all.delete(this);
@@ -18,7 +18,7 @@ class Skid {
 
 camera.lastPosition = new vec(camera.translation);
 Render.on("beforeLayer0", () => {
-	let now = World.time;
+	let now = world.time;
 
 	ctx.beginPath();
 	for (let skid of Skid.all) {

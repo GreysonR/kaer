@@ -78,7 +78,7 @@ class Car {
 		}
 	}
 	takeDamage = function(damage) {
-		const now = World.time;
+		const now = world.time;
 		if (now - this.lastDamage >= this.damageCooldown) {
 			this.lastDamage = now;
 			this.health = Math.max(0, this.health - damage);
@@ -433,8 +433,8 @@ class Car {
 		if (driftHistory.length > maxDriftHistLen) driftHistory.length = maxDriftHistLen;
 		this.pathFrame = (this.pathFrame + 1) % 3;
 		if (this.pathFrame === 0) this.path.unshift(new vec(body.position));
-		if (this.path.length > 100 / World.timescale) {
-			this.path.length = Math.ceil(100 / World.timescale);
+		if (this.path.length > 100 / world.timescale) {
+			this.path.length = Math.ceil(100 / world.timescale);
 		}
 	
 		// ~ toggle skid marks

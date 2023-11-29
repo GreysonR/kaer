@@ -4,7 +4,7 @@ class Enemy extends Car {
 	static all = [];
 	static update() {
 		let subAngle = ter.Common.angleDiff;
-		let now = World.time;
+		let now = world.time;
 	
 		for (let enemy of Enemy.all) {
 			let { state, reverseTime, body, controls, target, seenTime } = enemy;
@@ -43,7 +43,7 @@ class Enemy extends Car {
 				if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000 && now - seenTime > 1000) {
 					controls.up = false;
 					controls.down = true;
-					enemy.reverseTime = World.time;
+					enemy.reverseTime = world.time;
 					enemy.state = "reverse";
 				}
 			
@@ -116,12 +116,12 @@ class Enemy extends Car {
 		});
 		let car = this;
 		car.body.on("collisionStart", collision => {
-			let now = World.time;
+			let now = world.time;
 			if (car.state === "wait" && now - car.addTime > 2000) {
 				let otherBody = collision.bodyA === car.body ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
 					car.state = "attack";
-					car.seenTime = World.time;
+					car.seenTime = world.time;
 				}
 			}
 		});
@@ -129,14 +129,14 @@ class Enemy extends Car {
 		this.updateTarget = this.updateTarget.bind(this);
 		sightBox.on("beforeUpdate", this.updateTarget);
 		sightBox.on("collisionStart", collision => {
-			let now = World.time;
+			let now = world.time;
 			sightBox.collisions[collision.id] = collision;
 
 			if (car.state === "wait" && now - car.addTime > 2000) {
 				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
 					car.state = "attack";
-					car.seenTime = World.time;
+					car.seenTime = world.time;
 				}
 			}
 		});
@@ -148,7 +148,7 @@ class Enemy extends Car {
 		this.renderHealth = this.renderHealth.bind(this);
 
 		this.takeDamage = function(damage) {
-			const now = World.time;
+			const now = world.time;
 			const enemy = this;
 			if (now - this.lastDamage >= this.damageCooldown) {
 				this.lastDamage = now;
@@ -326,7 +326,7 @@ class Enemy extends Car {
 
 		this.state = "wait";
 		this.seenTime = -10000;
-		this.addTime = World.time;
+		this.addTime = world.time;
 		this.body.velocity.set(new vec(0, 0));
 
 		if (this.spawn) {

@@ -17,7 +17,7 @@ var ter = {
 		ter.canvas.height = height * pixelRatio;
 		ter.canvas.style.transformOrigin = "top left";
 		ter.canvas.style.transform = `scale(${ 1 / pixelRatio })`;
-		ter.Render.camera.boundSize = (Math.sqrt(width * height) || 1) * pixelRatio; // Math.sqrt(width * height) || 1; // Math.sqrt(width**2 + height**2) / 2;
+		ter.Render.camera.boundSize = (Math.min(width, height) || 1) * pixelRatio;
 	},
 	Performance: {
 		enabled: true,
@@ -119,150 +119,7 @@ var ter = {
 			ctx.fillText((Math.round(delta * 100) / 100).toFixed(2) + "ms", 190 * pixelRatio, 70 * pixelRatio);
 		}
 	},
-	World: {
-		gravity: new vec(0, 0),
-		timescale: 1,
-		time: 0,
-
-		bodies: [],
-		dynamicGrid: new Grid(2000),
-		staticGrid: new Grid(2000), // bucket size MUST be the same as dynamicGrid
-		constraints: [],
-		pairs: {},
-
-		events: {
-			addBody: [],
-			deleteBody: [],
-		},
-		on: function(event, callback) {
-			if (!this.events[event]) {
-				this.events[event] = [];
-			}
-			this.events[event].push(callback);
-		},
-		off: function(event, callback) {
-			event = this.events[event];
-			if (event.includes(callback)) {
-				event.splice(event.indexOf(callback), 1);
-			}
-		},
-		trigger: function(event, ...args) {
-			let events = this.events[event];
-			for (let i = 0; i < events.length; i++) {
-				events[i](...args);
-			}
-		},
-		
-		getPairs: function(bodies) {
-			let pairs = [];
-			let canCollide = ter.Bodies.canCollide;
-
-			for (let i = 0; i < bodies.length - 1; i++) {
-				let bodyA = bodies[i];
-				if (bodyA.removed) {
-					if (bodyA.isStatic) {
-						ter.World.staticGrid.removeBody(bodyA);
-					}
-					else {
-						ter.World.dynamicGrid.removeBody(bodyA);
-					}
-					continue;
-				}
-				if (!bodyA.hasCollisions || bodyA.children.length > 0)
-					continue;
-				
-				for (let j = i + 1; j < bodies.length; j++) {
-					// Do AABB collision test
-					let bodyB = bodies[j];
-
-					if (bodyB.removed) {
-						if (bodyB.isStatic) {
-							ter.World.staticGrid.removeBody(bodyB);
-						}
-						else {
-							ter.World.dynamicGrid.removeBody(bodyB);
-						}
-						continue;
-					}
-					if (!bodyB.hasCollisions || bodyA.parent && bodyA.parent === bodyB.parent)
-						continue;
-					if (!canCollide(bodyA.collisionFilter, bodyB.collisionFilter))
-						continue;
-					
-
-					const boundsA = bodyA.bounds;
-					const boundsB = bodyB.bounds;
-
-					if (boundsA.min.x <= boundsB.max.x &&
-						boundsA.max.x >= boundsB.min.x &&
-						boundsA.min.y <= boundsB.max.y &&
-						boundsA.max.y >= boundsB.min.y) {
-						pairs.push([ bodyA, bodyB ]);
-					}
-				}
-			}
-
-			return pairs;
-		},
-		get collisionPairs() {
-			let canCollide = ter.Bodies.canCollide;
-			let dynamicGrid = ter.World.dynamicGrid;
-			let staticGrid = ter.World.staticGrid;
-			let pair = ter.Common.pairCommon;
-			let getPairs = ter.World.getPairs;
-			let pairIds = new Set();
-			let pairs = [];
-
-			let dynamicBuckets = dynamicGrid.grid;
-			let staticBuckets = staticGrid.grid;
-			let bucketIds = dynamicGrid.gridIds;
-
-			for (let id of bucketIds) {
-				let curDynamicBucket = dynamicBuckets[id];
-				let curStaticBucket = staticBuckets[id];
-				let curPairs = getPairs(curDynamicBucket); // pair dynamic bodies
-
-				// add static bodies
-				if (curStaticBucket) {
-					for (let j = 0; j < curDynamicBucket.length; j++) {
-						let bodyA = curDynamicBucket[j];
-						if (!bodyA.hasCollisions || bodyA.children.length > 0)
-							continue;
-						for (let k = 0; k < curStaticBucket.length; k++) {
-							let bodyB = curStaticBucket[k];
-	
-							if (!bodyB.hasCollisions || bodyA.isStatic && bodyB.isStatic || bodyA.parent && bodyA.parent === bodyB.parent)
-								continue;
-							if (!canCollide(bodyA.collisionFilter, bodyB.collisionFilter))
-								continue;
-		
-		
-							const boundsA = bodyA.bounds;
-							const boundsB = bodyB.bounds;
-							
-							if (boundsA.min.x <= boundsB.max.x &&
-								boundsA.max.x >= boundsB.min.x &&
-								boundsA.min.y <= boundsB.max.y &&
-								boundsA.max.y >= boundsB.min.y) {
-								curPairs.push([ bodyA, bodyB ]);
-							}
-						}
-					}
-				}
-
-				for (let j = 0; j < curPairs.length; j++) {
-					let curPair = curPairs[j];
-					let n = pair(curPair[0].id, curPair[1].id);
-					if (!pairIds.has(n)) {
-						pairIds.add(n);
-						pairs.push(curPair);
-					}
-				}
-			}
-
-			return pairs;
-		},
-	},
+	World: new World(new vec(0, 0), 2000),
 	Bodies: {
 		bodies: 0,
 		get uniqueId() {
@@ -347,7 +204,7 @@ var ter = {
 			if (body.isStatic) return;
 
 			// apply forces
-			body.velocity.add2(body.force).add2(World.gravity.mult(delta));
+			body.velocity.add2(body.force).add2(ter.World.gravity.mult(delta));
 			body.angularVelocity += body.torque;
 
 			// clear forces
@@ -470,6 +327,7 @@ var ter = {
 			Engine.delta = delta * substeps;
 		},
 		testCollision: function(bodyA, bodyB) {
+			const World = ter.World;
 			if (bodyA.isStatic && bodyB.isStatic) return false;
 
 			let collision = true;
@@ -1054,8 +912,6 @@ var ter = {
 	Render: (() => {
 		let Render = function() {
 			const { canvas, ctx, Performance, Render } = ter;
-
-			Render.trigger("beforeSave");
 			
 			const camera = Render.camera;
 			const { position:cameraPosition, fov:FoV } = camera;
@@ -1073,6 +929,7 @@ var ter = {
 			camera.bounds.min.set({ x: -camera.translation.x / camera.scale, y: -camera.translation.y / camera.scale });
 			camera.bounds.max.set({ x: (canvWidth - camera.translation.x) / camera.scale, y: (canvHeight - camera.translation.y) / camera.scale });
 
+			Render.trigger("beforeSave");
 			ctx.save();
 			ctx.translate(camera.translation.x, camera.translation.y);
 			ctx.scale(camera.scale, camera.scale);
@@ -1145,9 +1002,6 @@ var ter = {
 						if (lineDash) {
 							ctx.setLineDash(lineDash);
 						}
-						else {
-							ctx.setLineDash([]);
-						}
 			
 						ctx.beginPath();
 	
@@ -1183,6 +1037,9 @@ var ter = {
 						if (bloom) {
 							ctx.shadowColor = "rgba(0, 0, 0, 0)";
 							ctx.shadowBlur = 0;
+						}
+						if (lineDash) {
+							ctx.setLineDash([]);
 						}
 						ctx.globalAlpha = 1;
 					}
@@ -1266,15 +1123,16 @@ var ter = {
 				if (lineDash) {
 					ctx.setLineDash(lineDash);
 				}
-				else {
-					ctx.setLineDash([]);
-				}
 				
 				ctx.lineWidth = borderWidth;
 				ctx.lineJoin = borderType;
 				ctx.lineCap = lineCap || "butt";
 				ctx.strokeStyle = border;
 				ctx.stroke();
+
+				if (lineDash) {
+					ctx.setLineDash([]);
+				}
 
 				ctx.globalAlpha = 1;
 			}
@@ -1291,7 +1149,7 @@ var ter = {
 				min: new vec({ x: 0, y: 0 }),
 				max: new vec({ x: 2000, y: 2000 }),
 			},
-			// ~ Camera
+			// ~ Point transformations
 			screenPtToGame: function(point) {
 				let camera = ter.Render.camera;
 				return new vec((point.x * Render.pixelRatio - camera.translation.x) / camera.scale, (point.y * Render.pixelRatio - camera.translation.y) / camera.scale);
@@ -1372,8 +1230,8 @@ var ter = {
 		Render.events = {
 			beforeRender: [],
 			afterRender: [],
-			afterRestore: [],
 			beforeSave: [],
+			afterRestore: [],
 		}
 		Render.on = function(event, callback) {
 			if (event.includes("beforeLayer") && !Render.events[event]) {

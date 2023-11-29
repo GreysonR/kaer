@@ -58,7 +58,7 @@ player.on("takeDamage", function effects() {
 function carCollision(event) {
 	let { bodyA, bodyB, contacts, normal, start } = event;
 	let otherBody = bodyA === player ? bodyB : bodyA;
-	let now = World.time;
+	let now = world.time;
 
 	if (!(otherBody.isCar || otherBody.isStatic) || otherBody.isSensor) return;
 	if (now - player.lastDamage < player.damageCooldown) return;

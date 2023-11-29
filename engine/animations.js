@@ -21,7 +21,7 @@ const animations = {
 		function loop() {
 			if (run === true) {
 				let delta = Performance.delta;
-				if (worldTimescale) delta *= World.timescale;
+				if (worldTimescale) delta *= ter.World.timescale;
 				t += delta;
 
 				p = curve(t / duration);

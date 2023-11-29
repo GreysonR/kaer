@@ -124,7 +124,7 @@ class Sprite {
 class SpriteAnimation {
 	static all = new Set();
 	static update() {
-		const now = World.time;
+		const now = ter.World.time;
 		for (let animation of SpriteAnimation.all) {
 			let { startTime, duration, frames, lastFrame, curve, totalLoops, loopNumber } = animation;
 			let pLinear = Math.max(0, Math.min(1, (now - startTime) / duration));
@@ -153,7 +153,7 @@ class SpriteAnimation {
 	constructor({ frames = [], duration = 200, curve = ease.linear, callback, onstart, onend, totalLoops = 1, autostart = false }) {
 		this.frames = frames;
 		this.duration = duration;
-		this.startTime = World.time;
+		this.startTime = ter.World.time;
 		this.curve = curve;
 		this.pauseTime = 0;
 		this.lastFrame = -1;
@@ -183,12 +183,12 @@ class SpriteAnimation {
 	pause() {
 		if (this.playing) {
 			SpriteAnimation.all.delete(this);
-			this.pauseTime = World.time - this.startTime;
+			this.pauseTime = ter.World.time - this.startTime;
 			this.playing = false;
 		}
 	}
 	start() {
-		this.startTime = World.time - this.pauseTime;
+		this.startTime = ter.World.time - this.pauseTime;
 		SpriteAnimation.all.add(this);
 		this.playing = true;
 
