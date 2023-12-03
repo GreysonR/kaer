@@ -214,7 +214,7 @@ class Body {
 				denominator += cross;
 			}
 	
-			return 2 * (mass / 6) * (numerator / denominator);
+			return (mass / 6) * (numerator / denominator);
 		}
 		else {
 			let inertia = 0;
@@ -237,7 +237,7 @@ class Body {
 		return area * 0.5;
 	}
 	setStatic(isStatic) {
-		let { dynamicGrid, staticGrid } = ter.World;
+		let { dynamicGrid, staticGrid } = this.world;
 		let lastStatic = this.isStatic;
 		if (isStatic === lastStatic) return;
 		
@@ -269,7 +269,7 @@ class Body {
 		}
 	}
 	setCollisions(hasCollisions) {
-		let { dynamicGrid, staticGrid } = ter.World;
+		let { dynamicGrid, staticGrid } = this.world;
 		if (hasCollisions === this.hasCollisions) return;
 
 		this.hasCollisions = hasCollisions;
@@ -293,6 +293,7 @@ class Body {
 	}
 
 	id = 0;
+	world = ter.World;
 
 	velocity = new vec(0, 0);
 	position = new vec(0, 0);
@@ -356,7 +357,8 @@ class Body {
 	}
 
 	delete() {
-		let { World, Render } = ter;
+		let { Render } = ter;
+		let { world:World } = this;
 		if (!this.parent && Render.bodies[this.render.layer]) {
 			Render.bodies[this.render.layer].delete(this);
 		}
@@ -384,7 +386,8 @@ class Body {
 		}
 	}
 	add() {
-		let { World, Render} = ter;
+		let { Render } = ter;
+		let { world:World } = this;
 		if (!World.bodies.includes(this)) {
 			this.trigger("add");
 			this.removed = false;
@@ -477,12 +480,12 @@ class Body {
 		let centroid = new vec(0, 0);
 		let children = this.children;
 
-		if (children.length > 0 && false) {
+		if (children.length > 0) {
 			let totalArea = 0;
 			for (let i = 0; i < children.length; i++) {
 				let child = children[i];
 				totalArea += child.area;
-				centroid.add2(child.position.mult(child.area));
+				centroid.add2(child.position.sub(this.position).mult2(child.area).add2(this.position));
 			}
 			centroid.div2(totalArea);
 		}
@@ -544,24 +547,6 @@ class Body {
 			let nextVert = verts[(i + 1) % verts.length];
 
 			axes.push(nextVert.sub(curVert));
-			/*
-			if (i >= verts.length / 2) { // Prevents duplicate axes, not correct
-				let axis = curVert.sub(nextVert);
-				let dupe = false;
-				for (let j = 0; j < axes.length; j++) {
-					if (axes[j].x === axis.y && axes[j].y === axis.x || axes[j].x === -axis.y && axes[j].y === -axis.x) {
-						dupe = true;
-						break;
-					}
-				}
-				if (!dupe) {
-					axes.push(axis);
-				}
-				axes.push(axis);
-			}
-			else {
-				axes.push(nextVert.sub(curVert));
-			}/* */
 		}
 		for (let i = 0; i < axes.length; i++) {
 			axes[i] = axes[i].normal().normalize2();
@@ -601,7 +586,7 @@ class Body {
 		}
 		this.updateBounds();
 
-		let tree = ter.World.dynamicGrid;
+		let tree = this.world.dynamicGrid;
 		if (this._Grids && this._Grids[tree.id]) {
 			tree.updateBody(this);
 		}
@@ -716,6 +701,17 @@ class Body {
 		}
 	}
 }
+class fromVertices extends Body {
+	constructor(vertices, position, options={}) {
+		super("polygon", options, vertices, position);
+
+		this.setPosition(position, true);
+		this.centerSprite();
+		if (!options.removed) {
+			this.add();
+		}
+	}
+}
 class rectangle extends Body {
 	constructor(width, height, position, options={}) {
 		super("rectangle", options, [
@@ -774,17 +770,6 @@ class circle extends Body {
 		this.centerSprite();
 
 		this.setPosition(position, true);
-		if (!options.removed) {
-			this.add();
-		}
-	}
-}
-class fromVertices extends Body {
-	constructor(vertices, position, options={}) {
-		super("polygon", options, vertices, position);
-
-		this.setPosition(position, true);
-		this.centerSprite();
 		if (!options.removed) {
 			this.add();
 		}
