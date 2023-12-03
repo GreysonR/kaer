@@ -52,6 +52,10 @@ class Body {
 			let colors = [ "#1AD465", "#FEC64F", "#4FB8FE", "#FF4F4F", "#AD59FF" ];
 			options.render.background = colors[Math.floor(Math.random() * colors.length)];
 		}
+		
+		// Common.merge is a deep copy, we want a shallow copy of the world
+		this.world = options.world || ter.World;
+		delete options.world;
 
 		ter.Common.merge(this, options);
 		
