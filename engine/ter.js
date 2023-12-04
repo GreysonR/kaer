@@ -158,9 +158,10 @@ var ter = {
 			}
 		},
 		cleansePair(pair) {
-			const { World, Performance } = ter;
+			const { Performance } = ter;
 			if (pair.frame < Performance.frame) {
 				let { bodyA, bodyB } = pair;
+				const World = bodyA.world;
 
 				// Remove pair
 				bodyA.pairs.splice(bodyA.pairs.indexOf(pair.id), 1);
@@ -326,7 +327,7 @@ var ter = {
 			Engine.delta = delta * substeps;
 		},
 		testCollision: function(bodyA, bodyB) {
-			const World = ter.World;
+			const World = bodyA.world;
 			if (bodyA.isStatic && bodyB.isStatic) return false;
 
 			let collision = true;
