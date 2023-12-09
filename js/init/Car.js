@@ -37,8 +37,6 @@ class Car {
 	// ~ visual
 	driftHistory = [];
 	tireSkid = [];
-	path = [];
-	pathFrame = 0; // number of frames since a position was added to the path array
 	smoke = [];
 
 	// ~ controls
@@ -431,11 +429,6 @@ class Car {
 		let avgDrift = driftHistory.reduce((t, c) => t + c) / driftHistory.length;
 		let maxDriftHistLen = Math.max(1, Math.round(20 / delta));
 		if (driftHistory.length > maxDriftHistLen) driftHistory.length = maxDriftHistLen;
-		this.pathFrame = (this.pathFrame + 1) % 3;
-		if (this.pathFrame === 0) this.path.unshift(new vec(body.position));
-		if (this.path.length > 100 / world.timescale) {
-			this.path.length = Math.ceil(100 / world.timescale);
-		}
 	
 		// ~ toggle skid marks
 		let hadTireSkid = this.hasTireSkid;
@@ -451,13 +444,13 @@ class Car {
 	
 		// ~ toggle smoke
 		let hadTireSmoke = this.hasTireSmoke;
-		this.hasTireSmoke = avgDrift > maxGrip * 17 && materialProps.hasTireSmoke;
+		this.hasTireSmoke = avgDrift > maxGrip * 25 && materialProps.hasTireSmoke;
 		if (this.hasTireSmoke !== hadTireSmoke) {
 			if (this.hasTireSmoke) {
 				let options = {
 					position: body.position,
 					render: {
-						background: "#ffffff70",
+						background: "#F2ECE9a0",
 					}
 				}
 				this.smoke.push(new Smoke(options));
@@ -465,19 +458,7 @@ class Car {
 			}
 			else {
 				for (let smoke of this.smoke) {
-					smoke.stop(() => {
-						let angle = body.angle;
-						let { width, height } = body;
-						let s = 0.3;
-						
-						smoke.position = new vec(-width*s, -height*s).rotate(angle).add(body.position);
-	
-						let verts = [];
-						for (let pt of this.path) {
-							verts.push(pt.sub(body.position));
-						}
-						smoke.setPath(verts);
-					});
+					smoke.stop();
 				}
 				this.smoke.length = 0;
 			}
@@ -495,7 +476,7 @@ class Car {
 			// this.tireSkid[3].addPt(new vec( width*s, -height*s).rotate(angle).add(body.position));
 		}
 	
-		// ~ add points to smoke path
+		// ~ set smoke position
 		if (this.smoke.length > 0) {
 			let angle = body.angle;
 			let { width, height } = body;
@@ -503,14 +484,10 @@ class Car {
 			
 			this.smoke[0].position = new vec(-width*s, -height*s).rotate(angle).add(body.position);
 			this.smoke[1].position = new vec(-width*s,  height*s).rotate(angle).add(body.position);
-	
-			let verts = [];
-			for (let pt of this.path) {
-				verts.push(pt.sub(body.position));
-			}
-			for (let s of this.smoke) {
-				s.setPath(verts);
-			}
+			// this.smoke[0].position = new vec(body.position);
+			// this.smoke[1].position = new vec(body.position);
+			this.smoke[0].velocity = new vec(body.velocity);
+			this.smoke[1].velocity = new vec(body.velocity);
 		}
 	}
 	resetEffects() {

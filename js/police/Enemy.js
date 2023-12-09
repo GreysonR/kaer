@@ -261,14 +261,15 @@ class Enemy extends Car {
 
 		// iterate through collision pairs to update target
 		let carDirection = new vec(Math.cos(this.body.angle), Math.sin(this.body.angle));
-		let direction = player.body.position.sub(this.body.position).normalize2().mult2(400);
+		let carDistance = this.body.position.sub(player.body.position).length;
+		let direction = player.body.position.sub(this.body.position).normalize2().mult2(Math.min(carDistance, 300));
 		let directionNormalized = direction.normalize();
 		for (let collision of Object.values(sightBox.collisions)) {
 			let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 			if (otherBody != this.body && otherBody != player.body && !otherBody.isSensor) {
 				let { point: closestPoint, normal: closestNormal } = closestEdgeBetweenBodies(this.body, otherBody);
 				let distance = this.body.position.sub(closestPoint);
-				let scale = ((500 / distance.length) ** 1.4) * 140;
+				let scale = ((1 - distance.length / sightBox.height) ** 2) * 300;
 				if (Math.abs(closestNormal.dot(carDirection)) > 0.8) {
 					closestNormal.normal2();
 					if (closestNormal.dot(directionNormalized) < 0) closestNormal.mult2(-1);
@@ -281,13 +282,13 @@ class Enemy extends Car {
 				direction.add2(closestNormal.mult(scale));
 			}
 		}
-		direction.normalize2().mult2(this.body.position.sub(player.body.position).length);
+		// direction.normalize2().mult2(carDistance);
 		this.target = this.body.position.add(direction);
 	}
 	renderTarget() {
-		Render.on("afterRender", () => {
+		Render.on("afterRender", (() => {
 			ctx.beginPath();
-			let point = police.target;
+			let point = this.target;
 			ctx.moveTo(point.x, point.y);
 			ctx.arc(point.x, point.y, 10 / camera.scale, 0, Math.PI*2);
 			ctx.fillStyle = "#ff000080";
@@ -310,7 +311,7 @@ class Enemy extends Car {
 				ctx.lineWidth = 3 / camera.scale;
 				ctx.stroke();
 			}
-		});
+		}).bind(this));
 	}
 	add() {
 		super.add();
