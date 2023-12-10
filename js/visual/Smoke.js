@@ -15,10 +15,10 @@ class SmokeParticle {
 	animate() {
 		let particle = this;
 		// let share = 0.3 + Math.random() * 0.3;
-		let share = 0.7;
+		let share = 0.6;
 		particle.animation = animations.create({
 			duration: particle.duration * share,
-			curve: ease.out.cubic,
+			curve: ease.linear,
 			callback: p => {
 				particle.radius = particle.maxRadius * p;
 			},
@@ -74,8 +74,8 @@ class Smoke {
 	velocity = new vec(0, 0);
 	aliveTime = [400, 700];
 	radius = [40, 90];
-	speed = [0, 200];
-	spawnTime = [10, 20];
+	speed = [100, 200];
+	spawnTime = [10, 10];
 	spawnQuantity = [1, 2];
 	nextSpawnTime = 0;
 
@@ -98,7 +98,7 @@ class Smoke {
 			let aliveTime = random(this.aliveTime);
 			let speed = random(this.speed);
 			let angle = Math.random() * Math.PI * 2;
-			let velocity = this.velocity.mult(speed * 0.1).add2(new vec(Math.cos(angle) * speed * 0.2, Math.sin(angle) * speed * 0.2));
+			let velocity = this.velocity.mult(speed * 0).add2(new vec(Math.cos(angle) * speed * 0.2, Math.sin(angle) * speed * 0.2));
 			this.particles.push(new SmokeParticle(new vec(this.position), velocity, radius, aliveTime, this));
 		}
 	}
