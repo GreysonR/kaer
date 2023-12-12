@@ -525,12 +525,12 @@ var ter = {
 				for (let c = 0; c < numContacts; c++) {
 					const { vertice } = contacts[c];
 
-					const offsetA = vertice.sub(bodyA.position).sub(bodyA.velocity);
-					const offsetB = vertice.sub(bodyB.position).sub(bodyB.velocity);
+					const offsetA = vertice.sub(bodyA.position);
+					const offsetB = vertice.sub(bodyB.position);
 					const vpA = bodyA.velocity.add(offsetA.normal().mult(-bodyA.angularVelocity));
 					const vpB = bodyB.velocity.add(offsetB.normal().mult(-bodyB.angularVelocity));
 					var relativeVelocity = vpA.sub(vpB);
-					const normalVelocity = relativeVelocity.abs().mult(0.9).sub(slop).mult(relativeVelocity.sign()).dot(normal);
+					const normalVelocity = relativeVelocity.abs().sub(slop).mult(relativeVelocity.sign()).dot(normal);
 					const tangentVelocity = relativeVelocity.dot(tangent);
 
 					if (normalVelocity > 0) continue;
