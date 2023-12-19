@@ -379,7 +379,7 @@ class Car {
 			body.frictionAir = 0.016; // lots of friction with handbrake
 		}
 		else if (!(up || down)) {
-			if (speed > 0.5) { // moving
+			if (speed > 0.01) { // moving
 				addVel.sub2(velocity.mult(0.002)); // decrease speed only in direction that car is moving
 		
 				if (isDrifting) {
