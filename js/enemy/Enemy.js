@@ -52,7 +52,7 @@ class EnemyCar extends Car {
 					let diff = player.body.position.sub(enemy.body.position);
 					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
 					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
-					if (dist <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
+					if (enemy.body.position.sub(player.body.position).length <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
 						controls.shoot = true;
 					}
 					else {

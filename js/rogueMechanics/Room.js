@@ -139,6 +139,7 @@ class Room extends Scene {
 
 		// create waves
 		this.waves = new Waves(this.waves, this);
+		this.waves.on("complete", finishLevel);
 	}
 	data;
 	waves = [];

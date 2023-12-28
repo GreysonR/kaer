@@ -14,6 +14,7 @@
 class Waves {
 	constructor(waves = [], room = null) { // waves is array of arrays of enemies
 		this.waves = waves;
+		this.room = room;
 	}
 	curWave = 0;
 	started = false;
@@ -29,7 +30,6 @@ class Waves {
 		for (let enemyData of this.waves[this.curWave]) {
 			let { type, position, angle } = enemyData;
 			if (this.room) {
-				console.log(this.room.position);
 				position = this.room.position.add(position);
 			}
 			let enemy = new Enemies[type](position, angle);
@@ -63,6 +63,36 @@ class Waves {
 			// place next wave
 			this.placeWave();
 			this.aggroWave();
+		}
+		else {
+			this.trigger("complete");
+		}
+	}
+
+	
+	events = {
+		complete: [],
+	}
+	on(event, callback) {
+		if (!this.events[event]) {
+			this.events[event] = [];
+		}
+		this.events[event].push(callback);
+	}
+	off(event, callback) {
+		event = this.events[event];
+		if (event.includes(callback)) {
+			event.splice(event.indexOf(callback), 1);
+		}
+	}
+	trigger(event, arg1, arg2) {
+		let events = this.events[event];
+		for (let i = 0; i < events.length; i++) {
+			events[i](arg1, arg2);
+		}
+
+		if (this.parent) {
+			this.parent.trigger(event, arg1, arg2);
 		}
 	}
 }

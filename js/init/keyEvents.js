@@ -21,19 +21,19 @@ window.addEventListener("keydown", event => {
 		else if (key === " ") {
 			player.controls.handbrake = true;
 		}
-		else if (key === "e") { // REMOVE ON RELEASE toggle big fov
-			if (!window.originalFov) {
-				window.originalFov = baseFov;
-			}
-			if (baseFov !== 10000) baseFov = 10000;
-			else baseFov = window.originalFov;
-		}
 		else if (key === "escape") {
 			// open pause menu
 		}
 	
 		// debug keybinds
 		if (devMode) {
+			if (key === "e") { // toggle big fov
+				if (!window.originalFov) {
+					window.originalFov = baseFov;
+				}
+				if (baseFov !== 10000) baseFov = 10000;
+				else baseFov = window.originalFov;
+			}
 			if (event.altKey && key === "q") { // toggle map file input
 				document.getElementById("mapInput").classList.toggle("active");
 			}
