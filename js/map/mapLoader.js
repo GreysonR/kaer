@@ -27,14 +27,13 @@ var MapBodies = {
 			angle: angle,
 		}
 	},
-	"Police Basic": function({ x, y, angle }, scene) {
-		let enemy = new Enemy("Police Basic", {
-			spawn: {
-				position: new vec(x, y),
-				angle: angle,
-			}
+	"PoliceBasic": function({ x, y, angle, wave }, scene) {
+		if (!scene.waves[wave]) scene.waves[wave] = [];
+		scene.waves[wave].push({
+			type: "PoliceBasic",
+			position: new vec(x, y),
+			angle: angle,
 		});
-		scene.enemies.push(enemy);
 	},
 	road: function({ x, y, position, vertices }) {
 		for (let i = 0; i < vertices.length; i++) {

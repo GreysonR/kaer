@@ -41,7 +41,7 @@ let world1Scene = (function createWorld1Scene() {
 			lastPos.length = 0;
 		}
 
-		let police = window.police = new Enemy("Police Basic");
+		let police = window.police = new EnemyCar("PoliceBasic");
 		police.body.setPosition(new vec(8650, 14200));
 		// police.renderTarget()
 	});

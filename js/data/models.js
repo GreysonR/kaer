@@ -34,6 +34,7 @@ class Model {
 		damageCooldown: 500,
 	};
 	body = {
+		removed: true,
 		round: 10,
 		roundQuality: 20,
 		friction: 0.05,
@@ -85,8 +86,8 @@ var Models = {
 			},
 		},
 	}),
-	"Police Basic": new Model({
-		model: "Police Basic",
+	"PoliceBasic": new Model({
+		model: "PoliceBasic",
 		gun: "pistol",
 		value: 100,
 		car: {

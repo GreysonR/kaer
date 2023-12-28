@@ -105,8 +105,7 @@ function createSeededRandom(seed) { // Returns function that generates numbers b
 		return result;
 	}
 }
-function blurCanvas(direction = new vec(0, 10), durationIn = 200, durationOut = 200) {
-	direction = new vec(direction);
+function blurCanvas(amount = 10, durationIn = 200, durationOut = 200) {
 	canv.style.filter = "url(#blurFilter)";
 	let filter = document.getElementById("blurFilterItem");
 	
@@ -114,7 +113,7 @@ function blurCanvas(direction = new vec(0, 10), durationIn = 200, durationOut = 
 		duration: durationIn,
 		curve: ease.out.cubic,
 		callback: p => {
-			filter.setAttribute("stdDeviation", `${direction.x * p},${direction.y * p}`);
+			filter.setAttribute("stdDeviation", `${amount * p},${amount * p}`);
 		}
 	});
 	animations.create({
@@ -122,7 +121,7 @@ function blurCanvas(direction = new vec(0, 10), durationIn = 200, durationOut = 
 		duration: durationOut,
 		curve: ease.linear,
 		callback: p => {
-			filter.setAttribute("stdDeviation", `${direction.x * (1 - p)},${direction.y * (1 - p)}`);
+			filter.setAttribute("stdDeviation", `${amount * (1 - p)},${amount * (1 - p)}`);
 		}
 	});
 

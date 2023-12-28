@@ -215,7 +215,17 @@ document.getElementById("mapInput").addEventListener("input", event => {
 		function crawlNext(elem) {
 			if (elem.tagName === "clipPath" || elem.tagName === "defs") return;
 			if (elem.properties?.id) {
-				let id = elem.properties.id.split("_")[0];
+				let data = elem.properties.id.split("_")[0].split(":");
+				let id = data[0];
+				let additionalData = {};
+				if (data.length > 1) {
+					let parameters = data[1].split(",");
+					for (let parameter of parameters) {
+						let [key, value] = parameter.split("=");
+						additionalData[key] = Number(value) ? Number(value) : value;
+					}
+				}
+
 				if (MapBodies[id] && !ignoreMapBody.includes(id)) {
 					if (!out[id]) out[id] = [];
 					let rect = elem.children[elem.children.length - 1];
@@ -232,6 +242,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 						options.width = rect.properties.width;
 						options.height = rect.properties.height;
 					}
+					ter.Common.merge(options, additionalData);
 					out[id].push(options);
 					return;
 				}
@@ -246,7 +257,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			if (elem.tagName === "rect" || elem.tagName === "path") {
 				// Get element name
 				if (elem.properties?.fill === "none") return;
-				name = elem.properties?.id?.split("_")[0];
+				name = elem.properties?.id?.split("_")[0].split("=")[0];
 				if (!name) {
 					console.warn("no name: " + name, elem.properties);
 					return;
@@ -276,15 +287,19 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				else if (name === "order") {
 					let type = resourceNames[rect.fill];
 					out[name].push({
-						x: Math.round(rect.x + rect.width /2),
-						y: Math.round(rect.y + rect.height/2),
+						x: Math.round(rect.x + rect.width  / 2),
+						y: Math.round(rect.y + rect.height / 2),
 						radius: Math.round(rect.width / 2),
 						type: type,
 					});
 					return;
 				}
+				else if (Object.keys(Enemies).includes(name)) { // 
+					console.warn(obj);
+				}
 				else if (name === "orderCount") {
-					out[name] = rect.rx; // just use border radius to get # of orders needed for this level
+					let data = elem.properties.id.split("=");
+					out[data[0]] = Number(data[1]); // use border radius to get # of orders needed for this level
 					return;
 				}
 				out[name].push(obj);

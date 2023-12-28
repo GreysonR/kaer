@@ -1,12 +1,12 @@
 "use strict";
 
-class Enemy extends Car {
+class EnemyCar extends Car {
 	static all = [];
 	static update() {
 		let subAngle = ter.Common.angleDiff;
 		let now = world.time;
 	
-		for (let enemy of Enemy.all) {
+		for (let enemy of EnemyCar.all) {
 			let { state, reverseTime, body, controls, target, seenTime } = enemy;
 			let { position, angle } = body;
 			let dist = position.sub(target).length;
@@ -82,7 +82,7 @@ class Enemy extends Car {
 	}
 	constructor(model, options = {}) {
 		super(model, options);
-		Enemy.all.push(this);
+		EnemyCar.all.push(this);
 
 		this.body.delete();
 
@@ -93,6 +93,12 @@ class Enemy extends Car {
 		this.aimVariation = 0.2; // radians
 		this.gun = new Gun(Models[model].gun);
 		this.gun.magazine = Infinity;
+
+		let car = this;
+		this.on("spotted", () => {
+			car.state = "attack";
+			car.seenTime = world.time;
+		});
 
 		// reset state
 		this.reverseTime = -10000;
@@ -114,14 +120,12 @@ class Enemy extends Car {
 				background: "#ff000040",
 			}
 		});
-		let car = this;
 		car.body.on("collisionStart", collision => {
 			let now = world.time;
 			if (car.state === "wait" && now - car.addTime > 2000) {
 				let otherBody = collision.bodyA === car.body ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
-					car.state = "attack";
-					car.seenTime = world.time;
+					car.trigger("spotted");
 				}
 			}
 		});
@@ -135,8 +139,7 @@ class Enemy extends Car {
 			if (car.state === "wait" && now - car.addTime > 2000) {
 				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
-					car.state = "attack";
-					car.seenTime = world.time;
+					car.trigger("spotted");
 				}
 			}
 		});
@@ -315,7 +318,7 @@ class Enemy extends Car {
 	}
 	add() {
 		super.add();
-		Enemy.all.push(this);
+		EnemyCar.all.push(this);
 		this.body.add();
 		this.sightBox.add();
 		Render.on("afterRender", this.renderHealth);
@@ -337,7 +340,7 @@ class Enemy extends Car {
 	}
 	delete() {
 		super.delete();
-		Enemy.all.delete(this);
+		EnemyCar.all.delete(this);
 		this.body.delete();
 		this.sightBox.delete();
 		Render.off("afterRender", this.renderHealth);
@@ -389,5 +392,21 @@ class Enemy extends Car {
 	}
 }
 
-// Update police AI
-Render.on("afterRender", Enemy.update);
+class PoliceBasic extends EnemyCar {
+	constructor(position, angle) {
+		super("PoliceBasic", {
+			spawn: {
+				position: position,
+				angle: angle,
+			}
+		});
+	}
+}
+
+var Enemies = {
+	"EnemyCar": EnemyCar,
+	"PoliceBasic": PoliceBasic,
+}
+
+// Update AI
+Render.on("afterRender", EnemyCar.update);

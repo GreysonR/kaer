@@ -9,7 +9,7 @@ class Weapon {
 	fireRate = 100; // time between shots in ms
 	bulletSpeed = 30; // bullet speed
 	range = 1000; // max distance bullet travels
-	kick = 0.6; // how much firing the weapon pushes you back
+	kick = 0.3; // how much firing the weapon pushes you back
 	trailLength = 600;
 	
 	magazineSize = 6; // number of bullets before reload

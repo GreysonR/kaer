@@ -16,7 +16,7 @@ function updateHealthBar() {
 updateHealthBar();
 player.on("takeDamage", function effects() {
 	// blur
-	blurCanvas(new vec(2.5, 2.5), 60, 250);
+	blurCanvas(2.5, 60, 280);
 
 	// camera zoom
 	let scale = 1;
@@ -54,6 +54,7 @@ player.on("takeDamage", function effects() {
 		redOutline.remove();
 	});
 });
+player.add();
 
 function carCollision(event) {
 	let { bodyA, bodyB, contacts, normal, start } = event;
