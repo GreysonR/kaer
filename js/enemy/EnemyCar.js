@@ -120,15 +120,6 @@ class EnemyCar extends Car {
 				background: "#ff000040",
 			}
 		});
-		car.body.on("collisionStart", collision => {
-			let now = world.time;
-			if (car.state === "wait" && now - car.addTime > 2000) {
-				let otherBody = collision.bodyA === car.body ? collision.bodyB : collision.bodyA;
-				if (otherBody === player.body || otherBody.isBullet) {
-					car.trigger("spotted");
-				}
-			}
-		});
 		sightBox.collisions = {};
 		this.updateTarget = this.updateTarget.bind(this);
 		sightBox.on("beforeUpdate", this.updateTarget);
@@ -136,7 +127,7 @@ class EnemyCar extends Car {
 			let now = world.time;
 			sightBox.collisions[collision.id] = collision;
 
-			if (car.state === "wait" && now - car.addTime > 2000) {
+			if (car.state === "wait" && now - car.addTime > 200) {
 				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
 					car.trigger("spotted");

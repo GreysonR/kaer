@@ -482,13 +482,14 @@ var ter = {
 		},
 		solveVelocity: function(delta) {
 			let { pairs } = ter.World;
-			let now = Performance.aliveTime;
 			
 			for (let i in pairs) {
 				let pair = pairs[i];
 				if (!pair || ter.Bodies.cleansePair(pair)) continue;
 
-				let { bodyA, bodyB, normal, tangent, contacts, start } = pair;
+				let { bodyA, bodyB, normal, tangent, contacts } = pair;
+				let numContacts = contacts.length;
+				if (numContacts === 0) continue;
 
 				while (bodyA.parent && bodyA.parent !== bodyA) {
 					bodyA = bodyA.parent;
@@ -500,7 +501,7 @@ var ter = {
 
 				const restitution = 1 + Math.max(bodyA.restitution, bodyB.restitution);
 				const relVel = bodyB.velocity.sub(bodyA.velocity);
-				const friction = Math.max(bodyA.friction, bodyB.friction) / 2; // divide friction by 2 to make it more stable
+				const friction = Math.max(bodyA.friction, bodyB.friction); // divide friction by 2 to make it more stable
 				const slop = Math.max(bodyA.slop, bodyB.slop);
 
 				if (relVel.dot(normal) < 0) {
@@ -519,8 +520,6 @@ var ter = {
 				shareB = Math.min(maxShare, shareB);
 				if (bodyA.isStatic) shareB = 1;
 				if (bodyB.isStatic) shareA = 1;
-
-				let numContacts = contacts.length;
 
 				for (let c = 0; c < numContacts; c++) {
 					const { vertice } = contacts[c];
@@ -549,16 +548,6 @@ var ter = {
 				impulse.div2(numContacts);
 				angImpulseA /= numContacts;
 				angImpulseB /= numContacts;
-				
-
-				// let impulse = normal.mult(normal.dot(relVel) * -restitution).sub2(tangent.abs().mult2(relVel).mult2(friction));
-				// if (bodyA.isStatic || bodyB.isStatic) impulse.mult2(1.5);
-
-				if (now - start > 2000) {
-					let m = 1000 / (now - start - 1000);
-					angImpulseA *= m;
-					angImpulseB *= m;
-				}
 
 				if (!bodyA.isStatic) {
 					bodyA.velocity.sub2(impulse.mult(shareA * delta));
