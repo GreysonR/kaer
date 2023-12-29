@@ -80,6 +80,11 @@ window.addEventListener("keyup", event => {
 		}
 	}
 });
+window.addEventListener("blur", () => { // reset player controls when window is unfocused
+	for (let key of Object.keys(player.controls)) {
+		player.controls[key] = false;
+	}
+});
 
 
 // controller
