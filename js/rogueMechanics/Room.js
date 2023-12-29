@@ -75,14 +75,9 @@ class Room extends Scene {
 				if (obj) {
 					obj.delete();
 					scene.addBody(obj);
-
-					if (obj.bodies) {
-						for (let body of obj.bodies) {
-							if (body.blocksExit) {
-								scene.exitBlocks.push(obj);
-							}
-						}
-					}
+				}
+				if (options.blocksExit) {
+					scene.exitBlocks.push(obj);
 				}
 			}
 		}

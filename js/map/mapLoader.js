@@ -231,9 +231,6 @@ var MapBodies = {
 		let scene = MapBodies.genericBody(x, y, width, height, "stone2", [
 			[{"x":29,"y":12},{"x":61,"y":2},{"x":101.67,"y":12.73},{"x":110.47,"y":53.76},{"x":100,"y":83},{"x":71.7,"y":108.88},{"x":34.9,"y":99.27},{"x":14,"y":79},{"x":1.98,"y":41}]
 		], -1);
-		for (let body of scene.bodies) {
-			body.blocksExit = true;
-		}
 		return scene;
 	},
 	stone3: function({ x, y }) {
@@ -242,9 +239,6 @@ var MapBodies = {
 		let scene = MapBodies.genericBody(x, y, width, height, "stone3", [
 			[{"x":3,"y":41},{"x":8,"y":28},{"x":26.16,"y":5.81},{"x":54.27,"y":1.47},{"x":76,"y":6},{"x":103.85,"y":27.89},{"x":103.72,"y":63.05},{"x":96,"y":79},{"x":74.38,"y":98.7},{"x":45.37,"y":98.69},{"x":27,"y":91},{"x":5,"y":70.96}]
 		], -1);
-		for (let body of scene.bodies) {
-			body.blocksExit = true;
-		}
 		return scene;
 	},
 	stone4: function({ x, y }) {
@@ -253,9 +247,6 @@ var MapBodies = {
 		let scene = MapBodies.genericBody(x, y, width, height, "stone4", [
 			[{"x":31,"y":8},{"x":63,"y":1},{"x":97.14,"y":20.02},{"x":86.26,"y":55.53},{"x":59,"y":74},{"x":28.4,"y":79.77},{"x":4.43,"y":59.45},{"x":5.09,"y":27.21}]
 		], -1);
-		for (let body of scene.bodies) {
-			body.blocksExit = true;
-		}
 		return scene;
 	},
 	stone5: function({ x, y }) {
@@ -264,9 +255,6 @@ var MapBodies = {
 		let scene = MapBodies.genericBody(x, y, width, height, "stone5", [
 			[{"x":8,"y":71},{"x":31,"y":28},{"x":65.01,"y":2.85},{"x":106,"y":12.45},{"x":149,"y":46},{"x":163.95,"y":65.8},{"x":167.6,"y":90.53},{"x":165,"y":113},{"x":146.91,"y":146.37},{"x":110.18,"y":157.13},{"x":69,"y":153},{"x":56.8,"y":149.93},{"x":35,"y":142},{"x":4.99,"y":112.58}]
 		], -1);
-		for (let body of scene.bodies) {
-			body.blocksExit = true;
-		}
 		return scene;
 	},
 	stone6: function({ x, y }) {
@@ -275,9 +263,6 @@ var MapBodies = {
 		let scene = MapBodies.genericBody(x, y, width, height, "stone6", [
 			[{"x":13,"y":85},{"x":57,"y":24},{"x":87.97,"y":4.07},{"x":123.99,"y":10.76},{"x":179,"y":45},{"x":202.42,"y":85.24},{"x":182.92,"y":127.31},{"x":118,"y":177},{"x":89.14,"y":187.39},{"x":59.66,"y":178.87},{"x":25,"y":156},{"x":3.72,"y":122.75}]
 		], -1);
-		for (let body of scene.bodies) {
-			body.blocksExit = true;
-		}
 		return scene;
 	},
 	stone7: function({ x, y }) {
@@ -286,9 +271,6 @@ var MapBodies = {
 		let scene = MapBodies.genericBody(x, y, width, height, "stone7", [
 			[{"x":26,"y":38},{"x":73,"y":9},{"x":118.68,"y":4.53},{"x":185,"y":31},{"x":207.48,"y":49.04},{"x":216.47,"y":76.19},{"x":218,"y":114},{"x":204.84,"y":149.18},{"x":171.43,"y":165.64},{"x":70,"y":173},{"x":37.56,"y":164.76},{"x":17.91,"y":137.98},{"x":5,"y":95},{"x":6.04,"y":63.01}]
 		], -1);
-		for (let body of scene.bodies) {
-			body.blocksExit = true;
-		}
 		return scene;
 	},
 	barrel: function({ x, y }) {
