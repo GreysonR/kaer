@@ -27,7 +27,7 @@ var MapBodies = {
 			angle: angle,
 		}
 	},
-	"PoliceBasic": function({ x, y, angle, wave }, scene) {
+	PoliceBasic: function({ x, y, angle, wave }, scene) {
 		if (!scene.waves[wave]) scene.waves[wave] = [];
 		scene.waves[wave].push({
 			type: "PoliceBasic",
@@ -414,76 +414,10 @@ var MapBodies = {
 			if (otherBody === player.body) { // go to next level
 				// transition to next level
 				body.delete();
-				run.transitionToScene(world2Scene)
+				run.transitionToScene(room2)
 			}
 		});
 
 		return body;
 	},
-}
-
-function createMap(mapData) {
-	let scene = new Scene();
-	scene.exitBlocks = [];
-	scene.enemies = [];
-
-	function finishLevel() {
-		window.removeEventListener("levelFinish", finishLevel);
-		for (let body of scene.exitBlocks) {
-			body.delete();
-		}
-	}
-	
-	scene.on("beforeAdd", () => {
-		// spawn player
-		if (scene.spawn) {
-			player.body.setPosition(new vec(scene.spawn.position));
-			player.body.setAngle(scene.spawn.angle);
-			lastFov.length = 0;
-			lastPos.length = 0;
-		}
-
-		// add enemies
-		for (let enemy of scene.enemies) {
-			enemy.add();
-		}
-
-		// add event listeners
-		window.addEventListener("levelFinish", finishLevel);
-	});
-	scene.on("beforeDelete", () => {
-		// remove enemies
-		for (let enemy of scene.enemies) {
-			enemy.delete();
-		}
-	});
-	
-	
-	for (let typeName of Object.keys(mapData)) {
-		if (typeName === "orderCount") continue;
-		let objFunc = MapBodies[typeName]; // creator function of for this object type
-		if (!objFunc) {
-			console.warn("no map function for type " + typeName);
-			continue;
-		}
-		let types = mapData[typeName]; // array of options for objects of this type
-
-		for (let options of types) {
-			let obj = objFunc(options, scene);
-			if (obj) {
-				obj.delete();
-				scene.addBody(obj);
-
-				if (obj.bodies) {
-					for (let body of obj.bodies) {
-						if (body.blocksExit) {
-							scene.exitBlocks.push(obj);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	return scene;
 }

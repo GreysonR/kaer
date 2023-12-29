@@ -108,7 +108,7 @@ class EnemyGround {
 
 		// set up targeting
 		this.target = player.body.position;
-		let sightBox = this.sightBox = Bodies.rectangle(1200, 1000, new vec(this.body.position), {
+		let sightBox = this.sightBox = Bodies.rectangle(800, 600, new vec(this.body.position), {
 			isSensor: true,
 			removed: true,
 			round: 400,
@@ -400,11 +400,6 @@ class PoliceBasic extends EnemyGround {
 			}
 		});
 	}
-}
-
-var Enemies = {
-	"EnemyGround": EnemyGround,
-	"PoliceBasic": PoliceBasic,
 }
 
 // Update AI

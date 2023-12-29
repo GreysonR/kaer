@@ -1,7 +1,7 @@
 "use strict";
 
 class Room extends Scene {
-	constructor({ name, position, width, height, waves }) {
+	constructor({ name, position, width, height }) {
 		super();
 		this.data = mapData[name];
 		this.position = new vec(position);
@@ -12,7 +12,6 @@ class Room extends Scene {
 		this.height = height;
 		
 		this.exitBlocks = [];
-		this.enemies = [];
 
 		this.loadScene();
 
@@ -49,9 +48,7 @@ class Room extends Scene {
 		});
 		this.on("beforeDelete", () => {
 			// remove enemies
-			for (let enemy of scene.enemies) {
-				enemy.delete();
-			}
+			scene.waves.delete();
 		});
 		
 		// load bodies from data
@@ -121,7 +118,6 @@ class Room extends Scene {
 	data;
 	waves = [];
 	bodies = [];
-	enemies = [];
 	doors = [];
 
 	add() {

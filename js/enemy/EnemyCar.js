@@ -82,9 +82,6 @@ class EnemyCar extends Car {
 	}
 	constructor(model, options = {}) {
 		super(model, options);
-		EnemyCar.all.push(this);
-
-		this.body.delete();
 
 		// set money value
 		this.value = Models[model].value;

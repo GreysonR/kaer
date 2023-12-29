@@ -25,6 +25,12 @@ class Waves {
 		this.curWave = 0;
 		this.placeWave();
 	}
+	delete() {
+		this.curWave = this.waves.length;
+		while (this.enemies.length > 0) {
+			this.enemies[0].delete();
+		}
+	}
 	
 	placeWave() {
 		for (let enemyData of this.waves[this.curWave]) {
