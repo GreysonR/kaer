@@ -175,7 +175,7 @@ document.getElementById("mapInput").addEventListener("input", event => {
 			resourceNames[Resources[resourceName].color] = resourceName;
 		}
 		
-		const ignoreMapBody = ["road", "wall", "order", "orderCount"];
+		const ignoreMapBody = ["road", "wall"];
 		
 		function getVertices(rect) {
 			let a = 0;
@@ -284,23 +284,8 @@ document.getElementById("mapInput").addEventListener("input", event => {
 					obj.angle = a;
 					delete obj.vertices;
 				}
-				else if (name === "order") {
-					let type = resourceNames[rect.fill];
-					out[name].push({
-						x: Math.round(rect.x + rect.width  / 2),
-						y: Math.round(rect.y + rect.height / 2),
-						radius: Math.round(rect.width / 2),
-						type: type,
-					});
-					return;
-				}
 				else if (Object.keys(Enemies).includes(name)) { // 
 					console.warn(obj);
-				}
-				else if (name === "orderCount") {
-					let data = elem.properties.id.split("=");
-					out[data[0]] = Number(data[1]); // use border radius to get # of orders needed for this level
-					return;
 				}
 				out[name].push(obj);
 			}

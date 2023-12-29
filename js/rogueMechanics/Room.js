@@ -11,11 +11,8 @@ class Room extends Scene {
 		this.width = width;
 		this.height = height;
 		
-		this.orders = [];
 		this.exitBlocks = [];
 		this.enemies = [];
-		this.requiredOrders = this.data.orderCount;
-		this.completedOrders = 0;
 
 		this.loadScene();
 
@@ -33,16 +30,9 @@ class Room extends Scene {
 				body.delete();
 			}
 		}
-		this.setCompletedOrders = function(value) {
-			this.completedOrders = value;
-			document.getElementById("ordersAmount").innerHTML = Math.max(0, this.requiredOrders - value);
-		}
 		
 		// scene events
 		this.on("beforeAdd", () => {
-			// reset orders
-			this.setCompletedOrders(0);
-			
 			// spawn player
 			if (this.spawn) {
 				player.body.setPosition(new vec(this.spawn.position));
@@ -84,28 +74,15 @@ class Room extends Scene {
 					options.y += scene.position.y;
 				}
 
-				if (typeName === "order") {
-					let order = new Order({
-						radius: options.radius,
-						position: new vec(options),
-						type: options.type,
-						scene: scene,
-						quantity: Math.round(Math.random() * 2) + 2,
-					});
-					scene.orders.push(order);
-					scene.addBody(order);
-				}
-				else {
-					let obj = objFunc(options, scene);
-					if (obj) {
-						obj.delete();
-						scene.addBody(obj);
+				let obj = objFunc(options, scene);
+				if (obj) {
+					obj.delete();
+					scene.addBody(obj);
 
-						if (obj.bodies) {
-							for (let body of obj.bodies) {
-								if (body.blocksExit) {
-									scene.exitBlocks.push(obj);
-								}
+					if (obj.bodies) {
+						for (let body of obj.bodies) {
+							if (body.blocksExit) {
+								scene.exitBlocks.push(obj);
 							}
 						}
 					}

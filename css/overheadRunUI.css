@@ -24,56 +24,6 @@
 	display: flex;
 }
 
-#inventory {
-	display: inline-block;
-	width: max-content;
-	height: 50px;
-	border-radius: 16px;
-	background: #28363E;
-
-	display: flex;
-	flex-direction: row;
-	flex-wrap: nowrap;
-
-	padding-left:  12px;
-	padding-right: 12px;
-}
-
-#inventory .item {
-	width: 90px;
-	height: 100%;
-
-	display: flex;
-	align-items: center;
-}
-#inventory .item span::before {
-	content: "";
-	display: inline-block;
-	width:  26px;
-	height: 26px;
-	border-radius: 50%;
-	background: #818181;
-
-	position: relative;
-	top: 4px;
-
-	margin-left:  10px;
-	margin-right: 14px;
-}
-
-#inventory .item.white span::before {
-	background: #FFE2D8;
-}
-#inventory .item.red span::before {
-	background: #DC567C;
-}
-#inventory .item.blue span::before {
-	background: #49ADE9;
-}
-#inventory .item.green span::before {
-	background: #A7D679;
-}
-
 #runMoney {
 	display: inline-block;
 
@@ -92,43 +42,5 @@
 	content: "$";
 	display: inline-block;
 	color: #9DF897;
-	margin-right: 6px;
-}
-
-#orders {
-	display: inline-block;
-
-	height: 50px;
-	border-radius: 16px;
-	background: #28363E;
-
-	display: flex;
-	align-items: center;
-
-	padding-left:  20px;
-	padding-right: 20px;
-
-	position: absolute;
-	top:   30px;
-	right: 30px;
-
-	user-select: none;
-	pointer-events: none;
-}
-#orders::before {
-	content: "";
-	display: inline-block;
-
-	width:  26px;
-	height: 26px;
-
-	margin-right: 12px;
-	
-	background-image: url("../img/packageIcon.svg");
-	background-size: contain;
-	background-position: center;
-	background-repeat: no-repeat;
-}
-#ordersAmount {
 	margin-right: 6px;
 }

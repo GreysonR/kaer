@@ -420,16 +420,12 @@ var MapBodies = {
 
 		return body;
 	},
-	order: true, // this isn't supposed to be used, it's here to tell the map loader it exists
 }
 
 function createMap(mapData) {
 	let scene = new Scene();
-	scene.orders = [];
 	scene.exitBlocks = [];
 	scene.enemies = [];
-	scene.requiredOrders = mapData.orderCount;
-	scene.completedOrders = 0;
 
 	function finishLevel() {
 		window.removeEventListener("levelFinish", finishLevel);
@@ -437,15 +433,8 @@ function createMap(mapData) {
 			body.delete();
 		}
 	}
-	scene.setCompletedOrders = function(value) {
-		scene.completedOrders = value;
-		document.getElementById("ordersAmount").innerHTML = Math.max(0, scene.requiredOrders - value);
-	}
 	
 	scene.on("beforeAdd", () => {
-		// reset orders
-		scene.setCompletedOrders(0);
-		
 		// spawn player
 		if (scene.spawn) {
 			player.body.setPosition(new vec(scene.spawn.position));
@@ -480,28 +469,15 @@ function createMap(mapData) {
 		let types = mapData[typeName]; // array of options for objects of this type
 
 		for (let options of types) {
-			if (typeName === "order") {
-				let order = new Order({
-					radius: options.radius,
-					position: new vec(options),
-					type: options.type,
-					scene: scene,
-					quantity: Math.round(Math.random() * 2) + 2,
-				});
-				scene.orders.push(order);
-				scene.addBody(order);
-			}
-			else {
-				let obj = objFunc(options, scene);
-				if (obj) {
-					obj.delete();
-					scene.addBody(obj);
+			let obj = objFunc(options, scene);
+			if (obj) {
+				obj.delete();
+				scene.addBody(obj);
 
-					if (obj.bodies) {
-						for (let body of obj.bodies) {
-							if (body.blocksExit) {
-								scene.exitBlocks.push(obj);
-							}
+				if (obj.bodies) {
+					for (let body of obj.bodies) {
+						if (body.blocksExit) {
+							scene.exitBlocks.push(obj);
 						}
 					}
 				}
