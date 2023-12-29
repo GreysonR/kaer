@@ -20,7 +20,7 @@ player.on("takeDamage", function effects() {
 
 	// camera zoom
 	let scale = 1;
-	let scaleDelta = 0.06;
+	let scaleDelta = 0.05;
 	function zoom() {
 		camera.fov *= scale;
 	}

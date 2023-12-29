@@ -903,6 +903,8 @@ var ter = {
 		let Render = function() {
 			const { canvas, ctx, Performance, Render } = ter;
 			
+			Render.trigger("beforeSave");
+			
 			const camera = Render.camera;
 			const { position:cameraPosition, fov:FoV } = camera;
 			const boundSize = camera.boundSize;
@@ -919,7 +921,6 @@ var ter = {
 			camera.bounds.min.set({ x: -camera.translation.x / camera.scale, y: -camera.translation.y / camera.scale });
 			camera.bounds.max.set({ x: (canvWidth - camera.translation.x) / camera.scale, y: (canvHeight - camera.translation.y) / camera.scale });
 
-			Render.trigger("beforeSave");
 			ctx.save();
 			ctx.translate(camera.translation.x, camera.translation.y);
 			ctx.scale(camera.scale, camera.scale);
