@@ -79,8 +79,9 @@ class Car {
 		const now = world.time;
 		if (now - this.lastDamage >= this.damageCooldown) {
 			this.lastDamage = now;
-			this.health = Math.max(0, this.health - damage);
-			this.trigger("takeDamage");
+			damage = Math.min(this.health, damage);
+			this.health -= damage;
+			this.trigger("takeDamage", damage);
 
 			if (this.health <= 0) {
 				this.delete();

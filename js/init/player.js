@@ -14,13 +14,15 @@ function updateHealthBar() {
 	document.getElementById("healthbarText").innerHTML = health + "/" + player.maxHealth;
 }
 updateHealthBar();
-player.on("takeDamage", function effects() {
+player.on("takeDamage", function effects(damage) {
+	let intensity = Math.min(3, (damage / 10) ** 0.5);
+	
 	// blur
-	blurCanvas(2.5, 60, 280);
+	blurCanvas(2.5 * intensity, 60, 280);
 
 	// camera zoom
 	let scale = 1;
-	let scaleDelta = 0.05;
+	let scaleDelta = 0.05 * intensity;
 	function zoom() {
 		camera.fov *= scale;
 	}
