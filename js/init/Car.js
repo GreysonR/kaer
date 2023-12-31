@@ -11,7 +11,7 @@ class Car {
 		merge(this, options);
 
 		this.body = modelBase.getBody();
-		this.body.parentCar = this;
+		this.body.parentObj = this;
 		this.body.on("beforeUpdate", this.update.bind(this));
 		this.model = model;
 

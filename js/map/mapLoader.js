@@ -35,6 +35,14 @@ var MapBodies = {
 			angle: angle,
 		});
 	},
+	GroundBasic: function({ x, y, angle, wave }, scene) {
+		if (!scene.waves[wave]) scene.waves[wave] = [];
+		scene.waves[wave].push({
+			type: "GroundBasic",
+			position: new vec(x, y),
+			angle: angle || 0,
+		});
+	},
 	road: function({ x, y, position, vertices }) {
 		for (let i = 0; i < vertices.length; i++) {
 			vertices[i] = new vec(vertices[i]);

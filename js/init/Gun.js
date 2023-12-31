@@ -70,8 +70,8 @@ class Bullet {
 		body.on("collisionStart", collision => {
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (!otherBody.isSensor && otherBody != parent) {
-				if (otherBody.parentCar && otherBody.parentCar.takeDamage) {
-					otherBody.parentCar.takeDamage(gun.damage);
+				if (otherBody.parentObj && otherBody.parentObj.takeDamage) {
+					otherBody.parentObj.takeDamage(gun.damage);
 					bullet.hitCharacter(collision);
 				}
 				else {

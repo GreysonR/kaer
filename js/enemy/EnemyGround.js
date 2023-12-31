@@ -1,108 +1,100 @@
 "use strict";
 
-class EnemyGround {
+class EnemyGround extends Character {
 	static all = [];
 	static update() {
 		let subAngle = ter.Common.angleDiff;
 		let now = world.time;
 	
 		for (let enemy of EnemyGround.all) {
-			let { state, reverseTime, body, controls, target, seenTime } = enemy;
-			let { position, angle } = body;
-			let dist = position.sub(target).length;
-			let angleToTarget = position.sub(target).angle - Math.PI;
-			let angleDiff = subAngle(angleToTarget, angle);
-			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let { state, body, controls, target, seenTime, gun } = enemy;
+			let { position } = body;
+			let distance = target.sub(position);
+			let direction = distance.normalize();
+			let realDistance = player.body.position.sub(position);
 			
+			controls.left = false;
+			controls.right = false;
+			controls.up = false;
+			controls.down = false;
 			if (state === "wait") {
-				controls.up = false;
-				controls.down = false;
-				controls.left = false;
-				controls.right = false;
 				controls.shoot = false;
-				controls.handbrake = true;
 			}
 			else if (state === "attack") {
-				controls.handbrake = false;
-				if (angleDiff * Math.sign(direction.dot(body.velocity)) > 0) {
-					controls.right = true;
-					controls.left = false;
+				if (realDistance.length > Math.max(1500, gun.range * 1.7)) {
+					continue; // don't move if too far away
 				}
-				else {
-					controls.right = false;
-					controls.left = true;
-				}
-				controls.up = true;
-	
-				// slow down to make tight turn
-				if (Math.abs(angleDiff) > Math.PI*0.3 && dist < 500) {
-					controls.up = (Math.max(10, dist) / 500) ** 3;
+				controls.right = direction.x;
+				controls.down = direction.y;
+				// if (direction.x > 0.2) controls.right = true;
+				// else if (direction.x < -0.2) controls.left = true;
+				// if (direction.y > 0.2) controls.down = true;
+				// else if (direction.y < -0.2) controls.up = true;
+				body.setAngle(direction.angle);
+
+				if (realDistance.length < gun.range * 0.5) {
+					enemy.state = "shoot";
 				}
 				
-				// start reversing
-				if (body.velocity.length < 5 && Math.abs(angleDiff) > Math.PI * 0.4 && now - reverseTime > 8000 && now - seenTime > 1000) {
-					controls.up = false;
-					controls.down = true;
-					enemy.reverseTime = world.time;
-					enemy.state = "reverse";
-				}
-			
-				if (player.health > 0 && now - enemy.seenTime >= enemy.seenDelay) {
+				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= gun.range) {
+					controls.shoot = true;
+
 					let { aimVariation } = enemy;
 					let diff = player.body.position.sub(enemy.body.position);
 					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
 					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
-					if (enemy.body.position.sub(player.body.position).length <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
-						controls.shoot = true;
-					}
-					else {
-						controls.shoot = false;
-					}
 				}
 				else {
 					controls.shoot = false;
 				}
 			}
-			else if (state === "reverse") {
-				if (angleDiff < 0) {
-					controls.right = true;
-					controls.left = false;
+			else if (state === "shoot") {
+				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= gun.range) {
+					controls.shoot = true;
+
+					let { aimVariation } = enemy;
+					let diff = player.body.position.sub(enemy.body.position);
+					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
+					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
 				}
 				else {
-					controls.right = false;
-					controls.left = true;
+					controls.shoot = false;
 				}
-	
-				if (now - reverseTime > 2000 || Math.abs(angleDiff) < Math.PI * 0.2) {
-					controls.down = false;
+
+				if (realDistance.length > gun.range * 0.5) {
 					enemy.state = "attack";
+				}
+
+				if (realDistance.length < Math.min(gun.range * 0.3, 200)) {
+					controls.right = -direction.x;
+					controls.down = -direction.y;
 				}
 			}
 		}
 	}
 	constructor(model, options = {}) {
+		super(model, options);
+
 		EnemyGround.all.push(this);
 
 		this.body.delete();
 
 		// set money value
-		this.value = Models[model].value;
+		this.value = CharacterModels[model].value;
 
 		// init gun
 		this.aimVariation = 0.2; // radians
-		this.gun = new Gun(Models[model].gun);
+		this.gun = new Gun(CharacterModels[model].gun);
 		this.gun.magazine = Infinity;
 
-		let car = this;
+		let character = this;
 		this.on("spotted", () => {
-			car.state = "attack";
-			car.seenTime = world.time;
+			character.state = "attack";
+			character.seenTime = world.time;
 		});
 
 		// reset state
-		this.reverseTime = -10000;
 		this.state = "wait";
-
 		this.seenDelay = 1500;
 		this.seenTime = -10000;
 
@@ -119,15 +111,6 @@ class EnemyGround {
 				background: "#ff000040",
 			}
 		});
-		car.body.on("collisionStart", collision => {
-			let now = world.time;
-			if (car.state === "wait" && now - car.addTime > 2000) {
-				let otherBody = collision.bodyA === car.body ? collision.bodyB : collision.bodyA;
-				if (otherBody === player.body || otherBody.isBullet) {
-					car.trigger("spotted");
-				}
-			}
-		});
 		sightBox.collisions = {};
 		this.updateTarget = this.updateTarget.bind(this);
 		sightBox.on("beforeUpdate", this.updateTarget);
@@ -135,10 +118,10 @@ class EnemyGround {
 			let now = world.time;
 			sightBox.collisions[collision.id] = collision;
 
-			if (car.state === "wait" && now - car.addTime > 2000) {
+			if (character.state === "wait" && now - character.addTime > 200) {
 				let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 				if (otherBody === player.body || otherBody.isBullet) {
-					car.trigger("spotted");
+					character.trigger("spotted");
 				}
 			}
 		});
@@ -391,9 +374,9 @@ class EnemyGround {
 	}
 }
 
-class PoliceBasic extends EnemyGround {
+class GroundBasic extends EnemyGround {
 	constructor(position, angle) {
-		super("PoliceBasic", {
+		super("GroundBasic", {
 			spawn: {
 				position: position,
 				angle: angle,

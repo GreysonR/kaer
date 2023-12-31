@@ -28,4 +28,14 @@ var Weapons = {
 		reloadTime: 600,
 		singleFire: false,
 	}),
+	"pistol2": new Weapon({
+		damage: 2,
+		fireRate: 600,
+		bulletSpeed: 25,
+		range: 800,
+		
+		magazineSize: 10,
+		reloadTime: 600,
+		singleFire: false,
+	}),
 }

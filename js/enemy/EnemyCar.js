@@ -7,7 +7,7 @@ class EnemyCar extends Car {
 		let now = world.time;
 	
 		for (let enemy of EnemyCar.all) {
-			let { state, reverseTime, body, controls, target, seenTime } = enemy;
+			let { state, reverseTime, body, controls, target, seenTime, seenDelay } = enemy;
 			let { position, angle } = body;
 			let dist = position.sub(target).length;
 			let angleToTarget = position.sub(target).angle - Math.PI;
@@ -47,13 +47,14 @@ class EnemyCar extends Car {
 					enemy.state = "reverse";
 				}
 			
-				if (player.health > 0 && now - enemy.seenTime >= enemy.seenDelay) {
-					let { aimVariation } = enemy;
-					let diff = player.body.position.sub(enemy.body.position);
-					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
-					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
+				if (player.health > 0 && now - seenTime >= seenDelay) {
 					if (enemy.body.position.sub(player.body.position).length <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
 						controls.shoot = true;
+						
+						let { aimVariation } = enemy;
+						let diff = player.body.position.sub(enemy.body.position);
+						let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
+						enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
 					}
 					else {
 						controls.shoot = false;
@@ -389,11 +390,6 @@ class PoliceBasic extends EnemyCar {
 			}
 		});
 	}
-}
-
-var Enemies = {
-	"EnemyCar": EnemyCar,
-	"PoliceBasic": PoliceBasic,
 }
 
 // Update AI
