@@ -348,24 +348,17 @@
 </g>
 <g id="barrel_3">
 <g id="Ellipse 9_3" filter="url(#filter2_d_2237_3750)">
-<circle cx="4591" cy="2461" r="35" fill="#A5586E"/>
+<circle cx="2402" cy="3920" r="35" fill="#A5586E"/>
 </g>
-<circle id="Ellipse 10_3" cx="4602.5" cy="2472.5" r="8.5" fill="#803A4E"/>
-<rect id="Rectangle 2165_53" x="4556" y="2426" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
+<circle id="Ellipse 10_3" cx="2413.5" cy="3931.5" r="8.5" fill="#803A4E"/>
+<rect id="Rectangle 2165_53" x="2367" y="3885" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
 </g>
 <g id="barrel_4">
 <g id="Ellipse 9_4" filter="url(#filter3_d_2237_3750)">
-<circle cx="2402" cy="3920" r="35" fill="#A5586E"/>
-</g>
-<circle id="Ellipse 10_4" cx="2413.5" cy="3931.5" r="8.5" fill="#803A4E"/>
-<rect id="Rectangle 2165_54" x="2367" y="3885" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
-</g>
-<g id="barrel_5">
-<g id="Ellipse 9_5" filter="url(#filter4_d_2237_3750)">
 <circle cx="3342" cy="2561" r="35" fill="#A5586E"/>
 </g>
-<circle id="Ellipse 10_5" cx="3353.5" cy="2572.5" r="8.5" fill="#803A4E"/>
-<rect id="Rectangle 2165_55" x="3307" y="2526" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
+<circle id="Ellipse 10_4" cx="3353.5" cy="2572.5" r="8.5" fill="#803A4E"/>
+<rect id="Rectangle 2165_54" x="3307" y="2526" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
 </g>
 <g id="exit blocks">
 <g id="stone7:blocksExit=true">
@@ -375,7 +368,7 @@
 <rect id="mapHelper" x="2981" y="1257" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
 </g>
 <g id="stone6:blocksExit=true">
-<path id="Rectangle 2189_2" d="M3225.09 1333.67C3211.72 1320.3 3215.17 1297.8 3231.93 1289.05L3369.35 1217.34C3380.2 1211.68 3393.46 1213.71 3402.11 1222.36L3431.89 1252.14C3435.83 1256.08 3438.5 1261.11 3439.57 1266.57L3450.75 1323.88C3452.75 1334.1 3448.91 1344.58 3440.78 1351.09L3392.71 1389.62C3388.34 1393.13 3383.01 1395.24 3377.43 1395.68L3306.65 1401.32C3298.47 1401.98 3290.42 1399.01 3284.62 1393.21L3225.09 1333.67Z" fill="black" fill-opacity="0.15"/>
+<path id="Rectangle 2189_2" d="M3224.27 1332.85C3211.14 1319.73 3214.19 1297.7 3230.38 1288.62L3350.23 1221.49C3359.05 1216.55 3369.84 1216.75 3378.47 1222L3427.37 1251.76C3434.1 1255.85 3438.79 1262.59 3440.3 1270.31L3450.75 1323.88C3452.75 1334.1 3448.91 1344.58 3440.78 1351.09L3392.71 1389.62C3388.34 1393.13 3383.01 1395.24 3377.43 1395.68L3306.65 1401.32C3298.47 1401.98 3290.42 1399.01 3284.62 1393.21L3224.27 1332.85Z" fill="black" fill-opacity="0.15"/>
 <path id="Vector 1152_2" d="M3202.58 1251.59L3247.03 1190.65C3262.5 1169.44 3291.74 1163.81 3313.99 1177.76L3369.04 1212.28C3398.57 1230.79 3400.57 1273.08 3372.92 1294.31L3308.06 1344.09C3291 1357.18 3267.48 1357.9 3249.66 1345.87L3215.01 1322.51C3191.52 1306.66 3185.88 1274.48 3202.58 1251.59Z" fill="#BB816E"/>
 <path id="Vector 1153_2" d="M3318.54 1287.3L3326.79 1266.75C3336.64 1242.23 3312.27 1217.88 3287.76 1227.74L3264.52 1237.08C3242.81 1245.82 3239.01 1274.94 3257.76 1288.95L3272.75 1300.15C3288.53 1311.94 3311.2 1305.58 3318.54 1287.3Z" fill="#9A6A5A"/>
 <rect id="mapHelper_2" x="3190" y="1167" width="5" height="5" fill="#A4C424" fill-opacity="0.01"/>
@@ -411,7 +404,7 @@
 <g id="spawn" clip-path="url(#clip43_2237_3750)">
 <rect id="Rectangle 2166" x="3237" y="5579" width="100" height="60" transform="rotate(-90 3237 5579)" fill="#DC567C"/>
 </g>
-<g id="exit:to=room2">
+<g id="exit:to=room1">
 <rect id="hitbox_2" x="2848" y="461" width="807" height="632" fill="white" fill-opacity="0.05"/>
 </g>
 <g id="enemies">
@@ -509,7 +502,7 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2237_3750"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2237_3750" result="shape"/>
 </filter>
-<filter id="filter2_d_2237_3750" x="4556" y="2426" width="82" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter2_d_2237_3750" x="2367" y="3885" width="82" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dx="12" dy="12"/>
@@ -518,16 +511,7 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2237_3750"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2237_3750" result="shape"/>
 </filter>
-<filter id="filter3_d_2237_3750" x="2367" y="3885" width="82" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
-<feOffset dx="12" dy="12"/>
-<feComposite in2="hardAlpha" operator="out"/>
-<feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.15 0"/>
-<feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2237_3750"/>
-<feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2237_3750" result="shape"/>
-</filter>
-<filter id="filter4_d_2237_3750" x="3307" y="2526" width="82" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter3_d_2237_3750" x="3307" y="2526" width="82" height="82" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dx="12" dy="12"/>
