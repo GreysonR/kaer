@@ -265,14 +265,5 @@ class Character {
 		body.velocity.set(velocity);
 	}
 	resetEffects() {
-		for (let skid of this.tireSkid) {
-			skid.delete();
-		}
-		this.tireSkid.length = 0;
-
-		for (let smoke of this.smoke) {
-			smoke.delete();
-		}
-		this.smoke.length = 0;
 	}
 }

@@ -76,7 +76,7 @@ var Models = {
 		body: {
 			width: 110,
 			height: 55,
-			mass: 2,
+			mass: 30,
 			render: {
 				sprite: "cars/car1.png",
 				spriteScale: new vec(1, 1),
@@ -117,7 +117,7 @@ var Models = {
 		body: {
 			width: 118,
 			height: 55,
-			mass: 2,
+			mass: 30,
 			render: {
 				sprite: "cars/policeCar.png",
 				spriteScale: new vec(1, 1),

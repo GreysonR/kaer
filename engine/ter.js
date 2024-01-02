@@ -501,7 +501,7 @@ var ter = {
 
 				const restitution = 1 + Math.max(bodyA.restitution, bodyB.restitution);
 				const relVel = bodyB.velocity.sub(bodyA.velocity);
-				const friction = Math.max(bodyA.friction, bodyB.friction) / 2; // divide friction by 2 to make it more stable
+				const friction = Math.max(bodyA.friction, bodyB.friction);
 				const slop = Math.max(bodyA.slop, bodyB.slop);
 
 				if (relVel.dot(normal) < 0) {
@@ -524,8 +524,8 @@ var ter = {
 				for (let c = 0; c < numContacts; c++) {
 					const { vertice } = contacts[c];
 
-					const offsetA = vertice.sub(bodyA.position).sub(bodyA.velocity);
-					const offsetB = vertice.sub(bodyB.position).sub(bodyB.velocity);
+					const offsetA = vertice.sub(bodyA.position);
+					const offsetB = vertice.sub(bodyB.position);
 					const vpA = bodyA.velocity.add(offsetA.normal().mult(-bodyA.angularVelocity));
 					const vpB = bodyB.velocity.add(offsetB.normal().mult(-bodyB.angularVelocity));
 					var relativeVelocity = vpA.sub(vpB);

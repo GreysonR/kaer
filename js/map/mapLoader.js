@@ -385,7 +385,7 @@ var MapBodies = {
 			{ x: 0, y: 0, width: 600, height: 300 },
 		], "LHouseE", 8, "buildings", 20);
 	},
-	exit: function({ x, y, width, height }) {
+	exit: function({ x, y, width, height, to }) {
 		let body = Bodies.rectangle(width, height, new vec(x + width/2, y + height / 2), {
 			isStatic: true,
 			hasCollisions: true,
@@ -404,7 +404,7 @@ var MapBodies = {
 			if (otherBody === player.body) { // go to next level
 				// transition to next level
 				body.delete();
-				run.transitionToScene(room2)
+				run.transitionToScene(rooms[to]);
 			}
 		});
 

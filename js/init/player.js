@@ -1,11 +1,10 @@
 "use strict";
 
 const player = new Car("car1");
-// player.body.on("collisionStart", carCollision);
-// player.body.on("collisionActive", carCollision);
+// const player = new Character("Player");
 player.gun = new Gun("playerGun");
-player.maxHealth = 10000; player.health = player.maxHealth;
-player.gun.magazine = Infinity;
+// player.maxHealth = 10000; player.health = player.maxHealth;
+// player.gun.damage = 1000;
 let healthbarWrapperWidth = document.getElementsByClassName("healthbarWrapper")[0].clientWidth;
 player.on("takeDamage", updateHealthBar);
 function updateHealthBar() {
@@ -58,46 +57,6 @@ player.on("takeDamage", function effects(damage) {
 	});
 });
 player.add();
-
-function carCollision(event) {
-	let { bodyA, bodyB, contacts, normal, start } = event;
-	let otherBody = bodyA === player ? bodyB : bodyA;
-	let now = world.time;
-
-	if (!(otherBody.isCar || otherBody.isStatic) || otherBody.isSensor) return;
-	if (now - player.lastDamage < player.damageCooldown) return;
-
-	let avgContact = (() => {
-		let avg = new vec(0, 0);
-		for (let i = 0; i < contacts.length; i++) {
-			avg.add2(contacts[i].vertice);
-		}
-		avg.div2(contacts.length);
-
-		return avg;
-	})();
-
-	let car = player.body;
-	let carDir = new vec(Math.cos(car.angle), Math.sin(car.angle));
-	let carDot = avgContact.sub(car.position).dot(carDir);
-	let inFront = carDot >= car.width / 2 - 20;
-
-	if (inFront && otherBody.isCar) return;
-
-	let speed = Math.abs(car.velocity.sub(otherBody.velocity).dot(normal)) * Math.sqrt(Performance.fps / 144);
-	if (otherBody.isStatic) speed *= 0.6;
-	let damage = speed <= player.minDamageSpeed ? 0 : Math.round((speed - player.minDamageSpeed) ** 0.5 * ((otherBody.damage ?? 1) * 0.7));
-	if (otherBody.isCar && now - start >= player.damageCooldown - 5) damage = Math.max(1, damage);
-
-	// if (inFront && otherBody.isCar) damage = Math.round(damage * 0.3);
-
-	player.lastDamage = now;
-	player.health = Math.max(0, player.health - damage);
-	if (player.health <= 0) {
-		car.delete();
-	}
-}
-
 
 // - shooting
 Render.on("beforeRender", () => {

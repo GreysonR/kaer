@@ -12,7 +12,7 @@ class Weapon {
 	kick = 0.3; // how much firing the weapon pushes you back
 	trailLength = 600;
 	
-	magazineSize = 6; // number of bullets before reload
+	magazineSize = Infinity; // number of bullets before reload
 	reloadTime = 600; // reload time in ms
 	singleFire = false; // whether you have to click every time to shoot or just hold the button
 }

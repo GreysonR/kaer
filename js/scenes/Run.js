@@ -12,7 +12,7 @@ var run = {
 	reset: function() {
 		this.money = 0;
 	},
-	currentScene: room2,
+	currentScene: rooms["room0"],
 	switchScene: function(newScene) {
 		player.body.velocity.set(new vec(0, 0));
 		this.currentScene.delete();

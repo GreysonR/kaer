@@ -29,6 +29,28 @@ class CharacterModel {
 }
 
 var CharacterModels = {
+	"Player": new CharacterModel({
+		model: "Player",
+		stats: {
+			// health
+			maxHealth:	30,
+			health:	    30,
+			damageCooldown: 500,
+			speed: 8,
+		},
+		body: {
+			width:  50,
+			height: 50,
+			mass: 1,
+			render: {
+				sprite: "characters/GroundBasic.png",
+				spriteScale: new vec(1, 1),
+			},
+			collisionFilter: {
+				category: "1"
+			},
+		},
+	}),
 	"GroundBasic": new CharacterModel({
 		model: "GroundBasic",
 		gun: "pistol2",

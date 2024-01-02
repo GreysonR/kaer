@@ -1,5 +1,5 @@
 "use strict";
-let room2 = new Room({
+rooms["room2"] = new Room({
 	name: "world2",
 	width: 12857,
 	height: 11078,
