@@ -18,24 +18,22 @@ class Weapon {
 }
 
 var Weapons = {
-	"pistol": new Weapon({
+	"playerGun": new Weapon({
 		damage: 4,
 		fireRate: 300,
 		bulletSpeed: 30,
 		range: 1000,
-		
-		magazineSize: 10,
-		reloadTime: 600,
-		singleFire: false,
+	}),
+	"pistol": new Weapon({
+		damage: 4,
+		fireRate: 500,
+		bulletSpeed: 28,
+		range: 1000,
 	}),
 	"pistol2": new Weapon({
 		damage: 2,
-		fireRate: 600,
-		bulletSpeed: 25,
-		range: 800,
-		
-		magazineSize: 10,
-		reloadTime: 600,
-		singleFire: false,
+		fireRate: 900,
+		bulletSpeed: 17,
+		range: 700,
 	}),
 }

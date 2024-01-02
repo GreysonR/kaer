@@ -3,7 +3,8 @@
 const player = new Car("car1");
 // player.body.on("collisionStart", carCollision);
 // player.body.on("collisionActive", carCollision);
-player.gun = new Gun("pistol");
+player.gun = new Gun("playerGun");
+player.maxHealth = 10000; player.health = player.maxHealth;
 player.gun.magazine = Infinity;
 let healthbarWrapperWidth = document.getElementsByClassName("healthbarWrapper")[0].clientWidth;
 player.on("takeDamage", updateHealthBar);
