@@ -5,7 +5,6 @@ let SurfaceGrid = new Grid(2000);
 let Materials = {
 	road: {
 		tireGrip: 1,
-		slidingGrip: 1,
 		steeringWeight: 1,
 		turnSpeed: 1,
 		acceleration: 1,
@@ -16,7 +15,6 @@ let Materials = {
 	},
 	dirt: {
 		tireGrip: 0.6,
-		slidingGrip: 0.6,
 		steeringWeight: 1.3,
 		turnSpeed: 1,
 		acceleration: 1,
@@ -27,10 +25,9 @@ let Materials = {
 	},
 	grass: {
 		tireGrip: 0.9,
-		slidingGrip: 0.9,
 		steeringWeight: 1.7,
-		turnSpeed: 0.9,
-		acceleration: 0.8,
+		turnSpeed: 1,
+		acceleration: 1,
 		maxSpeed: 1,
 		maxReverseSpeed: 1,
 		power: 1,

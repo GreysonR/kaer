@@ -19,7 +19,6 @@ class Model {
 	
 		// drifting / sliding
 		tireGrip: 6, // (0, Infinity] grip for car while not sliding
-		slidingGrip: 6, // (0, tireGrip] grip for car while sliding
 		steeringWeight: 0.05, // [0, 1] 1 = keeps rotating a lot after sliding, 0 = doesn't keep rotating much after sliding
 		power: 0.3, // [-1, 1] min amount of acceleration kept when sliding
 
@@ -59,8 +58,7 @@ var Models = {
 
 			// drifting / sliding
 			tireGrip:    3.2,
-			slidingGrip: 3.2,
-			steeringWeight: 0.02,
+			steeringWeight: 0,
 			power: 0.2,
 
 			// rotation point settings
@@ -100,7 +98,6 @@ var Models = {
 
 			// drifting / sliding
 			tireGrip:    3.4,
-			slidingGrip: 3.4,
 			steeringWeight: 0.02,
 			power: 0.3,
 

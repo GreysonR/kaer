@@ -46,6 +46,7 @@ window.addEventListener("keydown", event => {
 			}
 			if (event.altKey && key === "b") { // toggle broadphase render
 				Render.showBroadphase = !Render.showBroadphase;
+				Render.showBoundingBox = !Render.showBoundingBox;
 			}
 			if (event.altKey && key === "g") { // toggle graph
 				Render.graph = !Render.graph;

@@ -265,7 +265,7 @@ class Car {
 	update = function() {
 		let delta = Engine.delta;
 
-		let { body, controls, maxSpeed, acceleration, reverseAcceleration, maxReverseSpeed, turnSpeed, tireGrip, slidingGrip, isDrifting, driftAmount, power, steeringWeight, driftHistory } = this;
+		let { body, controls, maxSpeed, acceleration, reverseAcceleration, maxReverseSpeed, turnSpeed, tireGrip, isDrifting, driftAmount, power, steeringWeight, driftHistory } = this;
 		let { up, down, left, right, handbrake, locked } = controls;
 		let { rotationBounds, rotationSensitivity } = this;
 		let { angle, velocity } = body;
@@ -286,15 +286,12 @@ class Car {
 			right = false;
 			left = false;
 		}
-		if (isDrifting) {
-			tireGrip = slidingGrip;
-		}
 		
 		// get + apply material properties
 		let material = getCarMaterial(body);
 		if (!material) material = "grass";
 		let materialProps = Materials[material];
-		tireGrip *= (isDrifting ? (materialProps.slidingGrip ?? materialProps.tireGrip) : materialProps.tireGrip) ?? 1;
+		tireGrip *= materialProps.tireGrip ?? 1;
 		steeringWeight *= materialProps.steeringWeight ?? 1;
 		turnSpeed *= materialProps.turnSpeed ?? 1;
 		acceleration *= materialProps.acceleration ?? 1;
