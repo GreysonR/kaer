@@ -36,8 +36,8 @@ class Room extends Scene {
 			if (this.spawn) {
 				player.body.setPosition(new vec(this.spawn.position));
 				player.body.setAngle(this.spawn.angle);
-				lastFov.length = 0;
-				lastPos.length = 0;
+				gameCamera.lastFov.length = 0;
+				gameCamera.lastPosition.length = 0;
 			}
 
 			// start wave

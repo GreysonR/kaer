@@ -19,7 +19,6 @@ class Car {
 	}
 
 	// ~ names
-	// name = "Unknown"; // if multiplayer / leaderboard added in future
 	model = "car1";
 
 	// ~ drifting / sliding
@@ -88,15 +87,17 @@ class Car {
 			}
 		}
 	}
-	add() {
+	add(reset = false) {
 		this.body.add();
 		Car.all.push(this);
-		this.health = this.maxHealth;
+		if (reset) this.health = this.maxHealth;
 		if (this === player) updateHealthBar();
 	}
 	delete() {
 		if (!this.body.removed) {
 			this.body.delete();
+			this.body.velocity.set({ x: 0, y: 0 });
+			this.body.angularVelocity = 0;
 			Car.all.delete(this);
 	
 			if (this.health <= 0) {	
@@ -253,7 +254,8 @@ class Car {
 		}
 	}
 	updateShoot() {
-		if (!this.controls.locked && this.controls.shoot && this.gun !== undefined) {
+		if (!(this.gun instanceof Gun) || this.controls.locked) return;
+		if (this.controls.shoot) {
 			let target = this.gunTarget;
 			let angle = target.sub(this.body.position).angle;
 			this.gun.shoot(this.body.position.add(new vec(Math.cos(angle), Math.sin(angle)).mult2(this.body.height / 2)), angle, this.body);
@@ -498,5 +500,10 @@ class Car {
 			smoke.delete();
 		}
 		this.smoke.length = 0;
+	}
+	resetControls() {
+		for (let key of Object.keys(this.controls)) {
+			this.controls[key] = false;
+		}
 	}
 }

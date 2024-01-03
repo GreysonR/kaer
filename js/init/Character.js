@@ -19,7 +19,6 @@ class Character {
 	}
 
 	// ~ names
-	// name = "Unknown"; // if multiplayer / leaderboard added in future
 	model = "";
 
 	// ~ movement
@@ -79,15 +78,17 @@ class Character {
 			}
 		}
 	}
-	add() {
+	add(reset = false) {
 		this.body.add();
 		Character.all.push(this);
-		this.health = this.maxHealth;
+		if (reset) this.health = this.maxHealth;
 		if (this === player) updateHealthBar();
 	}
 	delete() {
 		if (!this.body.removed) {
 			this.body.delete();
+			this.body.velocity.set({ x: 0, y: 0 });
+			this.body.angularVelocity = 0;
 			Character.all.delete(this);
 	
 			if (this.health <= 0) {	
@@ -240,7 +241,8 @@ class Character {
 		}
 	}
 	updateShoot() {
-		if (!this.controls.locked && this.controls.shoot && this.gun !== undefined) {
+		if (!(this.gun instanceof Gun) || this.controls.locked) return;
+		if (this.controls.shoot) {
 			let target = this.gunTarget;
 			let angle = target.sub(this.body.position).angle;
 			this.gun.shoot(this.body.position.add(new vec(Math.cos(angle), Math.sin(angle)).mult2(this.body.height / 2)), angle, this.body);
@@ -252,6 +254,8 @@ class Character {
 	update = function() {
 		let { body, controls } = this;
 		let { up, down, left, right, locked } = controls;
+
+		body.setAngle(body.position.sub(this.gunTarget).angle);
 
 		if (locked) {
 			up = false;
@@ -265,5 +269,10 @@ class Character {
 		body.velocity.set(velocity);
 	}
 	resetEffects() {
+	}
+	resetControls() {
+		for (let key of Object.keys(this.controls)) {
+			this.controls[key] = false;
+		}
 	}
 }

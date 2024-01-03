@@ -2,29 +2,68 @@
 
 var mousePosition = new vec(0, 0);
 
+function toggleControl(value) {
+	if (player.controls[this.control])
+		player.controls[this.control] = value;
+}
+let binds = {
+	"w": toggleControl.bind({ control: "up" }),
+	"s": toggleControl.bind({ control: "down" }),
+	"a": toggleControl.bind({ control: "left" }),
+	"d": toggleControl.bind({ control: "right" }),
+	"arrowup": toggleControl.bind({ control: "up" }),
+	"arrowdown": toggleControl.bind({ control: "down" }),
+	"arrowleft": toggleControl.bind({ control: "left" }),
+	"arrowright": toggleControl.bind({ control: "right" }),
+	" ": toggleControl.bind({ control: "handbrake" }),
+
+	"click0": toggleControl.bind({ control: "shoot" }),
+	"click2": toggleControl.bind({ control: "roll" }),
+	
+	"f": function switchMovement(value) {
+		if (!value) return;
+		if (player.health <= 0) return;
+		let position = player.body.position;
+		let originalControls = {};
+		Common.merge(originalControls, player.controls);
+
+		if (player instanceof Car) { // swap to character
+			player.delete();
+			player = playerBodies.character;
+			player.add();
+		}
+		else { // swap to car
+			// let angle = player.body.velocity.angle;
+			let angle = player.body.angle - Math.PI;
+			player.delete();
+			player = playerBodies.car;
+			player.add();
+			player.body.setAngle(angle);
+		}
+		for (let key of Object.keys(player.controls)) {
+			if (originalControls[key]) {
+				player.controls[key] = originalControls[key];
+			}
+			else {
+				player.controls[key] = false;
+			}
+		}
+		player.body.setPosition(position);
+	},
+}
+
 window.addEventListener("keydown", event => {
 	let key = event.key.toLowerCase();
 
 	if (!event.repeat) {
-		if (key === "w" || key === "arrowup") {
-			player.controls.up = true;
+		let fullKeyName = (event.ctrlKey ? "ctrl " : "") + (event.altKey ? "alt " : "") + (event.shiftKey ? "shift " : "") + key;
+		if (binds[key]) {
+			binds[key](true);
 		}
-		else if (key === "s" || key === "arrowdown") {
-			player.controls.down = true;
+		else if (binds[fullKeyName]) {
+			binds[fullKeyName](true);
 		}
-		else if (key === "a" || key === "arrowleft") {
-			player.controls.left = true;
-		}
-		else if (key === "d" || key === "arrowright") {
-			player.controls.right = true;
-		}
-		else if (key === " ") {
-			player.controls.handbrake = true;
-		}
-		else if (key === "escape") {
-			// open pause menu
-		}
-	
+
 		// debug keybinds
 		if (devMode) {
 			if (key === "e") { // toggle big fov
@@ -54,7 +93,7 @@ window.addEventListener("keydown", event => {
 			if (event.altKey && key === "c") { // toggle graph
 				Render.rotationPoint = !Render.rotationPoint;
 			}
-			if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing)
+			if (event.altKey && key === "a") { // toggle image smoothing (anti aliasing for sprites)
 				ctx.imageSmoothingEnabled = !ctx.imageSmoothingEnabled;
 			}
 		}
@@ -64,20 +103,12 @@ window.addEventListener("keyup", event => {
 	let key = event.key.toLowerCase();
 
 	if (!event.repeat) {
-		if (key === "w" || key === "arrowup") {
-			player.controls.up = false;
+		let fullKeyName = (event.ctrlKey ? "ctrl " : "") + (event.altKey ? "alt " : "") + (event.shiftKey ? "shift " : "") + key;
+		if (binds[key]) {
+			binds[key](false);
 		}
-		else if (key === "s" || key === "arrowdown") {
-			player.controls.down = false;
-		}
-		else if (key === "a" || key === "arrowleft") {
-			player.controls.left = false;
-		}
-		else if (key === "d" || key === "arrowright") {
-			player.controls.right = false;
-		}
-		else if (key === " ") {
-			player.controls.handbrake = false;
+		if (binds[fullKeyName]) {
+			binds[fullKeyName](false);
 		}
 	}
 });
@@ -117,12 +148,22 @@ window.addEventListener("mousemove", event => {
 	mousePosition.set(screenPosition);
 });
 window.addEventListener("mousedown", event => {
-	if (event.button === 0) {
-		player.controls.shoot = true;
+	let key = "click" + event.button;
+	let fullKeyName = (event.ctrlKey ? "ctrl " : "") + (event.altKey ? "alt " : "") + (event.shiftKey ? "shift " : "") + key;
+	if (binds[key]) {
+		binds[key](true);
+	}
+	else if (binds[fullKeyName]) {
+		binds[fullKeyName](true);
 	}
 });
 window.addEventListener("mouseup", event => {
-	if (event.button === 0) {
-		player.controls.shoot = false;
+	let key = "click" + event.button;
+	let fullKeyName = (event.ctrlKey ? "ctrl " : "") + (event.altKey ? "alt " : "") + (event.shiftKey ? "shift " : "") + key;
+	if (binds[key]) {
+		binds[key](false);
+	}
+	else if (binds[fullKeyName]) {
+		binds[fullKeyName](false);
 	}
 });

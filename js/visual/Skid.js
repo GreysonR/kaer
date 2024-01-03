@@ -16,7 +16,6 @@ class Skid {
 	}
 }
 
-camera.lastPosition = new vec(camera.translation);
 Render.on("beforeLayer0", () => {
 	let now = world.time;
 

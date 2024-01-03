@@ -1,12 +1,20 @@
 "use strict";
 
-const player = new Car("car1");
+let playerBodies = {
+	car: new Car("car1"),
+	character: new Character("Player"),
+}
+playerBodies.character.gun = new Gun("playerGun");
+
+var player = playerBodies.car;
 // const player = new Character("Player");
-player.gun = new Gun("playerGun");
-// player.maxHealth = 10000; player.health = player.maxHealth;
-// player.gun.damage = 1000;
+
+// playerBodies.character.gun.damage = 1000;
+playerBodies.car.maxHealth = 100; playerBodies.car.health = playerBodies.car.maxHealth;
+
 let healthbarWrapperWidth = document.getElementsByClassName("healthbarWrapper")[0].clientWidth;
-player.on("takeDamage", updateHealthBar);
+playerBodies.car.on("takeDamage", updateHealthBar);
+playerBodies.character.on("takeDamage", updateHealthBar);
 function updateHealthBar() {
 	let health = player.health;
 	let width = health / player.maxHealth * healthbarWrapperWidth;
@@ -14,7 +22,7 @@ function updateHealthBar() {
 	document.getElementById("healthbarText").innerHTML = health + "/" + player.maxHealth;
 }
 updateHealthBar();
-player.on("takeDamage", function effects(damage) {
+function playerDamageEffects(damage) {
 	let intensity = Math.min(3, (damage / 10) ** 0.5);
 	
 	// blur
@@ -55,7 +63,9 @@ player.on("takeDamage", function effects(damage) {
 	redOutline.addEventListener("animationend", function end() {
 		redOutline.remove();
 	});
-});
+}
+playerBodies.car.on("takeDamage", playerDamageEffects);
+playerBodies.character.on("takeDamage", playerDamageEffects);
 player.add();
 
 // - shooting
@@ -145,33 +155,55 @@ player.body.on("beforeUpdate", updateGamepad);
 
 
 // - update camera
-let lastFov = [];
-let lastPos = [];
-let baseFov = 2000; 
-Render.on("beforeLayer0", () => {
-	let g = 0.15; // higher g = fov more sensitive to speed changes
-	let carBody = player.body;
-	let carUp = new vec(Math.cos(carBody.angle), Math.sin(carBody.angle));
+var gameCamera = {
+	lastFov: [],
+	lastPosition: [],
+	baseFov: 2000,
+}
+function updateGameCamera() {
+	let { baseFov, lastFov, lastPosition } = gameCamera;
 	
-	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*carBody.velocity.length)) / g)) ** 3 * 1000;
+	// fov
+	let g = 0.15; // higher g = fov more sensitive to speed changes
+	let body = player.body;
+	let bodyUp = new vec(Math.cos(body.angle), Math.sin(body.angle));
+	
+	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*body.velocity.length)) / g)) ** 3 * 1200;
 	lastFov.unshift(curFov);
-	let maxFovLen = Math.max(1, Math.round(Performance.fps * 0.5));
-	if (lastFov.length > maxFovLen) {
+	let maxFovLen = Math.max(1, Math.round(Performance.history.avgFps * 1));
+	let n = 0;
+	while (lastFov.length > maxFovLen && ++n <= 1) {
 		lastFov.pop();
-		if (Math.abs(lastFov.length - maxFovLen) > 6)
-			lastFov.pop();
 	}
-	let avgFov = lastFov.reduce((a, b) => a + b, 0) / lastFov.length;
+	let totalAvgFovWeight = 0;
+	let avgFov = lastFov.reduce((a, b, i) => {
+		let weight = 1 / Math.sqrt(i * 1 + 1);
+		totalAvgFovWeight += weight;
+		return a + b * weight;
+	}, 0) / totalAvgFovWeight;
 	camera.fov = avgFov;
 
-	let curPos = carBody.position.add(carUp.mult(carUp.dot(carBody.velocity) * 12)); // velocity) * 14));
-	lastPos.unshift(curPos);
-	let maxPosLen = Math.max(1, Math.round(Performance.history.avgFps * 0.14)); // avgFps * 0.1) * 2
-	if (lastPos.length > maxPosLen) {
-		lastPos.pop();
-		if (Math.abs(lastPos.length - maxPosLen) > 6)
-			lastPos.pop();
+	// position
+	let curPos;
+	let posWeightFalloff = 1;
+	if (player instanceof Car) {
+		curPos = body.position.add(bodyUp.mult(bodyUp.dot(body.velocity) * 12)); // velocity) * 14));
 	}
-	let avgPos = lastPos.reduce((a, b) => a.add(b), new vec(0, 0)).div(lastPos.length);
-	camera.position = avgPos; // carBody.position.add(carBody.velocity.mult(-2));
-});
+	else {
+		curPos = new vec(body.position);//.add(body.velocity.mult(Engine.delta));
+		posWeightFalloff = 300;
+	}
+	lastPosition.unshift(curPos);
+	let maxPosLen = Math.max(1, Math.round(Performance.history.avgFps * 0.5)); // avgFps * 0.1) * 2
+	n = 0;
+	while (lastPosition.length > maxPosLen && ++n <= 1) {
+		lastPosition.pop();
+	}
+	let totalAvgPosWeight = 0;
+	let avgPos = lastPosition.reduce((a, b, i) => {
+		let weight = 1 / Math.sqrt(i * posWeightFalloff + 1);
+		totalAvgPosWeight += weight;
+		return a.add2(b.mult(weight));
+	}, new vec(0, 0)).div(totalAvgPosWeight);
+	camera.position.set(avgPos); // carBody.position.add(carBody.velocity.mult(-2));
+}
