@@ -29,6 +29,7 @@ class Character {
 	damageCooldown = 0;
 	gun = null;
 	gunTarget = new vec(0, 0);
+	invincible = false;
 
 	// ~ controls
 	controls = {
@@ -38,7 +39,18 @@ class Character {
 		left: false,
 		locked: false, // whether you have control of character or not; controlled by game state not player
 		shoot: false,
+		roll: false,
 	};
+	roll = {
+		active: false,
+		distance: 180,
+		duration: 400,
+		invincibilityDuration: 150,
+		animation: null,
+
+		cooldown: 150,
+		last: -10000,
+	}
 
 	events = {
 		takeDamage: [],
@@ -67,7 +79,7 @@ class Character {
 	}
 	takeDamage = function(damage) {
 		const now = world.time;
-		if (now - this.lastDamage >= this.damageCooldown) {
+		if (now - this.lastDamage >= this.damageCooldown && !this.invincible) {
 			this.lastDamage = now;
 			damage = Math.min(this.health, damage);
 			this.health -= damage;
@@ -252,8 +264,9 @@ class Character {
 		}
 	}
 	update = function() {
+		let now = world.time;
 		let { body, controls } = this;
-		let { up, down, left, right, locked } = controls;
+		let { up, down, left, right, locked, roll } = controls;
 
 		body.setAngle(body.position.sub(this.gunTarget).angle);
 
@@ -262,11 +275,58 @@ class Character {
 			down = false;
 			right = false;
 			left = false;
+			roll = false;
 		}
-		this.updateShoot();
+		if (roll) {
+			let { distance, duration, invincibilityDuration, cooldown, last } = this.roll;
+			controls.roll = false;
+			if (!this.roll.active) { // create roll animation
+				let direction = new vec(right - left, down - up).normalize().mult(distance);
+				if (!direction.x && !direction.y || now - last <= cooldown) return;
+				if (this.roll.animation) this.roll.animation.stop();
+				
+				let curveDx = (t) => 2 * Math.pow(1 - t, 1); // d/dx of ease.out.quadratic
+				let curveDxArea = 5 * duration / 100;
+				direction.div2(curveDxArea);
+				
+				let character = this;
+				controls.locked = true;
+				character.invincible = true;
+				this.roll.active = true;
+				this.roll.animation = animations.create({
+					duration: duration,
+					curve: ease.linear,
+					callback: t => {
+						let pDx = curveDx(t);
+						character.body.velocity.set(direction.mult(pDx)); // apply d/dx of curve
 
-		let velocity = new vec(right - left, down - up).normalize().mult(this.speed);
-		body.velocity.set(velocity);
+						if (t * duration >= invincibilityDuration) { // remove invincibility once past invincibility time
+							character.invincible = false;
+						}
+					},
+					onend: () => {
+						character.invincible = false;
+						character.roll.active = false;
+						character.roll.last = world.time;
+						controls.locked = false;
+					},
+					onstop: () => {
+						character.invincible = false;
+						this.roll.active = false;
+						character.roll.last = world.time;
+					}
+				});
+			}
+			return;
+		}
+
+
+		if (!locked) {
+			this.updateShoot();
+
+			let velocity = new vec(right - left, down - up).normalize().mult(this.speed);
+			body.velocity.set(velocity);
+		}
 	}
 	resetEffects() {
 	}

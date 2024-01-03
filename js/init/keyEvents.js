@@ -3,7 +3,7 @@
 var mousePosition = new vec(0, 0);
 
 function toggleControl(value) {
-	if (player.controls[this.control])
+	if (player.controls[this.control] != undefined)
 		player.controls[this.control] = value;
 }
 let binds = {
@@ -22,7 +22,7 @@ let binds = {
 	
 	"f": function switchMovement(value) {
 		if (!value) return;
-		if (player.health <= 0) return;
+		if (player.health <= 0 || player.controls.locked) return;
 		let position = player.body.position;
 		let originalControls = {};
 		Common.merge(originalControls, player.controls);
@@ -68,10 +68,10 @@ window.addEventListener("keydown", event => {
 		if (devMode) {
 			if (key === "e") { // toggle big fov
 				if (!window.originalFov) {
-					window.originalFov = baseFov;
+					window.originalFov = gameCamera.baseFov;
 				}
-				if (baseFov !== 10000) baseFov = 10000;
-				else baseFov = window.originalFov;
+				if (gameCamera.baseFov !== 10000) gameCamera.baseFov = 10000;
+				else gameCamera.baseFov = window.originalFov;
 			}
 			if (event.altKey && key === "q") { // toggle map file input
 				document.getElementById("mapInput").classList.toggle("active");

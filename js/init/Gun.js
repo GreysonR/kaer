@@ -71,6 +71,7 @@ class Bullet {
 			let otherBody = collision.bodyA === body ? collision.bodyB : collision.bodyA;
 			if (!otherBody.isSensor && otherBody != parent) {
 				if (otherBody.parentObj && otherBody.parentObj.takeDamage) {
+					if (otherBody.parentObj.invincible) return;
 					otherBody.parentObj.takeDamage(gun.damage);
 					bullet.hitCharacter(collision);
 				}

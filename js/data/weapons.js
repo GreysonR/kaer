@@ -26,7 +26,7 @@ var Weapons = {
 	}),
 	"pistol": new Weapon({
 		damage: 4,
-		fireRate: 500,
+		fireRate: 700,
 		bulletSpeed: 28,
 		range: 1000,
 	}),
