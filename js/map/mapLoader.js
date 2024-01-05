@@ -385,7 +385,11 @@ var MapBodies = {
 			{ x: 0, y: 0, width: 600, height: 300 },
 		], "LHouseE", 8, "buildings", 20);
 	},
-	exit: function({ x, y, width, height, to }) {
+	exit: function({ x, y, width, height, to, side }, scene) {
+		if (!to) { // no destination, so just for connecting rooms up
+			scene.exits[side] = new vec(x + width/2, y + height/2);
+			return;
+		}
 		let body = Bodies.rectangle(width, height, new vec(x + width/2, y + height / 2), {
 			isStatic: true,
 			hasCollisions: true,

@@ -296,11 +296,11 @@ document.getElementById("mapInput").addEventListener("input", event => {
 				for (let path of paths) {
 					if (path.length > 1) {
 						let center = getCenterOfMass(path);
-						
+
 						if (name === "wall") {
 							let vertices = [];
 							for (let vertice of path) {
-								if (vertice.x) {
+								if (vertice.x != undefined) {
 									vertices.push(vertice);
 								}
 								else {

@@ -113,12 +113,29 @@ class Room extends Scene {
 	data;
 	waves = [];
 	bodies = [];
-	doors = [];
+	exits = {};
 
 	add() {
 		super.add();
 	}
 	delete() {
 		super.delete();
+	}
+	setPosition(position) {
+		let offset = position.sub(this.position);
+		this.position = new vec(position);
+		this.spawn.position.set(position);
+
+		function offsetScene(scene) {
+			for (let body of scene.bodies) {
+				if (body instanceof Scene) {
+					offsetScene(body);
+				}
+				else {
+					body.setPosition(body.position.add(offset));
+				}
+			}
+		}
+		offsetScene(this);
 	}
 }

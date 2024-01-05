@@ -59,7 +59,7 @@ var Models = {
 			// drifting / sliding
 			tireGrip:    3.2,
 			steeringWeight: 0,
-			power: 0.2,
+			power: 0.1,
 
 			// rotation point settings
 			rotationBounds: [-40, 0],
@@ -99,7 +99,7 @@ var Models = {
 			// drifting / sliding
 			tireGrip:    3.4,
 			steeringWeight: 0.02,
-			power: 0.3,
+			power: 0.1,
 
 			// rotation point settings
 			rotationBounds: [-40, 0],
