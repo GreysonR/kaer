@@ -43,9 +43,9 @@ class Character {
 	};
 	roll = {
 		active: false,
-		distance: 180,
-		duration: 400,
-		invincibilityDuration: 150,
+		distance: 200,
+		duration: 420,
+		invincibilityDuration: 300,
 		animation: null,
 
 		cooldown: 150,

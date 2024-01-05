@@ -178,6 +178,7 @@ var ter = {
 		},
 		updateVelocity: function(body, delta) {
 			const timescale = delta;
+			// let { velocity: lastVelocity, angularVelocity: lastAngularVelocity } = body.last;
 
 			let frictionAir = (1 - body.frictionAir) ** timescale;
 			let frictionAngular = (1 - body.frictionAngular) ** timescale;
@@ -186,17 +187,19 @@ var ter = {
 				return;
 			}
 			
-			let lastVelocity = new vec(body.velocity);
 			body.velocity.mult2(frictionAir);
 			if (body.velocity.x !== 0 || body.velocity.y !== 0){
-				body.translate(body.velocity.add(lastVelocity).mult(timescale / 2)); // trapezoidal rule to take into account acceleration
+				// body.translate(body.velocity.add(lastVelocity).mult(timescale / 2)); // trapezoidal rule to take into account acceleration
+				body.translate(body.velocity.mult(timescale)); // more stable
 			}
+			// body.last.velocity.set(body.velocity);
 
-			let lastAngularVelocity = body.angularVelocity;
 			body.angularVelocity *= frictionAngular;
 			if (body.angularVelocity){
-				body.translateAngle((body.angularVelocity + lastAngularVelocity) / 2 * timescale); // trapezoidal rule to take into account acceleration
+				// body.translateAngle((body.angularVelocity + lastAngularVelocity) / 2 * timescale); // trapezoidal rule to take into account acceleration
+				body.translateAngle((body.angularVelocity) * timescale); // more stable
 			}
+			// body.last.angularVelocity = body.angularVelocity;
 			
 			body.updateBounds();
 		},
@@ -264,10 +267,10 @@ var ter = {
 	},
 	Engine: {
 		delta: 1,
-		substeps: 4,
-		velocityIterations: 2,
-		positionIterations: 4,
-		constraintIterations: 4,
+		substeps: 2,
+		velocityIterations: 1,
+		positionIterations: 1,
+		constraintIterations: 1,
 		maxShare: 1,
 
 		update: function(delta) {
@@ -579,7 +582,7 @@ var ter = {
 				
 				if (depth < 1) continue;
 
-				let impulse = normal.mult(depth * 0.1);
+				let impulse = normal.mult(depth * 0.9);
 				let totalMass = bodyA.mass + bodyB.mass;
 				let shareA = (bodyB.mass / totalMass) || 0;
 				let shareB = (bodyA.mass / totalMass) || 0;

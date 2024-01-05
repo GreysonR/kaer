@@ -9,7 +9,10 @@ playerBodies.character.gun = new Gun("playerGun");
 var player = playerBodies.car;
 // const player = new Character("Player");
 
-// playerBodies.character.gun.damage = 1000;
+playerBodies.character.gun.damage = 8;
+
+playerBodies.car.gun = new Gun("playerGun");
+playerBodies.car.gun.damage = 100;
 playerBodies.car.maxHealth = 100; playerBodies.car.health = playerBodies.car.maxHealth;
 
 let healthbarWrapperWidth = document.getElementsByClassName("healthbarWrapper")[0].clientWidth;

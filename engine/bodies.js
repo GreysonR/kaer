@@ -309,6 +309,11 @@ class Body {
 	angularVelocity = 0;
 	torque = 0;
 
+	// last = {
+	// 	velocity: new vec(0, 0),
+	// 	angularVelocity: 0,
+	// };
+
 	vertices = [];
 	children = [];
 	parent = null;

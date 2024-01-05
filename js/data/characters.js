@@ -36,7 +36,7 @@ var CharacterModels = {
 			maxHealth:	30,
 			health:	    30,
 			damageCooldown: 500,
-			speed: 8,
+			speed: 8.5,
 		},
 		body: {
 			width:  50,

@@ -33,6 +33,7 @@ class Waves {
 	}
 	
 	placeWave() {
+		if (this.waves.length === 0) return;
 		for (let enemyData of this.waves[this.curWave]) {
 			let { type, position, angle } = enemyData;
 			if (this.room) {
