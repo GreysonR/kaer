@@ -267,7 +267,7 @@ var ter = {
 	},
 	Engine: {
 		delta: 1,
-		substeps: 2,
+		substeps: 5,
 		velocityIterations: 1,
 		positionIterations: 1,
 		constraintIterations: 1,

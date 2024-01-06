@@ -7,7 +7,8 @@ class EnemyGround extends Character {
 		let now = world.time;
 	
 		for (let enemy of EnemyGround.all) {
-			let { state, body, controls, target, seenTime, gun } = enemy;
+			let { state, body, controls, target, seenTime } = enemy;
+			let range = enemy.gun ? enemy.gun.range : 1000;
 			let { position } = body;
 			let distance = target.sub(position);
 			let direction = distance.normalize();
@@ -21,7 +22,7 @@ class EnemyGround extends Character {
 				controls.shoot = false;
 			}
 			else if (state === "attack") {
-				if (realDistance.length > Math.max(1500, gun.range * 1.7)) {
+				if (realDistance.length > Math.max(1500, range * 1.7)) {
 					continue; // don't move if too far away
 				}
 				controls.right = direction.x;
@@ -32,11 +33,11 @@ class EnemyGround extends Character {
 				// else if (direction.y < -0.2) controls.up = true;
 				body.setAngle(direction.angle);
 
-				if (realDistance.length < gun.range * 0.5) {
+				if (realDistance.length < range * 0.5) {
 					enemy.state = "shoot";
 				}
 				
-				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= gun.range) {
+				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= range) {
 					controls.shoot = true;
 
 					let { aimVariation } = enemy;
@@ -49,7 +50,7 @@ class EnemyGround extends Character {
 				}
 			}
 			else if (state === "shoot") {
-				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= gun.range) {
+				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= range) {
 					controls.shoot = true;
 
 					let { aimVariation } = enemy;
@@ -61,11 +62,11 @@ class EnemyGround extends Character {
 					controls.shoot = false;
 				}
 
-				if (realDistance.length > gun.range * 0.5) {
+				if (realDistance.length > range * 0.5) {
 					enemy.state = "attack";
 				}
 
-				if (realDistance.length < Math.min(gun.range * 0.3, 200)) {
+				if (realDistance.length < Math.min(range * 0.3, 200)) {
 					controls.right = -direction.x;
 					controls.down = -direction.y;
 				}
@@ -84,8 +85,9 @@ class EnemyGround extends Character {
 
 		// init gun
 		this.aimVariation = 0.2; // radians
-		this.gun = new Gun(CharacterModels[model].gun);
-		this.gun.magazine = Infinity;
+		if (CharacterModels[model].gun) {
+			this.gun = new Gun(CharacterModels[model].gun);
+		}
 
 		let character = this;
 		this.on("spotted", () => {
@@ -377,6 +379,17 @@ class EnemyGround extends Character {
 class GroundBasic extends EnemyGround {
 	constructor(position, angle) {
 		super("GroundBasic", {
+			spawn: {
+				position: position,
+				angle: angle,
+			}
+		});
+	}
+}
+
+class KingBoss extends EnemyGround {
+	constructor(position, angle) {
+		super("KingBoss", {
 			spawn: {
 				position: position,
 				angle: angle,

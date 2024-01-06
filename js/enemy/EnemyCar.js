@@ -13,6 +13,7 @@ class EnemyCar extends Car {
 			let angleToTarget = position.sub(target).angle - Math.PI;
 			let angleDiff = subAngle(angleToTarget, angle);
 			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let range = enemy.gun ? enemy.gun.range : 1000;
 			
 			if (state === "wait") {
 				controls.up = false;
@@ -48,7 +49,7 @@ class EnemyCar extends Car {
 				}
 			
 				if (player.health > 0 && now - seenTime >= seenDelay) {
-					if (enemy.body.position.sub(player.body.position).length <= enemy.gun.range && Math.abs(angleDiff) < Math.PI * 0.7) {
+					if (enemy.body.position.sub(player.body.position).length <= range && Math.abs(angleDiff) < Math.PI * 0.7) {
 						controls.shoot = true;
 						
 						let { aimVariation } = enemy;
@@ -89,8 +90,9 @@ class EnemyCar extends Car {
 
 		// init gun
 		this.aimVariation = 0.2; // radians
-		this.gun = new Gun(Models[model].gun);
-		this.gun.magazine = Infinity;
+		if (Models[model].gun) {
+			this.gun = new Gun(Models[model].gun);
+		}
 
 		let car = this;
 		this.on("spotted", () => {

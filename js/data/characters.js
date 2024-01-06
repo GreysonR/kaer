@@ -43,7 +43,7 @@ var CharacterModels = {
 			height: 50,
 			mass: 1,
 			render: {
-				sprite: "characters/GroundBasic.png",
+				sprite: "characters/Player.png",
 				spriteScale: new vec(1, 1),
 			},
 			collisionFilter: {
@@ -69,6 +69,29 @@ var CharacterModels = {
 			render: {
 				sprite: "characters/GroundBasic.png",
 				spriteScale: new vec(1, 1),
+			},
+			collisionFilter: {
+				category: "1"
+			},
+		},
+	}),
+	"KingBoss": new CharacterModel({
+		model: "KingBoss",
+		value: 500,
+		stats: {
+			// health
+			maxHealth:	200,
+			health:	    200,
+			damageCooldown: 100,
+			speed: 3,
+		},
+		body: {
+			width:  92,
+			height: 92,
+			mass: 500,
+			render: {
+				sprite: "characters/KingBoss.png",
+				spriteScale: new vec(2.15, 1.63),
 			},
 			collisionFilter: {
 				category: "1"
