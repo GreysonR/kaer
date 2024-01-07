@@ -79,7 +79,7 @@ class Character {
 	}
 	takeDamage = function(damage) {
 		const now = world.time;
-		if (now - this.lastDamage >= this.damageCooldown && !this.invincible) {
+		if (now - this.lastDamage >= this.damageCooldown && !this.invincible && this.health > 0) {
 			this.lastDamage = now;
 			damage = Math.min(this.health, damage);
 			this.health -= damage;

@@ -76,7 +76,7 @@ class Car {
 	}
 	takeDamage = function(damage) {
 		const now = world.time;
-		if (now - this.lastDamage >= this.damageCooldown) {
+		if (now - this.lastDamage >= this.damageCooldown && this.health > 0) {
 			this.lastDamage = now;
 			damage = Math.min(this.health, damage);
 			this.health -= damage;

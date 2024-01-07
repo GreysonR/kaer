@@ -272,7 +272,6 @@ class KingBoss extends EnemyGround {
 		},
 		phase2: {
 			summonServants: "summonServants", // same as normal
-			sceptorSweep: "sceptorSweep", // directional bullet hell
 			sceptorMagicPound: "sceptorMagicPound", // bullet hell
 			greatAvalanch: "greatAvalanch", // more intense avalanch falling thing
 		}

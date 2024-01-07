@@ -25,13 +25,13 @@ var Weapons = {
 		range: 1000,
 	}),
 	"pistol": new Weapon({
-		damage: 2,
+		damage: 3,
 		fireRate: 700,
 		bulletSpeed: 26,
 		range: 1000,
 	}),
 	"pistol2": new Weapon({
-		damage: 1,
+		damage: 2,
 		fireRate: 900,
 		bulletSpeed: 17,
 		range: 700,
