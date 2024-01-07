@@ -7,13 +7,12 @@ let playerBodies = {
 playerBodies.character.gun = new Gun("playerGun");
 
 var player = playerBodies.car;
-// const player = new Character("Player");
 
-playerBodies.character.gun.damage = 8;
+playerBodies.character.gun.damage = 6;
 
-playerBodies.car.gun = new Gun("playerGun");
-playerBodies.car.gun.damage = 100;
-playerBodies.car.maxHealth = 100; playerBodies.car.health = playerBodies.car.maxHealth;
+// playerBodies.car.gun = new Gun("playerGun");
+// playerBodies.car.gun.damage = 100;
+// playerBodies.car.maxHealth = 100; playerBodies.car.health = playerBodies.car.maxHealth;
 
 let healthbarWrapperWidth = document.getElementsByClassName("healthbarWrapper")[0].clientWidth;
 playerBodies.car.on("takeDamage", updateHealthBar);
@@ -74,6 +73,10 @@ player.add();
 // - shooting
 Render.on("beforeRender", () => {
 	player.gunTarget.set(camera.screenPtToGame(mousePosition));
+
+	if (player instanceof Character) {
+		player.body.setAngle(player.gunTarget.sub(player.body.position).angle);
+	}
 });
 
 // - velocity graph
@@ -156,57 +159,3 @@ function updateGamepad() {
 }
 player.body.on("beforeUpdate", updateGamepad);
 
-
-// - update camera
-var gameCamera = {
-	lastFov: [],
-	lastPosition: [],
-	baseFov: 2000,
-}
-function updateGameCamera() {
-	let { baseFov, lastFov, lastPosition } = gameCamera;
-	
-	// fov
-	let g = 0.15; // higher g = fov more sensitive to speed changes
-	let body = player.body;
-	let bodyUp = new vec(Math.cos(body.angle), Math.sin(body.angle));
-	
-	let curFov = baseFov + (Math.min(1, (g - g / Math.max(1, g*body.velocity.length)) / g)) ** 3 * 1200;
-	lastFov.unshift(curFov);
-	let maxFovLen = Math.max(1, Math.round(Performance.history.avgFps * 1));
-	let n = 0;
-	while (lastFov.length > maxFovLen && ++n <= 1) {
-		lastFov.pop();
-	}
-	let totalAvgFovWeight = 0;
-	let avgFov = lastFov.reduce((a, b, i) => {
-		let weight = 1 / Math.sqrt(i * 1 + 1);
-		totalAvgFovWeight += weight;
-		return a + b * weight;
-	}, 0) / totalAvgFovWeight;
-	camera.fov = avgFov;
-
-	// position
-	let curPos;
-	let posWeightFalloff = 1;
-	if (player instanceof Car) {
-		curPos = body.position.add(bodyUp.mult(bodyUp.dot(body.velocity) * 12)); // velocity) * 14));
-	}
-	else {
-		curPos = new vec(body.position);//.add(body.velocity.mult(Engine.delta));
-		posWeightFalloff = 300;
-	}
-	lastPosition.unshift(curPos);
-	let maxPosLen = Math.max(1, Math.round(Performance.history.avgFps * 0.5)); // avgFps * 0.1) * 2
-	n = 0;
-	while (lastPosition.length > maxPosLen && ++n <= 1) {
-		lastPosition.pop();
-	}
-	let totalAvgPosWeight = 0;
-	let avgPos = lastPosition.reduce((a, b, i) => {
-		let weight = 1 / Math.sqrt(i * posWeightFalloff + 1);
-		totalAvgPosWeight += weight;
-		return a.add2(b.mult(weight));
-	}, new vec(0, 0)).div(totalAvgPosWeight);
-	camera.position.set(avgPos); // carBody.position.add(carBody.velocity.mult(-2));
-}

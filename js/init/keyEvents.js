@@ -34,7 +34,7 @@ let binds = {
 		}
 		else { // swap to car
 			// let angle = player.body.velocity.angle;
-			let angle = player.body.angle - Math.PI;
+			let angle = player.body.angle;
 			player.delete();
 			player = playerBodies.car;
 			player.add();

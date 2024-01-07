@@ -20,6 +20,7 @@ class CharacterModel {
 		round: 10,
 		roundQuality: 20,
 		friction: 0.05,
+		frictionAir: 0.9,
 		restitution: 0.1,
 		mass: 3,
 		render: {
@@ -36,7 +37,7 @@ var CharacterModels = {
 			maxHealth:	30,
 			health:	    30,
 			damageCooldown: 500,
-			speed: 8.5,
+			speed: 25, // 8.5
 		},
 		body: {
 			width:  50,
@@ -60,7 +61,7 @@ var CharacterModels = {
 			maxHealth:	12,
 			health:	    12,
 			damageCooldown: 100,
-			speed: 5,
+			speed: 15,
 		},
 		body: {
 			width:  50,
@@ -83,13 +84,15 @@ var CharacterModels = {
 			maxHealth:	200,
 			health:	    200,
 			damageCooldown: 100,
-			speed: 3,
+			speed: 6,
 		},
 		body: {
 			width:  92,
 			height: 92,
 			mass: 500,
+			frictionAngular: 1,
 			render: {
+				layer: 2,
 				sprite: "characters/KingBoss.png",
 				spriteScale: new vec(2.15, 1.63),
 			},

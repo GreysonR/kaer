@@ -111,6 +111,13 @@ function createGradient(startPosition, endPosition, colorStops = [["#ff0000ff", 
 	}
 	return gradient;
 }
+function createRadialGradient(position, radius, colorStops = [["#ff0000ff", 0], ["#ff000000", 1]]) {
+	let gradient = ctx.createRadialGradient(position.x, position.y, 0, position.x, position.y, radius);
+	for (let colorStop of colorStops) {
+		gradient.addColorStop(colorStop[1], colorStop[0]);
+	}
+	return gradient;
+}
 
 function createElement(type, properties) {
 	let elem = document.createElement(type);
@@ -184,6 +191,10 @@ function blurCanvas(amount = 10, durationIn = 200, durationOut = 200) {
 }
 function setCSSVariable(varName, value) {
 	root.style.setProperty(`--${varName}`, value);
+}
+
+function boundedRandom([min, max]) {
+	return Math.random() * (max - min) + min;
 }
 
 String.prototype.toCapital = function() {

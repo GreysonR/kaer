@@ -40,7 +40,7 @@ function main() {
 	else {
 		if (runEngine) {
 			Engine.update();
-			updateGameCamera();
+			if (gameCamera.update) gameCamera.update();
 		}
 		else 
 			Performance.update();

@@ -3,82 +3,12 @@
 class EnemyGround extends Character {
 	static all = [];
 	static update() {
-		let subAngle = ter.Common.angleDiff;
-		let now = world.time;
-	
 		for (let enemy of EnemyGround.all) {
-			let { state, body, controls, target, seenTime } = enemy;
-			let range = enemy.gun ? enemy.gun.range : 1000;
-			let { position } = body;
-			let distance = target.sub(position);
-			let direction = distance.normalize();
-			let realDistance = player.body.position.sub(position);
-			
-			controls.left = false;
-			controls.right = false;
-			controls.up = false;
-			controls.down = false;
-			if (state === "wait") {
-				controls.shoot = false;
-			}
-			else if (state === "attack") {
-				if (realDistance.length > Math.max(1500, range * 1.7)) {
-					continue; // don't move if too far away
-				}
-				controls.right = direction.x;
-				controls.down = direction.y;
-				// if (direction.x > 0.2) controls.right = true;
-				// else if (direction.x < -0.2) controls.left = true;
-				// if (direction.y > 0.2) controls.down = true;
-				// else if (direction.y < -0.2) controls.up = true;
-				body.setAngle(direction.angle);
-
-				if (realDistance.length < range * 0.5) {
-					enemy.state = "shoot";
-				}
-				
-				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= range) {
-					controls.shoot = true;
-
-					let { aimVariation } = enemy;
-					let diff = player.body.position.sub(enemy.body.position);
-					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
-					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
-				}
-				else {
-					controls.shoot = false;
-				}
-			}
-			else if (state === "shoot") {
-				if (player.health > 0 && now - seenTime >= enemy.seenDelay && enemy.body.position.sub(player.body.position).length <= range) {
-					controls.shoot = true;
-
-					let { aimVariation } = enemy;
-					let diff = player.body.position.sub(enemy.body.position);
-					let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
-					enemy.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(enemy.body.position));
-				}
-				else {
-					controls.shoot = false;
-				}
-
-				if (realDistance.length > range * 0.5) {
-					enemy.state = "attack";
-				}
-
-				if (realDistance.length < Math.min(range * 0.3, 200)) {
-					controls.right = -direction.x;
-					controls.down = -direction.y;
-				}
-			}
+			enemy.updateAI();
 		}
 	}
 	constructor(model, options = {}) {
 		super(model, options);
-
-		EnemyGround.all.push(this);
-
-		this.body.delete();
 
 		// set money value
 		this.value = CharacterModels[model].value;
@@ -247,9 +177,9 @@ class EnemyGround extends Character {
 		}
 
 		// iterate through collision pairs to update target
-		let carDirection = new vec(Math.cos(this.body.angle), Math.sin(this.body.angle));
-		let carDistance = this.body.position.sub(player.body.position).length;
-		let direction = player.body.position.sub(this.body.position).normalize2().mult2(Math.min(carDistance, 300));
+		let bodyDirection = new vec(Math.cos(this.body.angle), Math.sin(this.body.angle));
+		let distanceToPlayer = this.body.position.sub(player.body.position).length;
+		let direction = player.body.position.sub(this.body.position).normalize2().mult2(Math.min(distanceToPlayer, 300));
 		let directionNormalized = direction.normalize();
 		for (let collision of Object.values(sightBox.collisions)) {
 			let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
@@ -257,12 +187,12 @@ class EnemyGround extends Character {
 				let { point: closestPoint, normal: closestNormal } = closestEdgeBetweenBodies(this.body, otherBody);
 				let distance = this.body.position.sub(closestPoint);
 				let scale = ((1 - distance.length / sightBox.height) ** 2) * 300;
-				if (Math.abs(closestNormal.dot(carDirection)) > 0.8) {
+				if (Math.abs(closestNormal.dot(bodyDirection)) > 0.8) {
 					closestNormal.normal2();
 					if (closestNormal.dot(directionNormalized) < 0) closestNormal.mult2(-1);
 				}
 				else {
-					scale *= Math.max(0, -carDirection.dot(closestNormal.normalize()));
+					scale *= Math.max(0, -bodyDirection.dot(closestNormal.normalize()));
 				}
 				// let scale = ((400 / distance.length) ** 1) * (carDirection.dot(distance.normalize()) ** 2) * 150;
 				this.normals.push([closestPoint, closestNormal.mult(scale)]);
@@ -334,6 +264,80 @@ class EnemyGround extends Character {
 		this.body.velocity.set(new vec(0, 0));
 	}
 
+	updateAI() {
+		let now = world.time;
+		let { state, body, controls, target, seenTime } = this;
+		let range = this.gun ? this.gun.range : 1000;
+		let { position } = body;
+		let distance = target.sub(position);
+		let direction = distance.normalize();
+		let realDistance = player.body.position.sub(position);
+		
+		controls.left = false;
+		controls.right = false;
+		controls.up = false;
+		controls.down = false;
+		if (state === "wait") {
+			controls.shoot = false;
+		}
+		else if (state === "alert") {
+			if (realDistance.length < Math.max(1500, range * 1.7)) {
+				this.state = "attack";
+			}
+		}
+		else if (state === "attack") {
+			if (realDistance.length > Math.max(1500, range * 1.7)) {
+				this.state = "alert"; // don't move if too far away
+				return;
+			}
+			controls.right = direction.x;
+			controls.down = direction.y;
+			// if (direction.x > 0.2) controls.right = true;
+			// else if (direction.x < -0.2) controls.left = true;
+			// if (direction.y > 0.2) controls.down = true;
+			// else if (direction.y < -0.2) controls.up = true;
+			body.setAngle(direction.angle);
+
+			if (realDistance.length < range * 0.5) {
+				this.state = "shoot";
+			}
+			
+			if (player.health > 0 && now - seenTime >= this.seenDelay && this.body.position.sub(player.body.position).length <= range) {
+				controls.shoot = true;
+
+				let { aimVariation } = this;
+				let diff = player.body.position.sub(this.body.position);
+				let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
+				this.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(this.body.position));
+			}
+			else {
+				controls.shoot = false;
+			}
+		}
+		else if (state === "shoot") {
+			if (player.health > 0 && now - seenTime >= this.seenDelay && this.body.position.sub(player.body.position).length <= range) {
+				controls.shoot = true;
+
+				let { aimVariation } = this;
+				let diff = player.body.position.sub(this.body.position);
+				let angle = diff.angle + Math.random() * aimVariation - aimVariation / 2;
+				this.gunTarget.set(new vec(Math.cos(angle), Math.sin(angle)).mult2(diff.length).add(this.body.position));
+			}
+			else {
+				controls.shoot = false;
+			}
+
+			if (realDistance.length > range * 0.5) {
+				this.state = "attack";
+			}
+
+			if (realDistance.length < Math.min(range * 0.3, 200)) {
+				controls.right = -direction.x;
+				controls.down = -direction.y;
+			}
+		}
+	}
+
 	healthBarPercent = 1;
 	healthBarBackgroundPercent = 1;
 	healthAnimation;
@@ -379,17 +383,6 @@ class EnemyGround extends Character {
 class GroundBasic extends EnemyGround {
 	constructor(position, angle) {
 		super("GroundBasic", {
-			spawn: {
-				position: position,
-				angle: angle,
-			}
-		});
-	}
-}
-
-class KingBoss extends EnemyGround {
-	constructor(position, angle) {
-		super("KingBoss", {
 			spawn: {
 				position: position,
 				angle: angle,

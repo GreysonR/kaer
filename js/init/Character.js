@@ -268,8 +268,6 @@ class Character {
 		let { body, controls } = this;
 		let { up, down, left, right, locked, roll } = controls;
 
-		body.setAngle(body.position.sub(this.gunTarget).angle);
-
 		if (locked) {
 			up = false;
 			down = false;
@@ -286,7 +284,7 @@ class Character {
 				if (this.roll.animation) this.roll.animation.stop();
 				
 				let curveDx = (t) => 2 * Math.pow(1 - t, 1); // d/dx of ease.out.quadratic
-				let curveDxArea = 5 * duration / 100;
+				let curveDxArea = 1.7 * duration / 100;
 				direction.div2(curveDxArea);
 				
 				let character = this;
@@ -298,7 +296,7 @@ class Character {
 					curve: ease.linear,
 					callback: t => {
 						let pDx = curveDx(t);
-						character.body.velocity.set(direction.mult(pDx)); // apply d/dx of curve
+						character.body.applyForce(direction.mult(pDx)); // apply d/dx of curve
 
 						if (t * duration >= invincibilityDuration) { // remove invincibility once past invincibility time
 							character.invincible = false;
@@ -325,7 +323,7 @@ class Character {
 			this.updateShoot();
 
 			let velocity = new vec(right - left, down - up).normalize().mult(this.speed);
-			body.velocity.set(velocity);
+			body.applyForce(velocity);
 		}
 	}
 	resetEffects() {

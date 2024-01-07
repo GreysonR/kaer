@@ -938,6 +938,9 @@ var ter = {
 			});
 			for (let layerId of layers) {
 				let layer = bodies[layerId];
+				// y sort for bodies
+				// let layer = [...bodies[layerId]];
+				// layer.sort((a, b) => (a.isStatic || b.isStatic) ? 0 : (a.position.y - b.position.y));
 				Render.trigger("beforeLayer" + layerId);
 				for (let body of layer) {
 					let { position, vertices, render, bounds, type } = body;
@@ -946,8 +949,8 @@ var ter = {
 					let width, height;
 					if (body.render.sprite) {
 						let sprite = body.render.sprite;
-						width  = Math.max(sprite.width,  bounds.max.x - bounds.min.x) * 0.5;
-						height = Math.max(sprite.height, bounds.max.y - bounds.min.y) * 0.5;
+						width  = Math.max(sprite.width * sprite.scale.x * render.spriteScale.x,  bounds.max.x - bounds.min.x) * 0.5;
+						height = Math.max(sprite.height * sprite.scale.y * render.spriteScale.y, bounds.max.y - bounds.min.y) * 0.5;
 					}
 					else {
 						width  = (bounds.max.x - bounds.min.x) * 0.5;
