@@ -167,7 +167,7 @@ class KingBoss extends EnemyGround {
 						return;
 					}
 
-					let possibleAttacks = ["sceptorPound", "charge", "summonServants"];
+					let possibleAttacks = ["sceptorPound", "charge", "summonServants", "avalanch"];
 					let nextAttack = possibleAttacks.choose();
 					// let nextAttack = "avalanch"; // change to random
 					
@@ -488,7 +488,175 @@ class KingBoss extends EnemyGround {
 			},
 			avalanch: (changeTo) => {
 				if (changeTo) {
+					let boss = this;
+					let boulders = new Set();
+					const numBoulders = 40;
+					const minBoulderDistance = 450;
+					const damage = 5;
+					const spawnBounds = {
+						min: boss.body.position.sub(700),
+						max: boss.body.position.add(700),
+					}
 
+					const maxSpawnDuration = 7000;
+					const fallTime = 800;
+					const fallHeight = 300;
+					const scaleBounds = [1, 1.8]
+					const delayBounds = [0, maxSpawnDuration - fallTime];
+					const numBoulderSprites = 4;
+					const now = world.time;
+
+					const dangerSprite = new Sprite({
+						src: "bossRoom/boulderDangerArea.png",
+						width: 294,
+						height: 298,
+						position: new vec(-294/2, -298/2),
+						scale: new vec(0.9, 0.9),
+					});
+
+					function nearOtherBoulders(position, time) {
+						for (let boulder of boulders) {
+							if (Math.abs(boulder.impactTime - time) < fallTime + 300 && boulder.position.sub(position).length <= minBoulderDistance) {
+								return true;
+							}
+						}
+						return false;
+					}
+					function boulderHitGround(position) {
+						createExplosion(position, {
+							circle: {
+								duration: 500,
+								fadeDuration: 300,
+								radius: [150, 170],
+								lineWidth: 12,
+								dash: 100,
+								color: "#F7EFEC90",
+							},
+							lines: {
+								visible: false,
+							},
+							dots: {
+								duration: [400, 800],
+								radius: [19, 30],
+								distance: [100, 280],
+								angle: [0, Math.PI*2],
+								colors: [
+									{
+										color: "#F29978",
+										quantity: 15,
+									},
+									{
+										color: "#F5F1EF",
+										quantity: 15,
+									},
+								],
+							}
+						});
+					}
+					function renderImpactArea() {
+						for (let boulder of boulders) {
+							let position = boulder.impactPosition;
+							let scale = new vec(boulder.scale, boulder.scale);
+
+							if (scale.x <= 0) continue;
+							dangerSprite.render(position, 0, ctx, scale);
+						}
+					}
+					Render.on("beforeLayer0", renderImpactArea);
+					animations.create({ // wait until all boulders have fallen before switching to new attack
+						delay: maxSpawnDuration + 400,
+						duration: 0,
+						curve: ease.linear,
+						callback: p => {},
+						onend: () => {
+							Render.off("beforeLayer0", renderImpactArea);
+							boss.setState("chooseAttack");
+						},
+					});
+
+					for (let i = 0; i < numBoulders; ++i) {
+						let impactPosition = boundedRandomPoint(spawnBounds);
+						let n = 0;
+						let delay = boundedRandom(delayBounds);
+						let impactTime = world.time + delay + fallTime;
+
+						while (nearOtherBoulders(impactPosition, impactTime) && ++n < 100) {
+							impactPosition.set(boundedRandomPoint(spawnBounds));
+							delay = boundedRandom(delayBounds)
+							impactTime = now + delay + fallTime;
+						}
+						if (n >= 100) { // can't spawn any more
+							break;
+						}
+
+						let boulder = Bodies.circle(140, impactPosition.add(new vec(0, -fallHeight)), {
+							isSensor: true,
+							hasCollisions: false,
+							removed: true,
+							render: {
+								sprite: `bossRoom/boulder${ Math.floor(Math.random() * numBoulderSprites) }.png`,
+								opacity: 0,
+								layer: 10,
+							}
+						});
+						boulders.add(boulder);
+						boulder.impactPosition = impactPosition;
+						boulder.impactTime = impactTime;
+						boulder.scale = 0;
+
+						function damagePlayer(collision) {
+							let otherBody = collision.bodyA == boulder ? collision.bodyB : collision.bodyA;
+							if (otherBody === player.body) {
+								player.takeDamage(damage);
+							}
+						}
+						boulder.on("collisionActive", damagePlayer);
+
+						animations.create({ // switch collisions on
+							delay: delay + 300 + fallTime - 30,
+							duration: 0,
+							curve: ease.linear,
+							callback: p => {},
+							onend: () => {
+								boulder.setCollisions(true);
+							}
+						});
+						
+						let deltaPosition = new vec(0, fallHeight);
+						let startPosition = new vec(boulder.position);
+						animations.create({ // fall animation for position + opacity
+							delay: delay + 300,
+							duration: fallTime,
+							curve: ease.in.quadratic,
+							callback: p => {
+								p = (p - 0.1) / 0.9;
+								if (p < 0) return;
+								if (boulder.removed) {
+									boulder.add();
+								}
+								boulder.setPosition(startPosition.add(deltaPosition.mult(p)));
+								boulder.render.opacity = Math.max(0, Math.min(1, p / 0.8));
+								let spriteScale = (1 - p) * (scaleBounds[1] - scaleBounds[0]) + scaleBounds[0];
+								boulder.render.spriteScale.set(new vec(spriteScale, spriteScale));
+							},
+							onend: () => {
+								boulderHitGround(new vec(impactPosition));
+								boulder.delete();
+								boulders.delete(boulder);
+							},
+						});
+						animations.create({ // animation for danger area sprite
+							delay: Math.max(0, delay - 100),
+							duration: 400,
+							curve: ease.out.cubic,
+							callback: p => {
+								boulder.scale = p;
+							},
+							onend: () => {
+								boulder.scale = 1;
+							},
+						});
+					}
 				}
 				else {
 					this.states.stop();

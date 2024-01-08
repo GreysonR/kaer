@@ -15,6 +15,7 @@ class World {
 		this.dynamicGrid = new Grid(gridSize);
 		this.staticGrid = new Grid(gridSize);
 		this.gravity = new vec(gravity);
+		this.getPairs = this.getPairs.bind(this);
 	}
 	
 	getPairs(bodies) {

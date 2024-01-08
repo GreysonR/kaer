@@ -156,4 +156,3 @@ function updateGamepad() {
 	}
 }
 player.body.on("beforeUpdate", updateGamepad);
-
