@@ -901,6 +901,10 @@ var ter = {
 			return (boundsA.max.x >= boundsB.min.x && boundsA.min.x <= boundsB.max.x && 
 					boundsA.max.y >= boundsB.min.y && boundsA.min.y <= boundsB.max.y);
 		},
+		pointInBounds: function(point, bounds) { // checks if a point { x: x, y: y } is within bounds { min: vec, max: vec }, returns true/false
+			return (point.x >= bounds.min.x && point.x <= bounds.max.x && 
+					point.y >= bounds.min.y && point.y <= bounds.max.y);
+		},
 	},
 	Render: (() => {
 		let Render = function() {

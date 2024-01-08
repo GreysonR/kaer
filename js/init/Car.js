@@ -290,16 +290,16 @@ class Car {
 		}
 		
 		// get + apply material properties
-		let material = getCarMaterial(body);
-		if (!material) material = "grass";
-		let materialProps = Materials[material];
-		tireGrip *= materialProps.tireGrip ?? 1;
-		steeringWeight *= materialProps.steeringWeight ?? 1;
-		turnSpeed *= materialProps.turnSpeed ?? 1;
-		acceleration *= materialProps.acceleration ?? 1;
-		maxSpeed *= materialProps.maxSpeed ?? 1;
-		maxReverseSpeed *= materialProps.maxReverseSpeed ?? 1;
-		power = Math.min(100, power * (materialProps.power ?? 1))
+		let materialName = getCarMaterial(body);
+		if (!materialName) materialName = "grass";
+		let material = Materials[materialName];
+		tireGrip *= material.tireGrip ?? 1;
+		steeringWeight *= material.steeringWeight ?? 1;
+		turnSpeed *= material.turnSpeed ?? 1;
+		acceleration *= material.acceleration ?? 1;
+		maxSpeed *= material.maxSpeed ?? 1;
+		maxReverseSpeed *= material.maxReverseSpeed ?? 1;
+		power = Math.min(100, power * (material.power ?? 1))
 	
 		// ~ handbrake
 		if (handbrake) {
@@ -444,7 +444,7 @@ class Car {
 	
 		// ~ toggle smoke
 		let hadTireSmoke = this.hasTireSmoke;
-		this.hasTireSmoke = avgDrift > maxGrip * 25 && materialProps.hasTireSmoke;
+		this.hasTireSmoke = material.hasTireSmoke && avgDrift > maxGrip * 25;
 		if (this.hasTireSmoke !== hadTireSmoke) {
 			if (this.hasTireSmoke) {
 				let options = {

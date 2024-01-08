@@ -69,7 +69,9 @@ class EnemyGround extends Character {
 			const enemy = this;
 			if (now - this.lastDamage >= this.damageCooldown) {
 				this.lastDamage = now;
-				this.health = Math.max(0, this.health - damage);
+				damage = Math.min(this.health, damage);
+				this.health -= damage;
+				this.trigger("takeDamage", damage);
 	
 				// health animation
 				let startPercent = this.healthBarPercent;

@@ -7,14 +7,14 @@ class KingBoss extends EnemyGround {
 		phase2: "phase2",
 	}
 	states = {
-		roam: (() => { // (almost) always active state that controls position
+		roam: (() => { // randomly roams area
 			function roam() {
 				let now = world.time;
 				let { enemy } = this;
 				let { body } = enemy;
 				if (now >= this.nextChange) {
 					this.nextChange = now + boundedRandom(this.changeTime);
-					this.target = new vec(boundedRandom([this.bounds.min.x, this.bounds.max.x]), boundedRandom([this.bounds.min.y, this.bounds.max.y]));
+					this.target = boundedRandomPoint(this.bounds);
 				}
 				let direction = this.target.sub(body.position);
 				let distance = direction.length;
@@ -45,6 +45,47 @@ class KingBoss extends EnemyGround {
 
 			return roam.bind(roam);
 		}),
+		approach: (() => { // slowly walks boss towards player
+			function walk() {
+				let { enemy } = this;
+				let { body } = enemy;
+
+				let direction = player.body.position.sub(body.position);
+				let distance = direction.length;
+				if (distance < 200) {
+					enemy.controls.down = 0;
+					enemy.controls.right = 0;
+					this.startPoint = new vec(body.position);
+				}
+				else {
+					direction.normalize2();
+					if (Common.pointInBounds(body.position, this.bounds) || direction.dot(this.center.sub(body.position)) > -0.4) {
+						enemy.controls.right = Math.abs(direction.x) > 0.3 ? Math.sign(direction.x) : 0;
+						enemy.controls.down =  Math.abs(direction.y) > 0.3 ? Math.sign(direction.y) : 0;
+					}
+					else {
+						enemy.controls.right = 0;
+						enemy.controls.down = 0;
+					}
+
+					enemy.speed = CharacterModels[enemy.model].stats.speed;
+				}
+			}
+			walk.center = new vec(this.spawn.position);
+			walk.bounds = {
+				min: walk.center.sub(500),
+				max: walk.center.add(500),
+			};
+			walk.enemy = this;
+
+			return walk.bind(walk);
+		}),
+		stop: () => {
+			this.controls.up = false;
+			this.controls.down = false;
+			this.controls.left = false;
+			this.controls.right = false;
+		},
 		wait: {
 			wait: (changedTo) => {
 				if (changedTo) {
@@ -62,7 +103,6 @@ class KingBoss extends EnemyGround {
 		phase1: {
 			startFight: (changedTo) => {
 				if (changedTo) {
-					let enemy = this;
 					let startPosition = new vec(camera.position);
 					let endPosition = new vec(this.body.position);
 					let deltaPosition = endPosition.sub(startPosition);
@@ -112,6 +152,9 @@ class KingBoss extends EnemyGround {
 						}
 					});
 				}
+				else {
+					this.states.stop();
+				}
 			},
 			chooseAttack: (changedTo) => {
 				if (changedTo) {
@@ -122,7 +165,6 @@ class KingBoss extends EnemyGround {
 						return;
 					}
 
-					console.log("choosing attack");
 					let nextAttack = "sceptorPound"; // change to random
 					
 					animations.create({
@@ -137,7 +179,7 @@ class KingBoss extends EnemyGround {
 					});
 				}
 				else {
-					this.states.roam();
+					this.states.approach();
 				}
 			},
 			sceptorPound: (changedTo) => {
@@ -145,7 +187,7 @@ class KingBoss extends EnemyGround {
 					let enemy = this;
 					function createShockwave(position) {
 						if (enemy.health <= 0) return;
-						let duration = 2300;
+						let duration = 2000;
 						
 						let maxRadius = 1700;
 						let radius = 0;
@@ -263,19 +305,86 @@ class KingBoss extends EnemyGround {
 					});
 				}
 				else {
-					this.states.roam();
+					this.states.stop();
 				}
 			},
-			summonServants: "summonServants",
-			charge: "charge",
+			summonServants: (changedTo) => {
+				let boss = this;
+				if (changedTo) {
+					if (boss.adds.length >= boss.maxAdds) {
+						boss.setState("chooseAttack");
+						return;
+					}
+					let summonTypes = ["GroundBasic"];
+					let summonQuantity = 4;
+					let summonTime = 600;
+					let totalTime = 1400;
+					let angleOffset = Math.random() * Math.PI;
+
+					for (let i = 0; i < summonQuantity; ++i) {
+						if (boss.adds.length >= boss.maxAdds) break;
+						let time = summonTime * (i + 1) / summonQuantity;
+						let type = summonTypes[Math.floor(Math.random() * summonTypes.length)];
+						
+						let angle = Math.PI*2 * (i + 1) / summonQuantity + angleOffset;
+						let distance = Math.random() * 150 + 80;
+						let position = new vec(Math.cos(angle) * distance, Math.sin(angle) * distance).add(boss.body.position);
+						
+						let enemy = new Enemies[type](position, 0);
+						enemy.value = 0;
+						enemy.on("takeDamage", () => {
+							if (enemy.health <= 0) {
+								boss.adds.delete(enemy);
+							}
+						});
+						boss.adds.push(enemy);
+						
+						animations.create({
+							delay: time,
+							curve: ease.linear,
+							duration: 0,
+							callback: p => {},
+							onend: () => {
+								enemy.add();
+								enemy.state = "attack";
+							}
+						});
+					}
+					
+					animations.create({
+						delay: totalTime,
+						curve: ease.linear,
+						duration: 0,
+						callback: p => {},
+						onend: () => {
+							boss.setState("chooseAttack");
+						}
+					});
+				}
+				else {
+					this.states.stop();
+				}
+			},
+			charge: (changedTo) => {
+				if (changedTo) {
+					let directionSprite = new Sprite({
+						src: "",
+						width,
+						height,
+						position
+					});
+				}
+			},
 			avalanch: "avalanch",
 		},
 		phase2: {
-			summonServants: "summonServants", // same as normal
+			summonServants: null, // same as normal
 			sceptorMagicPound: "sceptorMagicPound", // bullet hell
 			greatAvalanch: "greatAvalanch", // more intense avalanch falling thing
 		}
 	}
+	adds = [];
+	maxAdds = 6;
 	constructor(position, angle) {
 		super("KingBoss", {
 			spawn: {
@@ -287,6 +396,8 @@ class KingBoss extends EnemyGround {
 		this.sightBox.delete();
 		this.renderHealth = this.renderHealth.bind(this);
 		this.states.roam = this.states.roam.call(this);
+		this.states.approach = this.states.approach.call(this);
+		this.states.phase2.summonServants = this.states.phase1.summonServants;
 	}
 
 	// states

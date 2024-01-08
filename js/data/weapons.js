@@ -19,7 +19,7 @@ class Weapon {
 
 var Weapons = {
 	"playerGun": new Weapon({
-		damage: 4,
+		damage: 6,
 		fireRate: 300,
 		bulletSpeed: 30,
 		range: 1000,

@@ -196,12 +196,16 @@ function setCSSVariable(varName, value) {
 function boundedRandom([min, max]) {
 	return Math.random() * (max - min) + min;
 }
+function boundedRandomPoint(bounds) {
+	return new vec(boundedRandom([bounds.min.x, bounds.max.x]), boundedRandom([bounds.min.y, bounds.max.y]));
+}
 
 String.prototype.toCapital = function() {
 	return this.slice(0, 1).toUpperCase() + this.slice(1);
 }
 
 function renderMoneyGain(textStart, money) {
+	if (money <= 0) return;
 	let textPosition = new vec(textStart);
 	let textShift = new vec(0, Math.random() * -50 - 50);
 	let textOpacity = 1;

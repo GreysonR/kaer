@@ -2,24 +2,27 @@
 
 // https://easings.net/
 const animations = {
-	running: [],
+	running: new Set(),
+	queued: new Set(),
 	run: function() {
-		let i = this.running.length;
-
-		if (i > 0) {
-			for (i; i--;) {
-				this.running[i]();
+		let now = ter.World.time;
+		for (let loop of this.queued) {
+			if (now >= loop.startTime) {
+				this.queued.delete(loop);
+				this.running.add(loop);
 			}
 		}
+		for (let loop of this.running) {
+			loop();
+		}
 	},
-	create: function({ duration = 600, curve = ease.inOut.sine, start = 0, delay = 0, onstop, onend, callback, worldTimescale = true }) {
+	create: function({ duration = 600, curve = ease.linear, start = 0, delay = 0, onstop, onend, callback, worldTimescale = true }) {
 		let t = start * duration;
 		let p = t !== 0 && t !== 1 ? curve(t) : t === 0 ? 0 : 1;
 		let run = true;
-		let timeout;
 
 		function loop() {
-			if (run === true) {
+			if (run) {
 				let delta = Performance.delta;
 				if (worldTimescale) delta *= ter.World.timescale;
 				t += delta;
@@ -29,7 +32,7 @@ const animations = {
 
 				if (t >= duration) {
 					run = false;
-					animations.running.splice(animations.running.indexOf(loop), 1);
+					animations.running.delete(loop);
 				}
 				if (t >= duration) {
 					if (typeof onend === "function") {
@@ -40,12 +43,11 @@ const animations = {
 		}
 
 		if (delay > 0) {
-			setTimeout(() => {
-				this.running.push(loop);
-			}, delay);
+			loop.startTime = ter.World.time + delay;
+			this.queued.add(loop);
 		}
 		else {
-			this.running.push(loop);
+			this.running.add(loop);
 		}
 
 		return {
@@ -60,21 +62,27 @@ const animations = {
 				return run;
 			},
 			stop: () => {
-				if (run === true) {
+				if (run) {
 					run = false;
 					if (typeof onstop === "function") {
 						onstop(p);
 					}
-					if (timeout != undefined) {
-						clearTimeout(timeout);
-					}
+					animations.running.delete(this);
+					animations.queued.delete(this);
 					return p;
 				}
 			},
 			start: () => {
 				if (run === false) {
 					run = true;
-					timeout = setTimeout(loop, delay);
+					
+					let now = ter.World.time;
+					if (delay > 0 && loop.startTime < now) {
+						animations.queued.add(this);
+					}
+					else {
+						animations.running.add(this);
+					}
 				}
 			},
 		};

@@ -8,8 +8,6 @@ playerBodies.character.gun = new Gun("playerGun");
 
 var player = playerBodies.car;
 
-playerBodies.character.gun.damage = 6;
-
 // playerBodies.car.gun = new Gun("playerGun");
 // playerBodies.car.gun.damage = 100;
 // playerBodies.car.maxHealth = 100; playerBodies.car.health = playerBodies.car.maxHealth;
