@@ -6,13 +6,15 @@ const animations = {
 	queued: new Set(),
 	run: function() {
 		let now = ter.World.time;
-		for (let loop of this.queued) {
-			if (now >= loop.startTime) {
-				this.queued.delete(loop);
-				this.running.add(loop);
+		let realNow = Performance.lastUpdate;
+		for (let loop of animations.queued) {
+			let unqueue = loop.worldTimescale ? (now >= loop.startTime) : (realNow >= loop.startTime);
+			if (unqueue) {
+				animations.running.add(loop);
+				animations.queued.delete(loop);
 			}
 		}
-		for (let loop of this.running) {
+		for (let loop of animations.running) {
 			loop();
 		}
 	},
@@ -23,31 +25,40 @@ const animations = {
 
 		function loop() {
 			if (run) {
+				p = curve(t / duration);
+				callback(p);
+
 				let delta = Performance.delta;
 				if (worldTimescale) delta *= ter.World.timescale;
 				t += delta;
 
-				p = curve(t / duration);
-				callback(p);
-
-				if (t >= duration) {
+				
+				if (t > duration) {
 					run = false;
 					animations.running.delete(loop);
-				}
-				if (t >= duration) {
+					animations.queued.delete(loop);
+
 					if (typeof onend === "function") {
 						onend();
 					}
 				}
 			}
+			else {
+				animations.running.delete(loop);
+				animations.queued.delete(loop);
+			}
 		}
 
 		if (delay > 0) {
 			loop.startTime = ter.World.time + delay;
-			this.queued.add(loop);
+			if (!worldTimescale) {
+				loop.startTime = Performance.lastUpdate + delay;
+			}
+			loop.worldTimescale = worldTimescale;
+			animations.queued.add(loop);
 		}
 		else {
-			this.running.add(loop);
+			animations.running.add(loop);
 		}
 
 		return {
@@ -76,7 +87,7 @@ const animations = {
 				if (run === false) {
 					run = true;
 					
-					let now = ter.World.time;
+					let now = worldTimescale ? ter.World.time : Performance.lastUpdate;
 					if (delay > 0 && loop.startTime < now) {
 						animations.queued.add(this);
 					}

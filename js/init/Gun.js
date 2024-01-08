@@ -424,95 +424,30 @@ class Bullet {
 		}
 	}
 	hitNothing() { // effects for hitting nothing
-		let point = new vec(this.body.position).add(this.body.velocity.normalize().mult(15));
-		// circle
-		{
-			let duration = 300;
-			let maxRadius = Math.random() * 20 + 10;
-			let maxLineWidth = 9;
-			let radius = 0;
-			let lineWidth = maxLineWidth;
-			let position = point;
-			let maxDash = 30;
-			let dash = 0;
-			function render() {
-				if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
-					ctx.beginPath();
-					ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
-					ctx.strokeStyle = "#ffffff20";
-					ctx.lineWidth = lineWidth;
-					if (dash >= 1) {
-						ctx.lineCap = "round";
-						ctx.setLineDash([dash, maxDash - dash])
-					}
-					ctx.stroke();
-					ctx.setLineDash([]);
-				}
+		createExplosion(new vec(this.body.position), {
+			circle: {
+				visible: true,
+				duration: 300,
+				fadeDuration: 150,
+				radius: [30, 40],
+				lineWidth: 10,
+				dash: 30,
+				color: "#ffffff30",
+			},
+			lines: {
+				visible: false,
+			},
+			dots: {
+				duration: [200, 400],
+				radius: [5, 13],
+				distance: [30, 90],
+				colors: [
+					{
+						color: "#FFF4EB80",
+						quantity: 6,
+					},
+				],
 			}
-			animations.create({
-				duration: duration,
-				curve: ease.out.quintic,
-				callback: p => {
-					radius = maxRadius * p;
-				},
-				onend() {
-					Render.off("beforeLayer-2", render);
-				},
-			});
-			animations.create({
-				duration: duration * 0.7,
-				delay: duration * 0.3,
-				curve: ease.linear,
-				callback: p => {
-					lineWidth = maxLineWidth * (1 - p);
-					dash = maxDash * (1 - p);
-				},
-			});
-			Render.on("beforeLayer-2", render);
-		}
-
-		// dots
-		let numDots = 6;
-		for (let i = 0; i < numDots; i++) {
-			let angle = Math.random() * Math.PI * 2;
-			let duration = Math.random() * 200 + 200;
-			let maxRadius = Math.random() * 8 + 5;
-			let distance = Math.random() * 50 + 30 - (maxRadius / (14 + 8) * 30);
-			let start = new vec(point);
-			let direction = new vec(Math.cos(angle), Math.sin(angle));
-			let offset = direction.mult(distance);
-			
-			let pt = new vec(start);
-			let radius = maxRadius;
-			function render() {
-				ctx.beginPath();
-				ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
-				ctx.closePath();
-				ctx.fillStyle = "#FFF4EB80";
-				ctx.fill();
-			}
-			let positionAnimation = animations.create({
-				duration: duration,
-				curve: ease.linear,
-				callback: p => {
-					pt.set(start.add(offset.mult(p)));
-				},
-				onend() {
-					Render.off("beforeLayer-2", render);
-				},
-			});
-			let radiusAnimation = animations.create({
-				duration: duration * 0.6,
-				delay: duration * 0.4,
-				curve: ease.linear,
-				callback: p => {
-					radius = maxRadius * Math.max(0, 1 - p);
-				},
-				onend() {
-					radius = 0;
-				},
-			});
-			Render.on("beforeLayer-2", render);
-		}
+		});
 	}
 }

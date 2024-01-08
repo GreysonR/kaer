@@ -109,148 +109,39 @@ class Character {
 		}
 	}
 	destroyAnimation() {
-		let point = new vec(this.body.position);
-
-		// circle
-		{
-			let duration = 600;
-			let maxRadius = Math.random() * 50 + 150;
-			let maxLineWidth = 16;
-			let radius = 0;
-			let lineWidth = maxLineWidth;
-			let position = point;
-			let maxDash = 100;
-			let dash = 0;
-			function render() {
-				if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
-					ctx.beginPath();
-					ctx.arc(position.x, position.y, radius, 0, Math.PI*2);
-					// ctx.arc(position.x, position.y, radius, 0, Math.PI*2);
-					ctx.strokeStyle = "#E4749480";
-					ctx.lineWidth = lineWidth;
-					if (dash >= 1) {
-						ctx.lineCap = "round";
-						ctx.setLineDash([dash, maxDash - dash]);
-					}
-					ctx.stroke();
-					ctx.setLineDash([]);
-				}
+		createExplosion(new vec(this.body.position), {
+			circle: {
+				visible: false,
+			},
+			lines: {
+				quantity: 5,
+				velocity: [4, 8],
+				length: 50,
+				distance: [100, 250],
+				color: "#FFF4EB",
+				lineWidth: 10,
+			},
+			dots: {
+				duration: [400, 700],
+				radius: [19, 30],
+				distance: [80, 220],
+				angle: [0, Math.PI*2],
+				colors: [
+					{
+						color: "#FFF4EBe8",
+						quantity: 5,
+					},
+					{
+						color: "#E47494e8",
+						quantity: 8,
+					},
+					{
+						color: "#ED8666e8",
+						quantity: 2,
+					},
+				],
 			}
-			animations.create({
-				duration: duration,
-				curve: ease.out.quadratic,
-				callback: p => {
-					radius = maxRadius * p;
-				},
-				onend() {
-					Render.off("beforeLayer-2", render);
-				},
-			});
-			animations.create({
-				duration: duration * 0.7,
-				delay: duration * 0.3,
-				curve: ease.linear,
-				callback: p => {
-					lineWidth = maxLineWidth * (1 - p);
-					dash = maxDash * (1 - p);
-				},
-			});
-			Render.on("beforeLayer-2", render);
-		}
-
-		// lines
-		let numLines = 8; // must be > 1
-		let lineVelocityBounds = [4, 8]; // [min, max]
-		for (let i = 0; i < numLines; i++) {
-			let angle = (i / (numLines - 1)) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
-			let speed = Math.random() * (lineVelocityBounds[1] - lineVelocityBounds[0]) + lineVelocityBounds[0];
-			let distance = Math.random() * 100 + 140;
-			let start = new vec(point);
-			let direction = new vec(Math.cos(angle), Math.sin(angle));
-			let offset = direction.mult(distance);
-			let length = 50;
-			
-			let ptA = new vec(start);
-			let ptB = new vec(start);
-			function render() {
-				ctx.beginPath();
-				ctx.moveTo(ptA.x, ptA.y);
-				ctx.lineTo(ptB.x, ptB.y);
-				ctx.strokeStyle = "#FFF4EB";
-				ctx.lineWidth = 8;
-				ctx.lineCap = "round";
-				ctx.stroke();
-			}
-			let animation = animations.create({
-				duration: distance / speed * 16.67,
-				curve: ease.out.quadratic,
-				callback: p => {
-					let lengthPercent = length / distance;
-					p = p * (1 + lengthPercent);
-					let percentB = Math.min(1, p);
-					let percentA = Math.max(0, p - lengthPercent);
-					ptA = start.add(offset.mult(percentA));
-					ptB = start.add(offset.mult(percentB));
-
-					if (percentA >= 0.995) {
-						animation.stop();
-					}
-				},
-				onend() {
-					Render.off("beforeLayer-2", render);
-				},
-				onstop() {
-					Render.off("beforeLayer-2", render);
-				},
-			});
-			Render.on("beforeLayer-2", render);
-		}
-
-		// dots
-		let numDots = 15;
-		let dotColors = ["#FFF4EBd8", "#FFF4EBd8", "#FFF4EBd8", "#FFF4EBd8", "#E47494d8", "#ED8666d8"]
-		for (let i = 0; i < numDots; i++) {
-			let angle = Math.random() * Math.PI * 2;
-			let duration = Math.random() * 300 + 400;
-			let maxRadius = Math.random() * 20 + 14;
-			let distance = Math.random() * 200 + 100 - (maxRadius / (20 + 14) * 100);
-			let start = new vec(point);
-			let direction = new vec(Math.cos(angle), Math.sin(angle));
-			let offset = direction.mult(distance);
-			let color = dotColors.choose();
-			
-			let pt = new vec(start);
-			let radius = maxRadius;
-			function render() {
-				ctx.beginPath();
-				ctx.arc(pt.x, pt.y, radius, 0, Math.PI * 2);
-				ctx.closePath();
-				ctx.fillStyle = color;
-				ctx.fill();
-			}
-			let positionAnimation = animations.create({
-				duration: duration,
-				curve: ease.linear,
-				callback: p => {
-					pt.set(start.add(offset.mult(p)));
-				},
-				onend() {
-					Render.off("beforeLayer-2", render);
-				},
-			});
-			let radiusAnimation = animations.create({
-				duration: duration * 0.6,
-				delay: duration * 0.4,
-				curve: ease.linear,
-				callback: p => {
-					radius = maxRadius * Math.max(0, 1 - p);
-				},
-				onend() {
-					radius = 0;
-				},
-			});
-			Render.on("beforeLayer-2", render);
-		}
+		});
 	}
 	updateShoot() {
 		if (!(this.gun instanceof Gun) || this.controls.locked) return;

@@ -247,3 +247,222 @@ function renderMoneyGain(textStart, money) {
 	});
 	Render.on("afterRender", renderText);
 }
+
+function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {}, dots: {} }) {
+	// todo: add angle bounds to circle and lines, then use function for all bullet collision effects
+
+	// circle
+	(function createCircle() {
+		let defaults = {
+			visible: true,
+			duration: 600,
+			fadeDuration: 200,
+			radius: [150, 200],
+			lineWidth: 16,
+			dash: 100,
+			color: "#E4749480",
+		}
+		Common.merge(defaults, options.circle)
+		if (!defaults.visible) return;
+		let { duration, fadeDuration, radius: maxRadiusBounds, lineWidth: maxLineWidth, dash: maxDash, color } = defaults;
+		let radius = 0;
+		let maxRadius = boundedRandom(maxRadiusBounds);
+		let lineWidth = maxLineWidth;
+		let position = point;
+		let dash = 0;
+		function render() {
+			if (lineWidth > 0 && (dash == 0 || dash >= 1)) {
+				ctx.beginPath();
+				ctx.arc(position.x, position.y, radius, 0, Math.PI*2);
+
+				ctx.strokeStyle = color;
+				ctx.lineWidth = lineWidth;
+				if (dash >= 1) {
+					ctx.lineCap = "round";
+					ctx.setLineDash([dash, maxDash - dash]);
+				}
+				ctx.stroke();
+				ctx.setLineDash([]);
+			}
+		}
+		animations.create({
+			duration: duration,
+			curve: ease.out.quadratic,
+			callback: p => {
+				radius = maxRadius * p;
+			},
+			onend() {
+				Render.off("beforeLayer-2", render);
+			},
+		});
+		animations.create({
+			duration: fadeDuration,
+			delay: duration - fadeDuration,
+			curve: ease.linear,
+			callback: p => {
+				lineWidth = maxLineWidth * (1 - p);
+				if (maxDash > 0) dash = maxDash * (1 - p);
+			},
+		});
+		Render.on("beforeLayer-2", render);
+	})();
+
+	// lines
+	(function createLines() {
+		let defaults = {
+			visible: true,
+			quantity: 8,
+			velocity: [4, 8],
+			length: 50,
+			distance: [140, 240],
+			color: "#FFF4EB",
+			lineWidth: 8,
+		}
+		Common.merge(defaults, options.lines);
+		let { visible, quantity, velocity, length, distance, color, lineWidth } = defaults;
+		if (!visible || quantity <= 0) return;
+		// lines
+		let lines = new Set();
+		for (let i = 0; i < quantity; i++) {
+			let angle = (i / (quantity - 1)) * Math.PI * 2 + (Math.random() * 0.4 - 0.2);
+			let speed = boundedRandom(velocity);
+			let curDistance = boundedRandom(distance);
+			let start = new vec(point);
+			let direction = new vec(Math.cos(angle), Math.sin(angle));
+			let offset = direction.mult(curDistance);
+			
+			let ptA = new vec(start);
+			let ptB = new vec(start);
+			let line = [ptA, ptB];
+			lines.add(line);
+			let animation = animations.create({
+				duration: curDistance / speed * 16.67,
+				curve: ease.out.quadratic,
+				callback: p => {
+					let lengthPercent = length / curDistance;
+					p = p * (1 + lengthPercent);
+					let percentB = Math.min(1, p);
+					let percentA = Math.max(0, p - lengthPercent);
+					ptA.set(start.add(offset.mult(percentA)));
+					ptB.set(start.add(offset.mult(percentB)));
+
+					if (percentA >= 0.995) {
+						animation.stop();
+					}
+				},
+				onend() {
+					lines.delete(line);
+				},
+				onstop() {
+					lines.delete(line);
+				},
+			});
+		}
+		function render() {
+			if (lines.size === 0) {
+				Render.off("beforeLayer-2", render);
+				return;
+			}
+
+			ctx.beginPath();
+			for (let line of lines) {
+				let [ptA, ptB] = line;
+				ctx.moveTo(ptA.x, ptA.y);
+				ctx.lineTo(ptB.x, ptB.y);
+			}
+			ctx.strokeStyle = color;
+			ctx.lineWidth = lineWidth;
+			ctx.lineCap = "round";
+			ctx.stroke();
+		}
+		Render.on("beforeLayer-2", render);
+	})();
+
+	// dots
+	(function createDots() {
+		let defaults = {
+			visible: true,
+			duration: [400, 700],
+			radius: [14, 34],
+			distance: [100, 300],
+			weightedDistance: true,
+			angle: [0, Math.PI*2],
+			colors: [],
+		}
+		Common.merge(defaults, options.dots);
+		if (!defaults.visible || defaults.colors.length === 0) return;
+		let { duration: durationBounds, radius: radiusBounds, distance: distanceBounds, angle: angleBounds, weightedDistance } = defaults;
+
+		function createColorDots(options = {}) {
+			let defaults = {
+				color: "#FFF4EBd8",
+				quantity: 4,
+			}
+			Common.merge(defaults, options);
+			let { color, quantity } = defaults;
+
+			let dots = new Set();
+			for (let i = 0; i < quantity; ++i) {
+				let angle = boundedRandom(angleBounds);
+				let duration = boundedRandom(durationBounds);
+				let maxRadius = boundedRandom(radiusBounds);
+				let distance = boundedRandom(distanceBounds);
+
+				if (weightedDistance) {
+					distance -= (maxRadius / radiusBounds[1] * distanceBounds[0]);
+				}
+	
+				let start = new vec(point);
+				let direction = new vec(Math.cos(angle), Math.sin(angle));
+				let offset = direction.mult(distance);
+	
+				let dot = {
+					position: new vec(point),
+					radius: maxRadius,
+				};
+				dots.add(dot);
+	
+				let positionAnimation = animations.create({
+					duration: duration,
+					curve: ease.linear,
+					callback: p => {
+						dot.position.set(start.add(offset.mult(p)));
+					},
+					onend() {
+						dots.delete(dot);
+					},
+				});
+				let radiusAnimation = animations.create({
+					duration: duration * 0.6,
+					delay: duration * 0.4,
+					curve: ease.linear,
+					callback: p => {
+						dot.radius = maxRadius * Math.max(0, 1 - p);
+					},
+					onend() {
+						radius = 0;
+					},
+				});
+			}
+			function render() {
+				if (dots.size === 0) {
+					Render.off("beforeLayer-2", render);
+					return;
+				}
+	
+				ctx.beginPath();
+				for (let dot of dots) {
+					let { position, radius } = dot;
+					ctx.arc(position.x, position.y, radius, 0, Math.PI * 2);
+					ctx.closePath();
+				}
+				ctx.fillStyle = color;
+				ctx.fill();
+			}
+			Render.on("beforeLayer-2", render);
+		}
+		for (let dotOptions of defaults.colors) {
+			createColorDots(dotOptions);
+		}
+	})();
+}

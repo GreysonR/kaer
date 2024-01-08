@@ -21,20 +21,15 @@ class KingBoss extends EnemyGround {
 				if (distance < 100) {
 					enemy.controls.down = 0;
 					enemy.controls.right = 0;
-					this.startPoint = new vec(body.position);
 				}
 				else {
 					direction.normalize2();
 					enemy.controls.right = direction.x;
 					enemy.controls.down = direction.y;
-
-					let startDistance = this.startPoint.sub(body.position).length;
-					enemy.speed = CharacterModels[enemy.model].stats.speed * Math.min(1, (Math.min(startDistance + 70, distance - 40) / 100) ** 2);
 				}
 			}
 			roam.lastChange = -10000;
 			roam.changeTime = [4000, 8000];
-			roam.startPoint = new vec(this.spawn.position);
 			roam.bounds = {
 				min: new vec(this.spawn.position).sub(300),
 				max: new vec(this.spawn.position).add(300),
@@ -124,8 +119,15 @@ class KingBoss extends EnemyGround {
 						},
 						onend: () => {
 							deltaPosition = getDefaultCameraPosition().sub(endPosition);
+							let frameElem = document.getElementById("kingBossFrame");
+							frameElem.classList.add("active");
+							setTimeout(() => {
+								frameElem.classList.remove("active");
+							}, 2000);
+
 							animations.create({
 								worldTimescale: false,
+								delay: 2000,
 								duration: 700,
 								curve: ease.out.quadratic,
 								callback: p => {
@@ -165,7 +167,9 @@ class KingBoss extends EnemyGround {
 						return;
 					}
 
-					let nextAttack = "charge"; // change to random
+					let possibleAttacks = ["sceptorPound", "charge", "summonServants"];
+					let nextAttack = possibleAttacks.choose();
+					// let nextAttack = "avalanch"; // change to random
 					
 					animations.create({
 						delay: 800,
@@ -316,7 +320,7 @@ class KingBoss extends EnemyGround {
 						return;
 					}
 					let summonTypes = ["GroundBasic"];
-					let summonQuantity = 4;
+					let summonQuantity = 3
 					let summonTime = 600;
 					let totalTime = 1400;
 					let angleOffset = Math.random() * Math.PI;
@@ -376,9 +380,9 @@ class KingBoss extends EnemyGround {
 					});
 					
 					const chargeDistance = pathSprite.width;
-					const chargeTime = 400;
+					const chargeTime = 200;
 					const rotationSpeed = 0.015;
-					const damage = 10;
+					const damage = 8;
 					let direction = player.body.position.sub(boss.body.position);
 					let angle = direction.angle;
 					let spritePosition = new vec(Math.cos(angle) * pathSprite.width / 2, Math.sin(angle) * pathSprite.width / 2).add2(boss.body.position);
@@ -468,7 +472,7 @@ class KingBoss extends EnemyGround {
 							animations.create({
 								delay: 0,
 								curve: ease.linear,
-								duration: 100,
+								duration: 200,
 								callback: p => {
 									boss.states.stop();
 									spritePosition = direction.mult(pathSprite.width/2).add2(boss.body.position);
@@ -482,7 +486,14 @@ class KingBoss extends EnemyGround {
 					});
 				}
 			},
-			avalanch: "avalanch",
+			avalanch: (changeTo) => {
+				if (changeTo) {
+
+				}
+				else {
+					this.states.stop();
+				}
+			},
 		},
 		phase2: {
 			summonServants: null, // same as normal
@@ -491,7 +502,7 @@ class KingBoss extends EnemyGround {
 		}
 	}
 	adds = [];
-	maxAdds = 6;
+	maxAdds = 4;
 	constructor(position, angle) {
 		super("KingBoss", {
 			spawn: {
