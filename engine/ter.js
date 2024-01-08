@@ -119,7 +119,7 @@ var ter = {
 			ctx.fillText((Math.round(delta * 100) / 100).toFixed(2) + "ms", 190 * pixelRatio, 70 * pixelRatio);
 		}
 	},
-	World: new World(new vec(0, 0), 2000),
+	World: new World(new vec(0, 0), 1000),
 	Bodies: {
 		bodies: 0,
 		get uniqueId() {
@@ -129,8 +129,8 @@ var ter = {
 			let { category: categoryA, mask: maskA } = filterA;
 			let { category: categoryB, mask: maskB } = filterB;
 
-			let canA = maskA === 0 || (maskA & categoryB) !== 0;
-			let canB = maskB === 0 || (maskB & categoryA) !== 0;
+			let canA = maskA === 0 || categoryB === 0 || (maskA & categoryB) !== 0;
+			let canB = maskB === 0 || categoryA === 0 || (maskB & categoryA) !== 0;
 
 			return canA && canB;
 		},

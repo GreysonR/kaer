@@ -165,7 +165,7 @@ class KingBoss extends EnemyGround {
 						return;
 					}
 
-					let nextAttack = "sceptorPound"; // change to random
+					let nextAttack = "charge"; // change to random
 					
 					animations.create({
 						delay: 800,
@@ -367,11 +367,118 @@ class KingBoss extends EnemyGround {
 			},
 			charge: (changedTo) => {
 				if (changedTo) {
-					let directionSprite = new Sprite({
-						src: "",
-						width,
-						height,
-						position
+					let boss = this;
+					let pathSprite = new Sprite({
+						src: "bossRoom/chargePath.png",
+						width: 1364,
+						height: 275,
+						position: new vec(-1364/2, -275/2),
+					});
+					
+					const chargeDistance = pathSprite.width;
+					const chargeTime = 400;
+					const rotationSpeed = 0.015;
+					const damage = 10;
+					let direction = player.body.position.sub(boss.body.position);
+					let angle = direction.angle;
+					let spritePosition = new vec(Math.cos(angle) * pathSprite.width / 2, Math.sin(angle) * pathSprite.width / 2).add2(boss.body.position);
+					let chargeAnimation;
+
+					let hitbox = Bodies.circle(pathSprite.height / 2, new vec(boss.body.position), {
+						numSides: 8,
+						isSensor: true,
+						render: {
+							visible: false,
+						}
+					});
+
+					boss.body.collisionFilter.mask = 0b10;
+					
+					function renderPath() {
+						ctx.beginPath();
+						pathSprite.render(spritePosition, angle, ctx);
+					}
+					Render.on("beforeLayer0", renderPath);
+
+					function updateHitbox() {
+						hitbox.setPosition(boss.body.position);
+					}
+					boss.body.on("beforeUpdate", updateHitbox);
+
+
+					function damagePlayer(collision) {
+						let otherBody = collision.bodyA == hitbox ? collision.bodyB : collision.bodyA;
+						if (otherBody === player.body) {
+							player.takeDamage(damage);
+						}
+						else if (otherBody.isStatic && chargeAnimation && otherBody.position.sub(boss.body.position).dot(direction) > 0) {
+							chargeAnimation.stop();
+						}
+					}
+					hitbox.on("collisionActive", damagePlayer);
+
+					function stop() {
+						Render.off("beforeLayer0", renderPath);
+						
+						boss.body.off("beforeUpdate", updateHitbox);
+						hitbox.off("collisionActive", damagePlayer);
+						hitbox.delete();
+						
+						boss.body.collisionFilter.mask = 0;
+
+						boss.setState("chooseAttack");
+					}
+
+					function charge() {
+						let deltaPosition = new vec(Math.cos(angle), Math.sin(angle)).mult(chargeDistance - 50);
+						let velocity = deltaPosition.div(chargeTime).mult2(16.67 * 3.33);
+
+						chargeAnimation = animations.create({
+							curve: ease.linear,
+							duration: chargeTime,
+							callback: p => {
+								boss.body.velocity.set(velocity.mult(Engine.delta));
+							},
+							onend: stop,
+							onstop: stop,
+						});
+					}
+
+					// track player
+					animations.create({
+						delay: 0,
+						curve: ease.linear,
+						duration: 800,
+						callback: p => {
+							// go towards player
+							boss.states.approach();
+
+							// rotate to follow player
+							let targetDirection = player.body.position.sub(boss.body.position);
+							let targetAngle = targetDirection.angle;
+							let angleDiff = Common.angleDiff(targetAngle, angle);
+							angle += Math.min(Math.abs(angleDiff), rotationSpeed) * Math.sign(angleDiff) * Engine.delta;
+
+							direction = new vec(Math.cos(angle), Math.sin(angle));
+							spritePosition = direction.mult(pathSprite.width/2).add2(boss.body.position);
+						},
+						onend: () => {
+							direction = new vec(Math.cos(angle), Math.sin(angle));
+							// lock into a position + angle
+							animations.create({
+								delay: 0,
+								curve: ease.linear,
+								duration: 100,
+								callback: p => {
+									boss.states.stop();
+									spritePosition = direction.mult(pathSprite.width/2).add2(boss.body.position);
+								},
+								onend: () => {
+									// charge at player
+									charge();
+								}
+							});
+						}
 					});
 				}
 			},
