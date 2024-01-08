@@ -76,6 +76,7 @@ class Sprite {
 		this.useBuffer = true;
 	}
 	render = function(position, angle, ctx, spriteScale = new vec(1, 1)) {
+		if (!this.loaded) return;
 		let { position: spritePos, width, height, scale, image } = this;
 		scale = scale.mult(spriteScale);
 
