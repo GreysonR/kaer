@@ -34,6 +34,6 @@ var Weapons = {
 		damage: 2,
 		fireRate: 900,
 		bulletSpeed: 17,
-		range: 700,
+		range: 900,
 	}),
 }

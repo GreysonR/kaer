@@ -12,6 +12,7 @@ class Room extends Scene {
 		this.height = height;
 		
 		this.exitBlocks = [];
+		this.enterBlocks = [];
 
 		this.loadScene();
 
@@ -26,6 +27,9 @@ class Room extends Scene {
 		function finishLevel() {
 			window.removeEventListener("levelFinish", finishLevel);
 			for (let body of scene.exitBlocks) {
+				body.delete();
+			}
+			for (let body of scene.enterBlocks) {
 				body.delete();
 			}
 		}
@@ -78,6 +82,10 @@ class Room extends Scene {
 				}
 				if (options.blocksExit) {
 					scene.exitBlocks.push(obj);
+				}
+				if (options.blocksEnter) {
+					scene.enterBlocks.push(obj);
+					obj.sceneAdd = false;
 				}
 			}
 		}

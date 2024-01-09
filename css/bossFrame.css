@@ -22,3 +22,9 @@
 #kingBossFrame {
 	background-image: url("../img/bossRoom/bossFrame.svg");
 }
+#kingBossFrame.phase2 {
+	background-image: url("../img/bossRoom/bossFramePhase2.svg");
+}
+#kingBossFrame.defeated {
+	background-image: url("../img/bossRoom/bossFrameDefeated.svg");
+}

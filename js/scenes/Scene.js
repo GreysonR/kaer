@@ -15,7 +15,9 @@ class Scene {
 	add() {
 		this.trigger("beforeAdd");
 		for (let body of this.bodies) {
-			body.add();
+			if (body.sceneAdd !== false) {
+				body.add();
+			}
 		}
 		this.trigger("afterAdd");
 	}

@@ -187,6 +187,7 @@ class EnemyGround extends Character {
 			let otherBody = collision.bodyA === sightBox ? collision.bodyB : collision.bodyA;
 			if (otherBody != this.body && otherBody != player.body && !otherBody.isSensor) {
 				let { point: closestPoint, normal: closestNormal } = closestEdgeBetweenBodies(this.body, otherBody);
+				if (!closestPoint) continue;
 				let distance = this.body.position.sub(closestPoint);
 				let scale = ((1 - distance.length / sightBox.height) ** 2) * 300;
 				if (Math.abs(closestNormal.dot(bodyDirection)) > 0.8) {

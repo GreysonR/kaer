@@ -261,10 +261,11 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 			lineWidth: 16,
 			dash: 100,
 			color: "#E4749480",
+			layer: -2,
 		}
 		Common.merge(defaults, options.circle)
 		if (!defaults.visible) return;
-		let { duration, fadeDuration, radius: maxRadiusBounds, lineWidth: maxLineWidth, dash: maxDash, color } = defaults;
+		let { duration, fadeDuration, radius: maxRadiusBounds, lineWidth: maxLineWidth, dash: maxDash, color, layer } = defaults;
 		let radius = 0;
 		let maxRadius = boundedRandom(maxRadiusBounds);
 		let lineWidth = maxLineWidth;
@@ -292,7 +293,7 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 				radius = maxRadius * p;
 			},
 			onend() {
-				Render.off("beforeLayer-2", render);
+				Render.off(`beforeLayer${layer}`, render);
 			},
 		});
 		animations.create({
@@ -304,7 +305,7 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 				if (maxDash > 0) dash = maxDash * (1 - p);
 			},
 		});
-		Render.on("beforeLayer-2", render);
+		Render.on(`beforeLayer${layer}`, render);
 	})();
 
 	// lines
@@ -317,9 +318,10 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 			distance: [140, 240],
 			color: "#FFF4EB",
 			lineWidth: 8,
+			layer: -2,
 		}
 		Common.merge(defaults, options.lines);
-		let { visible, quantity, velocity, length, distance, color, lineWidth } = defaults;
+		let { visible, quantity, velocity, length, distance, color, lineWidth, layer } = defaults;
 		if (!visible || quantity <= 0) return;
 		// lines
 		let lines = new Set();
@@ -360,7 +362,7 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 		}
 		function render() {
 			if (lines.size === 0) {
-				Render.off("beforeLayer-2", render);
+				Render.off(`beforeLayer${layer}`, render);
 				return;
 			}
 
@@ -375,7 +377,7 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 			ctx.lineCap = "round";
 			ctx.stroke();
 		}
-		Render.on("beforeLayer-2", render);
+		Render.on(`beforeLayer${layer}`, render);
 	})();
 
 	// dots
@@ -388,10 +390,11 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 			weightedDistance: true,
 			angle: [0, Math.PI*2],
 			colors: [],
+			layer: -2,
 		}
 		Common.merge(defaults, options.dots);
 		if (!defaults.visible || defaults.colors.length === 0) return;
-		let { duration: durationBounds, radius: radiusBounds, distance: distanceBounds, angle: angleBounds, weightedDistance } = defaults;
+		let { duration: durationBounds, radius: radiusBounds, distance: distanceBounds, angle: angleBounds, weightedDistance, layer } = defaults;
 
 		function createColorDots(options = {}) {
 			let defaults = {
@@ -446,7 +449,7 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 			}
 			function render() {
 				if (dots.size === 0) {
-					Render.off("beforeLayer-2", render);
+					Render.off(`beforeLayer${layer}`, render);
 					return;
 				}
 	
@@ -459,7 +462,7 @@ function createExplosion(point = new vec(0, 0), options = { circle: {}, lines: {
 				ctx.fillStyle = color;
 				ctx.fill();
 			}
-			Render.on("beforeLayer-2", render);
+			Render.on(`beforeLayer${layer}`, render);
 		}
 		for (let dotOptions of defaults.colors) {
 			createColorDots(dotOptions);

@@ -34,7 +34,11 @@ function playerDamageEffects(damage) {
 	function zoom() {
 		camera.fov *= scale;
 	}
+	function unzoom() {
+		camera.fov /= scale;
+	}
 	Render.on("beforeSave", zoom);
+	Render.on("afterRestore", unzoom);
 	animations.create({
 		duration: 100,
 		curve: ease.out.cubic,
@@ -50,6 +54,7 @@ function playerDamageEffects(damage) {
 				},
 				onend: () => {
 					Render.off("beforeSave", zoom);
+					Render.off("afterRestore", unzoom);
 				}
 			});
 		}

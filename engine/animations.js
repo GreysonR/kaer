@@ -26,7 +26,7 @@ const animations = {
 		function loop() {
 			if (run) {
 				p = curve(t / duration);
-				callback(p);
+				if (callback) callback(p);
 
 				let delta = Performance.delta;
 				if (worldTimescale) delta *= ter.World.timescale;
