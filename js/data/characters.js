@@ -34,8 +34,8 @@ var CharacterModels = {
 		model: "Player",
 		stats: {
 			// health
-			maxHealth:	40,
-			health:	    40,
+			maxHealth:	60,
+			health:	    60,
 			damageCooldown: 500,
 			speed: 25, // 8.5
 		},

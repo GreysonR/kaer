@@ -66,8 +66,8 @@ var Models = {
 			rotationSensitivity: 0.2,
 
 			// health
-			maxHealth:	60,
-			health:	    60,
+			maxHealth:	80,
+			health:	    80,
 			ramDamage: 6,
 			damageCooldown: 500,
 		},
