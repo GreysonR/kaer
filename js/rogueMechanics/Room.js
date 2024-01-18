@@ -25,7 +25,6 @@ class Room extends Scene {
 
 		// scene progress
 		function finishLevel() {
-			window.removeEventListener("levelFinish", finishLevel);
 			for (let body of scene.exitBlocks) {
 				body.delete();
 			}
@@ -46,9 +45,6 @@ class Room extends Scene {
 
 			// start wave
 			this.waves.add();
-
-			// add event listeners
-			window.addEventListener("levelFinish", finishLevel);
 		});
 		this.on("beforeDelete", () => {
 			// remove enemies
